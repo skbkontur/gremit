@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+
+using GrEmit.InstructionParameters;
+
+namespace GrEmit.StackMutators
+{
+    internal class BrStackMutator : StackMutator
+    {
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        {
+            var label = ((LabelILInstructionParameter)parameter).Label;
+            SaveOrCheck(il, stack, label);
+        }
+    }
+}

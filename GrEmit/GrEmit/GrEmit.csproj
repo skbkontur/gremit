@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{049F27EE-942B-4F5F-BFA8-BD199538E3A8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GrEmit</RootNamespace>
+    <AssemblyName>GrEmit</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="InstructionComments\InaccessibleCodeILInstructionComment.cs" />
+    <Compile Include="InstructionParameters\ConstructorILInstructionParameter.cs" />
+    <Compile Include="InstructionParameters\FieldILInstructionParameter.cs" />
+    <Compile Include="Formatter.cs" />
+    <Compile Include="GroboIL.cs" />
+    <Compile Include="ILCode.cs" />
+    <Compile Include="ILInstructionComment.cs" />
+    <Compile Include="ILInstructionParameter.cs" />
+    <Compile Include="InstructionParameters\LabelILInstructionParameter.cs" />
+    <Compile Include="InstructionParameters\LocalILInstructionParameter.cs" />
+    <Compile Include="InstructionParameters\MethodByAddressILInstructionParameter.cs" />
+    <Compile Include="InstructionParameters\MethodILInstructionParameter.cs" />
+    <Compile Include="InstructionParameters\PrimitiveILInstructionParameter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="InstructionComments\StackILInstructionComment.cs" />
+    <Compile Include="InstructionParameters\StringILInstructionParameter.cs" />
+    <Compile Include="InstructionParameters\TypeILInstructionParameter.cs" />
+    <Compile Include="StackMutator.cs" />
+    <Compile Include="StackMutatorCollection.cs" />
+    <Compile Include="StackMutators\BleStackMutator.cs" />
+    <Compile Include="StackMutators\BoxStackMutator.cs" />
+    <Compile Include="StackMutators\BrfalseStackMutator.cs" />
+    <Compile Include="StackMutators\BrStackMutator.cs" />
+    <Compile Include="StackMutators\BeqStackMutator.cs" />
+    <Compile Include="StackMutators\CalliStackMutator.cs" />
+    <Compile Include="StackMutators\CallStackMutator.cs" />
+    <Compile Include="StackMutators\CastclassStackMutator.cs" />
+    <Compile Include="StackMutators\CeqStackMutator.cs" />
+    <Compile Include="StackMutators\CgtStackMutator.cs" />
+    <Compile Include="StackMutators\ConstrainedStackMutator.cs" />
+    <Compile Include="StackMutators\DupStackMutator.cs" />
+    <Compile Include="StackMutators\LdargaStackMutator.cs" />
+    <Compile Include="StackMutators\Ldarga_SStackMutator.cs" />
+    <Compile Include="StackMutators\LdargStackMutator.cs" />
+    <Compile Include="StackMutators\Ldarg_0StackMutator.cs" />
+    <Compile Include="StackMutators\InitobjStackMutator.cs" />
+    <Compile Include="StackMutators\Ldarg_1StackMutator.cs" />
+    <Compile Include="StackMutators\Ldarg_2StackMutator.cs" />
+    <Compile Include="StackMutators\Ldarg_3StackMutator.cs" />
+    <Compile Include="StackMutators\Ldarg_SStackMutator.cs" />
+    <Compile Include="StackMutators\Ldc_I4StackMutator.cs" />
+    <Compile Include="StackMutators\Ldc_I8StackMutator.cs" />
+    <Compile Include="StackMutators\Ldc_R4StackMutator.cs" />
+    <Compile Include="StackMutators\Ldc_R8StackMutator.cs" />
+    <Compile Include="StackMutators\LdelemaStackMutator.cs" />
+    <Compile Include="StackMutators\LdelemStackMutator.cs" />
+    <Compile Include="StackMutators\LdfldaStackMutator.cs" />
+    <Compile Include="StackMutators\LdfldStackMutator.cs" />
+    <Compile Include="StackMutators\LdftnStackMutator.cs" />
+    <Compile Include="StackMutators\LdindStackMutator.cs" />
+    <Compile Include="StackMutators\LdlenStackMutator.cs" />
+    <Compile Include="StackMutators\LdlocaStackMutator.cs" />
+    <Compile Include="StackMutators\LdlocStackMutator.cs" />
+    <Compile Include="StackMutators\LdnullStackMutator.cs" />
+    <Compile Include="StackMutators\LdstrStackMutator.cs" />
+    <Compile Include="StackMutators\MathOpStackMutator.cs" />
+    <Compile Include="StackMutators\NewarrStackMutator.cs" />
+    <Compile Include="StackMutators\NewobjStackMutator.cs" />
+    <Compile Include="StackMutators\PopStackMutator.cs" />
+    <Compile Include="StackMutators\RetStackMutator.cs" />
+    <Compile Include="StackMutators\MarkLabelStackMutator.cs" />
+    <Compile Include="StackMutators\StelemStackMutator.cs" />
+    <Compile Include="StackMutators\StfldStackMutator.cs" />
+    <Compile Include="StackMutators\StindStackMutator.cs" />
+    <Compile Include="StackMutators\StlocStackMutator.cs" />
+    <Compile Include="StackMutators\Unbox_AnyStackMutator.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetDir)$(TargetName).dll $(SolutionDir)..\Assemblies\
+copy $(TargetDir)$(TargetName).pdb $(SolutionDir)..\Assemblies\
+</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

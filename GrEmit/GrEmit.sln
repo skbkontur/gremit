@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrEmit", "GrEmit\GrEmit.csproj", "{049F27EE-942B-4F5F-BFA8-BD199538E3A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{FA3769F0-39AD-4413-BA0E-B45A116EA957}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{049F27EE-942B-4F5F-BFA8-BD199538E3A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{049F27EE-942B-4F5F-BFA8-BD199538E3A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{049F27EE-942B-4F5F-BFA8-BD199538E3A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{049F27EE-942B-4F5F-BFA8-BD199538E3A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA3769F0-39AD-4413-BA0E-B45A116EA957}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA3769F0-39AD-4413-BA0E-B45A116EA957}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA3769F0-39AD-4413-BA0E-B45A116EA957}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA3769F0-39AD-4413-BA0E-B45A116EA957}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
