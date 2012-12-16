@@ -13,7 +13,7 @@ namespace GrEmit.InstructionParameters
 
         public override string Format()
         {
-            return Formatter.Format(ReturnType) + "&(" + string.Join(", ", ParameterTypes.Select(Formatter.Format)) + ")";
+            return Formatter.Format(ReturnType) + " *i" + IntPtr.Size + "(" + string.Join(", ", ParameterTypes.Select(Formatter.Format)) + ")";
         }
 
         public Type ReturnType { get; set; }
