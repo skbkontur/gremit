@@ -13,13 +13,13 @@ namespace GrEmit.StackMutators
             var parameterTypes = Formatter.GetParameterTypes(method);
             for(int i = parameterTypes.Length - 1; i >= 0; --i)
             {
-                CheckNotEmpty(stack);
-                CheckCanBeAssigned(parameterTypes[i], stack.Pop());
+                CheckNotEmpty(il, stack);
+                CheckCanBeAssigned(il, parameterTypes[i], stack.Pop());
             }
             if(!method.IsStatic)
             {
-                CheckNotEmpty(stack);
-                CheckNotStruct(stack.Pop());
+                CheckNotEmpty(il, stack);
+                CheckNotStruct(il, stack.Pop());
             }
             if(method.ReturnType != typeof(void))
                 stack.Push(method.ReturnType);

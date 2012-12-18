@@ -15,16 +15,16 @@ namespace GrEmit
             return type.IsByRef || type.IsPointer || type == typeof(IntPtr) || type == (IntPtr.Size == 4 ? typeof(int) : typeof(long));
         }
 
-        protected static void CheckNotStruct(Type type)
+        protected static void CheckNotStruct(GroboIL il, Type type)
         {
             if(IsStruct(type))
-                throw new InvalidOperationException("Struct of type '" + type + "' is not valid at this point");
+                throw new InvalidOperationException("Struct of type '" + type + "' is not valid at this point\r\n" + il.GetILCode());
         }
 
-        protected void CheckNotEmpty(Stack<Type> stack)
+        protected void CheckNotEmpty(GroboIL il, Stack<Type> stack)
         {
             if(stack.Count == 0)
-                throw new InvalidOperationException("Stack is empty");
+                throw new InvalidOperationException("Stack is empty\r\n" + il.GetILCode());
         }
 
         protected static bool StacksConsistent(Stack<Type> stack, Type[] otherStack)
@@ -54,16 +54,16 @@ namespace GrEmit
             return type.IsValueType && !type.IsPrimitive && !type.IsEnum;
         }
 
-        protected static void CheckIsAddress(Type peek)
+        protected static void CheckIsAddress(GroboIL il, Type peek)
         {
             if(!IsAddressType(peek))
-                throw new InvalidOperationException("An address type expected but was '" + peek + "'");
+                throw new InvalidOperationException("An address type expected but was '" + peek + "'\r\n" + il.GetILCode());
         }
 
-        protected static void CheckCanBeAssigned(Type to, Type from)
+        protected static void CheckCanBeAssigned(GroboIL il, Type to, Type from)
         {
             if(!CanBeAssigned(to, from))
-                throw new InvalidOperationException("Unable to set value of type '" + from + "' to value of type '" + to + "'");
+                throw new InvalidOperationException("Unable to set value of type '" + from + "' to value of type '" + to + "'\r\n" + il.GetILCode());
         }
 
         protected static bool CanBeAssigned(Type to, Type from)
@@ -104,17 +104,17 @@ namespace GrEmit
             }
         }
 
-        protected void CheckStacksEqual(GroboIL.Label label, Stack<Type> stack, Type[] otherStack)
+        protected void CheckStacksEqual(GroboIL il, GroboIL.Label label, Stack<Type> stack, Type[] otherStack)
         {
             if(!StacksConsistent(stack, otherStack))
-                throw new InvalidOperationException("Incosistent stack for label '" + label.Name + "'");
+                throw new InvalidOperationException("Inconsistent stack for label '" + label.Name + "'\r\n" + il.GetILCode());
         }
 
         protected void SaveOrCheck(GroboIL il, Stack<Type> stack, GroboIL.Label label)
         {
             Type[] labelStack;
             if(il.labelStacks.TryGetValue(label, out labelStack))
-                CheckStacksEqual(label, stack, labelStack);
+                CheckStacksEqual(il, label, stack, labelStack);
             else
             {
                 int lineNumber = il.ilCode.GetLabelLineNumber(label);

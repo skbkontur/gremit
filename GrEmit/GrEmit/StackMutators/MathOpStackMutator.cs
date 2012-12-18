@@ -7,11 +7,11 @@ namespace GrEmit.StackMutators
     {
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
         {
-            CheckNotEmpty(stack);
-            CheckNotStruct(stack.Pop());
-            CheckNotEmpty(stack);
+            CheckNotEmpty(il, stack);
+            CheckNotStruct(il, stack.Pop());
+            CheckNotEmpty(il, stack);
             Type peek = stack.Pop();
-            CheckNotStruct(peek);
+            CheckNotStruct(il, peek);
             stack.Push(peek);
         }
     }

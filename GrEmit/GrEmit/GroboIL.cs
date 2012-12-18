@@ -745,125 +745,139 @@ namespace GrEmit
 
         private void Emit(OpCode opCode, ILInstructionParameter parameter)
         {
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode);
         }
 
         private void Emit(OpCode opCode)
         {
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, null);
-            ilCode.Append(opCode, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode);
         }
 
         private void Emit(OpCode opCode, Local local)
         {
             var parameter = new LocalILInstructionParameter(local);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, local);
         }
 
         private void Emit(OpCode opCode, Type type)
         {
             var parameter = new TypeILInstructionParameter(type);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, type);
         }
 
         private void Emit(OpCode opCode, byte value)
         {
             var parameter = new PrimitiveILInstructionParameter(value);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, int value)
         {
             var parameter = new PrimitiveILInstructionParameter(value);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, long value)
         {
             var parameter = new PrimitiveILInstructionParameter(value);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, double value)
         {
             var parameter = new PrimitiveILInstructionParameter(value);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, float value)
         {
             var parameter = new PrimitiveILInstructionParameter(value);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, string value)
         {
             var parameter = new StringILInstructionParameter(value);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, Label label)
         {
             var parameter = new LabelILInstructionParameter(label);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, label);
         }
 
         private void Emit(OpCode opCode, FieldInfo field)
         {
             var parameter = new FieldILInstructionParameter(field);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, field);
         }
 
         private void Emit(OpCode opCode, MethodInfo method)
         {
             var parameter = new MethodILInstructionParameter(method);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, method);
         }
 
         private void Emit(OpCode opCode, ConstructorInfo constructor)
         {
             var parameter = new ConstructorILInstructionParameter(constructor);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, constructor);
         }
 

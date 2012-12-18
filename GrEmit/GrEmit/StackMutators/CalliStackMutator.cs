@@ -12,12 +12,12 @@ namespace GrEmit.StackMutators
             var calliParameter = (MethodByAddressILInstructionParameter)parameter;
             var returnType = calliParameter.ReturnType;
             var parameterTypes = calliParameter.ParameterTypes;
-            CheckNotEmpty(stack);
-            CheckIsAddress(stack.Pop());
+            CheckNotEmpty(il, stack);
+            CheckIsAddress(il, stack.Pop());
             for (int i = parameterTypes.Length - 1; i >= 0; --i)
             {
-                CheckNotEmpty(stack);
-                CheckCanBeAssigned(parameterTypes[i], stack.Pop());
+                CheckNotEmpty(il, stack);
+                CheckCanBeAssigned(il, parameterTypes[i], stack.Pop());
             }
             if (returnType != typeof(void))
                 stack.Push(returnType);

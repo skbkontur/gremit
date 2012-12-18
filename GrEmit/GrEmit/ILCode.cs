@@ -8,22 +8,23 @@ namespace GrEmit
 {
     internal class ILCode
     {
-        public void MarkLabel(GroboIL.Label label, ILInstructionComment comment)
+        public int MarkLabel(GroboIL.Label label, ILInstructionComment comment)
         {
-            labelLineNumbers.Add(label, lineNumber++);
+            labelLineNumbers.Add(label, lineNumber);
             instructions.Add(new ILInstruction(default(OpCode), new LabelILInstructionParameter(label), comment));
+            return lineNumber++;
         }
 
-        public void Append(OpCode opCode, ILInstructionComment comment)
+        public int Append(OpCode opCode, ILInstructionComment comment)
         {
-            ++lineNumber;
             instructions.Add(new ILInstruction(opCode, null, comment));
+            return lineNumber++;
         }
 
-        public void Append(OpCode opCode, ILInstructionParameter parameter, ILInstructionComment comment)
+        public int Append(OpCode opCode, ILInstructionParameter parameter, ILInstructionComment comment)
         {
-            ++lineNumber;
             instructions.Add(new ILInstruction(opCode, parameter, comment));
+            return lineNumber++;
         }
 
         public int GetLabelLineNumber(GroboIL.Label label)
@@ -130,7 +131,7 @@ namespace GrEmit
         private readonly Dictionary<Label, int> labelLineNumbers = new Dictionary<Label, int>();
 
         private int lineNumber;
-        private const int maxCommentStart = 80;
+        private const int maxCommentStart = 50;
         private const string margin = "        ";
     }
 }

@@ -19,7 +19,7 @@ namespace GrEmit.StackMutators
             else
             {
                 var peek = stack.Pop();
-                CheckCanBeAssigned(il.methodReturnType, peek);
+                CheckCanBeAssigned(il, il.methodReturnType, peek);
             }
         }
     }

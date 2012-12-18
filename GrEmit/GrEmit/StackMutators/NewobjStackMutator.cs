@@ -14,8 +14,8 @@ namespace GrEmit.StackMutators
             ParameterInfo[] parameterInfos = constructor.GetParameters();
             for(int i = parameterInfos.Length - 1; i >= 0; --i)
             {
-                CheckNotEmpty(stack);
-                CheckCanBeAssigned(parameterInfos[i].ParameterType, stack.Pop());
+                CheckNotEmpty(il, stack);
+                CheckCanBeAssigned(il, parameterInfos[i].ParameterType, stack.Pop());
             }
             stack.Push(constructor.ReflectedType);
         }

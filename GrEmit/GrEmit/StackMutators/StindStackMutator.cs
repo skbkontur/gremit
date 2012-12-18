@@ -10,10 +10,10 @@ namespace GrEmit.StackMutators
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
         {
             var type = ((TypeILInstructionParameter)parameter).Type;
-            CheckNotEmpty(stack);
-            CheckCanBeAssigned(type, stack.Pop());
-            CheckNotEmpty(stack);
-            CheckIsAddress(stack.Pop());
+            CheckNotEmpty(il, stack);
+            CheckCanBeAssigned(il, type, stack.Pop());
+            CheckNotEmpty(il, stack);
+            CheckIsAddress(il, stack.Pop());
         }
     }
 }

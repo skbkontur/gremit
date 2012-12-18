@@ -10,9 +10,9 @@ namespace GrEmit.StackMutators
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
         {
             var local = ((LocalILInstructionParameter)parameter).Local;
-            CheckNotEmpty(stack);
+            CheckNotEmpty(il, stack);
             var peek = stack.Pop();
-            CheckCanBeAssigned(local.Type, peek);
+            CheckCanBeAssigned(il, local.Type, peek);
         }
     }
 }

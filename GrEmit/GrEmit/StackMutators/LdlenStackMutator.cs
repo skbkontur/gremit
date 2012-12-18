@@ -7,7 +7,7 @@ namespace GrEmit.StackMutators
     {
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
         {
-            CheckNotEmpty(stack);
+            CheckNotEmpty(il, stack);
             var peek = stack.Pop();
             if (!peek.IsArray)
                 throw new InvalidOperationException("An array expected but was '" + peek + "'");
