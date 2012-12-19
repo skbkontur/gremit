@@ -801,6 +801,16 @@ namespace GrEmit
             il.Emit(opCode, value);
         }
 
+        private void Emit(OpCode opCode, sbyte value)
+        {
+            var parameter = new PrimitiveILInstructionParameter(value);
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
+                MutateStack(opCode, parameter);
+            ilCode.SetComment(lineNumber, GetComment());
+            il.Emit(opCode, value);
+        }
+
         private void Emit(OpCode opCode, long value)
         {
             var parameter = new PrimitiveILInstructionParameter(value);
