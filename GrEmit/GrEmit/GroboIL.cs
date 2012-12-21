@@ -279,7 +279,7 @@ namespace GrEmit
 
         public void Stfld(FieldInfo field)
         {
-            if (field == null)
+            if(field == null)
                 throw new ArgumentNullException("field");
             Emit(OpCodes.Stfld, field);
         }
@@ -652,6 +652,30 @@ namespace GrEmit
             il.EmitCall(opCode, method, optionalParameterTypes);
         }
 
+        public void Callvirt(MethodInfo method, Type type, Type[] optionalParameterTypes = null)
+        {
+            OpCode opCode = OpCodes.Callvirt;
+            if(type == null)
+                throw new ArgumentNullException("type", "Type must be specified for a virtual method call");
+            if(type.IsValueType)
+                Emit(OpCodes.Constrained, type);
+            var parameter = new MethodILInstructionParameter(method);
+            if(analyzeStack && stack != null)
+                MutateStack(opCode, parameter);
+            ilCode.Append(opCode, parameter, GetComment());
+            il.EmitCall(opCode, method, optionalParameterTypes);
+        }
+
+        public void Callnonvirt(MethodInfo method, Type[] optionalParameterTypes = null)
+        {
+            OpCode opCode = OpCodes.Call;
+            var parameter = new MethodILInstructionParameter(method);
+            if(analyzeStack && stack != null)
+                MutateStack(opCode, parameter);
+            ilCode.Append(opCode, parameter, GetComment());
+            il.EmitCall(opCode, method, optionalParameterTypes);
+        }
+
         public void Calli(CallingConventions callingConvention, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes = null)
         {
             var parameter = new MethodByAddressILInstructionParameter(returnType, parameterTypes);
@@ -746,7 +770,7 @@ namespace GrEmit
         private void Emit(OpCode opCode, ILInstructionParameter parameter)
         {
             var lineNumber = ilCode.Append(opCode, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode);
@@ -755,7 +779,7 @@ namespace GrEmit
         private void Emit(OpCode opCode)
         {
             var lineNumber = ilCode.Append(opCode, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, null);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode);
@@ -765,7 +789,7 @@ namespace GrEmit
         {
             var parameter = new LocalILInstructionParameter(local);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, local);
@@ -775,7 +799,7 @@ namespace GrEmit
         {
             var parameter = new TypeILInstructionParameter(type);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, type);
@@ -785,7 +809,7 @@ namespace GrEmit
         {
             var parameter = new PrimitiveILInstructionParameter(value);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
@@ -795,7 +819,7 @@ namespace GrEmit
         {
             var parameter = new PrimitiveILInstructionParameter(value);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
@@ -805,7 +829,7 @@ namespace GrEmit
         {
             var parameter = new PrimitiveILInstructionParameter(value);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
@@ -815,7 +839,7 @@ namespace GrEmit
         {
             var parameter = new PrimitiveILInstructionParameter(value);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
@@ -825,7 +849,7 @@ namespace GrEmit
         {
             var parameter = new PrimitiveILInstructionParameter(value);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
@@ -835,7 +859,7 @@ namespace GrEmit
         {
             var parameter = new PrimitiveILInstructionParameter(value);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
@@ -845,7 +869,7 @@ namespace GrEmit
         {
             var parameter = new StringILInstructionParameter(value);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, value);
@@ -855,7 +879,7 @@ namespace GrEmit
         {
             var parameter = new LabelILInstructionParameter(label);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, label);
@@ -865,7 +889,7 @@ namespace GrEmit
         {
             var parameter = new FieldILInstructionParameter(field);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, field);
@@ -875,7 +899,7 @@ namespace GrEmit
         {
             var parameter = new MethodILInstructionParameter(method);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, method);
@@ -885,7 +909,7 @@ namespace GrEmit
         {
             var parameter = new ConstructorILInstructionParameter(constructor);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, constructor);
