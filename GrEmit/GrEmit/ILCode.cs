@@ -93,7 +93,7 @@ namespace GrEmit
                 ILInstructionComment comment = instructions[i].Comment;
                 if(comment != null)
                 {
-                    if(line.Length < maxLen)
+                    if(line.Length <= maxLen)
                     {
                         result.Append(WhiteSpace(maxLen - line.Length));
                         result.Append("// ");
