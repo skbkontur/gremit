@@ -157,6 +157,17 @@ namespace GrEmit
                 {OpCodes.Div_Un, new MathOpStackMutator()},
                 {OpCodes.Rem, new MathOpStackMutator()},
                 {OpCodes.Rem_Un, new MathOpStackMutator()},
+                {OpCodes.Conv_I1, new ConvI4StackMutator()},
+                {OpCodes.Conv_I2, new ConvI4StackMutator()},
+                {OpCodes.Conv_I4, new ConvI4StackMutator()},
+                {OpCodes.Conv_I8, new ConvI8StackMutator()},
+                {OpCodes.Conv_U1, new ConvI4StackMutator()},
+                {OpCodes.Conv_U2, new ConvI4StackMutator()},
+                {OpCodes.Conv_U4, new ConvI4StackMutator()},
+                {OpCodes.Conv_U8, new ConvI8StackMutator()},
+                {OpCodes.Conv_R4, new ConvR4StackMutator()},
+                {OpCodes.Conv_R8, new ConvR8StackMutator()},
+                {OpCodes.Conv_R_Un, new ConvR4StackMutator()},
             };
 
         private static readonly MarkLabelStackMutator markLabelStackMutator = new MarkLabelStackMutator();

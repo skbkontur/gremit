@@ -635,6 +635,61 @@ namespace GrEmit
             Emit(OpCodes.Ldstr, value);
         }
 
+        public void Conv_I1()
+        {
+            Emit(OpCodes.Conv_I1);
+        }
+
+        public void Conv_U1()
+        {
+            Emit(OpCodes.Conv_U1);
+        }
+
+        public void Conv_I2()
+        {
+            Emit(OpCodes.Conv_I2);
+        }
+
+        public void Conv_U2()
+        {
+            Emit(OpCodes.Conv_U2);
+        }
+
+        public void Conv_I4()
+        {
+            Emit(OpCodes.Conv_I4);
+        }
+
+        public void Conv_U4()
+        {
+            Emit(OpCodes.Conv_U4);
+        }
+
+        public void Conv_I8()
+        {
+            Emit(OpCodes.Conv_I8);
+        }
+
+        public void Conv_U8()
+        {
+            Emit(OpCodes.Conv_U8);
+        }
+
+        public void Conv_R4()
+        {
+            Emit(OpCodes.Conv_R4);
+        }
+
+        public void Conv_R8()
+        {
+            Emit(OpCodes.Conv_R8);
+        }
+
+        public void Conv_R_Un()
+        {
+            Emit(OpCodes.Conv_R_Un);
+        }
+
         public void Call(MethodInfo method, Type type = null, Type[] optionalParameterTypes = null)
         {
             OpCode opCode = method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call;

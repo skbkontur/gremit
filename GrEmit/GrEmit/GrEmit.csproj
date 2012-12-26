@@ -71,6 +71,10 @@
     <Compile Include="StackMutators\CeqStackMutator.cs" />
     <Compile Include="StackMutators\CgtStackMutator.cs" />
     <Compile Include="StackMutators\ConstrainedStackMutator.cs" />
+    <Compile Include="StackMutators\ConvI4StackMutator.cs" />
+    <Compile Include="StackMutators\ConvI8StackMutator.cs" />
+    <Compile Include="StackMutators\ConvR4StackMutator.cs" />
+    <Compile Include="StackMutators\ConvR8StackMutator.cs" />
     <Compile Include="StackMutators\DupStackMutator.cs" />
     <Compile Include="StackMutators\LdargaStackMutator.cs" />
     <Compile Include="StackMutators\Ldarga_SStackMutator.cs" />
