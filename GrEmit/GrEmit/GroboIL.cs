@@ -610,14 +610,29 @@ namespace GrEmit
             Emit(OpCodes.Add);
         }
 
+        public void Add_Ovf(Type type)
+        {
+            Emit(Unsigned(type) ? OpCodes.Add_Ovf_Un : OpCodes.Add_Ovf);
+        }
+
         public void Sub()
         {
             Emit(OpCodes.Sub);
         }
 
+        public void Sub_Ovf(Type type)
+        {
+            Emit(Unsigned(type) ? OpCodes.Sub_Ovf_Un : OpCodes.Sub_Ovf);
+        }
+
         public void Mul()
         {
             Emit(OpCodes.Mul);
+        }
+
+        public void Mul_Ovf(Type type)
+        {
+            Emit(Unsigned(type) ? OpCodes.Mul_Ovf_Un : OpCodes.Mul_Ovf);
         }
 
         public void Div(Type type)
