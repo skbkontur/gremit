@@ -645,6 +645,16 @@ namespace GrEmit
             Emit(Unsigned(type) ? OpCodes.Rem_Un : OpCodes.Rem);
         }
 
+        public void Shl()
+        {
+            Emit(OpCodes.Shl);
+        }
+
+        public void Shr(Type type)
+        {
+            Emit(Unsigned(type) ? OpCodes.Shr_Un : OpCodes.Shr);
+        }
+
         public void Ldstr(string value)
         {
             Emit(OpCodes.Ldstr, value);
