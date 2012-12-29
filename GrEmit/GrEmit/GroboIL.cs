@@ -731,9 +731,10 @@ namespace GrEmit
                     Emit(OpCodes.Constrained, type);
             }
             var parameter = new MethodILInstructionParameter(method);
-            if(analyzeStack && stack != null)
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.EmitCall(opCode, method, optionalParameterTypes);
         }
 
@@ -745,9 +746,10 @@ namespace GrEmit
             if(type.IsValueType)
                 Emit(OpCodes.Constrained, type);
             var parameter = new MethodILInstructionParameter(method);
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.EmitCall(opCode, method, optionalParameterTypes);
         }
 
@@ -755,18 +757,20 @@ namespace GrEmit
         {
             OpCode opCode = OpCodes.Call;
             var parameter = new MethodILInstructionParameter(method);
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
-            ilCode.Append(opCode, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.EmitCall(opCode, method, optionalParameterTypes);
         }
 
         public void Calli(CallingConventions callingConvention, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes = null)
         {
             var parameter = new MethodByAddressILInstructionParameter(returnType, parameterTypes);
+            var lineNumber = ilCode.Append(OpCodes.Calli, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
                 MutateStack(OpCodes.Calli, parameter);
-            ilCode.Append(OpCodes.Calli, parameter, GetComment());
+            ilCode.SetComment(lineNumber, GetComment());
             il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes, optionalParameterTypes);
         }
 
