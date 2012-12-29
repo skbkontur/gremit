@@ -166,6 +166,7 @@ namespace GrEmit
                 {OpCodes.Shl, new MathOpStackMutator()},
                 {OpCodes.Shr, new MathOpStackMutator()},
                 {OpCodes.Shr_Un, new MathOpStackMutator()},
+                {OpCodes.Neg, new NegStackMutator()},
                 {OpCodes.Conv_I1, new ConvI4StackMutator()},
                 {OpCodes.Conv_I2, new ConvI4StackMutator()},
                 {OpCodes.Conv_I4, new ConvI4StackMutator()},

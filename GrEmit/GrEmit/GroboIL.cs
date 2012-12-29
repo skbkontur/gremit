@@ -655,6 +655,11 @@ namespace GrEmit
             Emit(Unsigned(type) ? OpCodes.Shr_Un : OpCodes.Shr);
         }
 
+        public void Neg()
+        {
+            Emit(OpCodes.Neg);
+        }
+
         public void Ldstr(string value)
         {
             Emit(OpCodes.Ldstr, value);
