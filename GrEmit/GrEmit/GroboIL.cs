@@ -660,6 +660,11 @@ namespace GrEmit
             Emit(OpCodes.Neg);
         }
 
+        public void Not()
+        {
+            Emit(OpCodes.Not);
+        }
+
         public void Ldstr(string value)
         {
             Emit(OpCodes.Ldstr, value);
