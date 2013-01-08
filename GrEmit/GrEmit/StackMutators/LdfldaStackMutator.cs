@@ -10,8 +10,11 @@ namespace GrEmit.StackMutators
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
         {
             var field = ((FieldILInstructionParameter)parameter).Field;
-            CheckNotEmpty(il, stack);
-            CheckNotStruct(il, stack.Pop());
+            if (!field.IsStatic)
+            {
+                CheckNotEmpty(il, stack);
+                CheckNotStruct(il, stack.Pop());
+            }
             stack.Push(field.FieldType.MakeByRefType());
         }
     }

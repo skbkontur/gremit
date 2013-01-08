@@ -152,9 +152,9 @@ namespace GrEmit
             Emit(OpCodes.Stloc, local);
         }
 
-        public void Ldnull()
+        public void Ldnull(Type type)
         {
-            Emit(OpCodes.Ldnull);
+            Emit(OpCodes.Ldnull, new TypeILInstructionParameter(type));
         }
 
         public void Initobj(Type type)
@@ -281,21 +281,21 @@ namespace GrEmit
         {
             if(field == null)
                 throw new ArgumentNullException("field");
-            Emit(OpCodes.Stfld, field);
+            Emit(field.IsStatic ? OpCodes.Stsfld : OpCodes.Stfld, field);
         }
 
         public void Ldfld(FieldInfo field)
         {
             if(field == null)
                 throw new ArgumentNullException("field");
-            Emit(OpCodes.Ldfld, field);
+            Emit(field.IsStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, field);
         }
 
         public void Ldflda(FieldInfo field)
         {
             if(field == null)
                 throw new ArgumentNullException("field");
-            Emit(OpCodes.Ldflda, field);
+            Emit(field.IsStatic ? OpCodes.Ldsflda : OpCodes.Ldflda, field);
         }
 
         public void Ldelema(Type elementType)
