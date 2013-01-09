@@ -515,6 +515,13 @@ namespace GrEmit
             Emit(OpCodes.Castclass, type);
         }
 
+        public void Isinst(Type type)
+        {
+            if(type == null)
+                throw new ArgumentNullException("type");
+            Emit(OpCodes.Isinst, type);
+        }
+
         public void Unbox_Any(Type type)
         {
             if(type == null)
@@ -737,7 +744,7 @@ namespace GrEmit
             }
             var parameter = new MethodILInstructionParameter(method);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if (analyzeStack && stack != null)
+            if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.EmitCall(opCode, method, optionalParameterTypes);
@@ -835,6 +842,10 @@ namespace GrEmit
 
         private static bool Unsigned(Type type)
         {
+            if(type == typeof(IntPtr))
+                return false;
+            if(type == typeof(UIntPtr))
+                return true;
             switch(Type.GetTypeCode(type))
             {
             case TypeCode.Boolean:

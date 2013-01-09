@@ -139,6 +139,7 @@ namespace GrEmit
                 {OpCodes.Ldind_U4, new LdindStackMutator()},
                 {OpCodes.Ldobj, new LdindStackMutator()},
                 {OpCodes.Castclass, new CastclassStackMutator()},
+                {OpCodes.Isinst, new IsinstStackMutator()},
                 {OpCodes.Unbox_Any, new Unbox_AnyStackMutator()},
                 {OpCodes.Box, new BoxStackMutator()},
                 {OpCodes.Constrained, new ConstrainedStackMutator()},
