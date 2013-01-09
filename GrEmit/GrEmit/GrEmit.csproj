@@ -101,6 +101,7 @@
     <Compile Include="StackMutators\LdlocStackMutator.cs" />
     <Compile Include="StackMutators\LdnullStackMutator.cs" />
     <Compile Include="StackMutators\LdstrStackMutator.cs" />
+    <Compile Include="StackMutators\LdtokenStackMutator.cs" />
     <Compile Include="StackMutators\MathOpStackMutator.cs" />
     <Compile Include="StackMutators\NegStackMutator.cs" />
     <Compile Include="StackMutators\NewarrStackMutator.cs" />

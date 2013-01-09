@@ -506,6 +506,27 @@ namespace GrEmit
             }
         }
 
+        public void Ldtoken(Type type)
+        {
+            if (type == null)
+                throw new ArgumentNullException("type");
+            Emit(OpCodes.Ldtoken, type);
+        }
+
+        public void Ldtoken(MethodInfo method)
+        {
+            if (method == null)
+                throw new ArgumentNullException("method");
+            Emit(OpCodes.Ldtoken, method);
+        }
+
+        public void Ldtoken(FieldInfo field)
+        {
+            if (field == null)
+                throw new ArgumentNullException("field");
+            Emit(OpCodes.Ldtoken, field);
+        }
+
         public void Castclass(Type type)
         {
             if(type == null)
