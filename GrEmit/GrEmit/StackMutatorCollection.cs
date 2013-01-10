@@ -184,6 +184,22 @@ namespace GrEmit
                 {OpCodes.Conv_R4, new ConvR4StackMutator()},
                 {OpCodes.Conv_R8, new ConvR8StackMutator()},
                 {OpCodes.Conv_R_Un, new ConvR4StackMutator()},
+                {OpCodes.Conv_Ovf_I1, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_I1_Un, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_I2, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_I2_Un, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_I4, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_I4_Un, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_I8, new ConvI8StackMutator()},
+                {OpCodes.Conv_Ovf_I8_Un, new ConvI8StackMutator()},
+                {OpCodes.Conv_Ovf_U1, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_U1_Un, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_U2, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_U2_Un, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_U4, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_U4_Un, new ConvI4StackMutator()},
+                {OpCodes.Conv_Ovf_U8, new ConvI8StackMutator()},
+                {OpCodes.Conv_Ovf_U8_Un, new ConvI8StackMutator()},
             };
 
         private static readonly MarkLabelStackMutator markLabelStackMutator = new MarkLabelStackMutator();

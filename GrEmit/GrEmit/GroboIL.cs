@@ -753,6 +753,62 @@ namespace GrEmit
             Emit(OpCodes.Conv_R_Un);
         }
 
+        public void Conv_Ovf_I1(Type type)
+        {
+            if(type == null)
+                throw new ArgumentNullException("type");
+            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_I1_Un : OpCodes.Conv_Ovf_I1);
+        }
+
+        public void Conv_Ovf_I2(Type type)
+        {
+            if(type == null)
+                throw new ArgumentNullException("type");
+            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_I2_Un : OpCodes.Conv_Ovf_I2);
+        }
+
+        public void Conv_Ovf_I4(Type type)
+        {
+            if(type == null)
+                throw new ArgumentNullException("type");
+            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_I4_Un : OpCodes.Conv_Ovf_I4);
+        }
+
+        public void Conv_Ovf_I8(Type type)
+        {
+            if(type == null)
+                throw new ArgumentNullException("type");
+            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_I8_Un : OpCodes.Conv_Ovf_I8);
+        }
+
+        public void Conv_Ovf_U1(Type type)
+        {
+            if(type == null)
+                throw new ArgumentNullException("type");
+            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_U1_Un : OpCodes.Conv_Ovf_U1);
+        }
+
+        public void Conv_Ovf_U2(Type type)
+        {
+            if(type == null)
+                throw new ArgumentNullException("type");
+            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_U2_Un : OpCodes.Conv_Ovf_U2);
+        }
+
+        public void Conv_Ovf_U4(Type type)
+        {
+            if(type == null)
+                throw new ArgumentNullException("type");
+            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_U4_Un : OpCodes.Conv_Ovf_U4);
+        }
+
+        public void Conv_Ovf_U8(Type type)
+        {
+            if(type == null)
+                throw new ArgumentNullException("type");
+            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_U8_Un : OpCodes.Conv_Ovf_U8);
+        }
+
         public void Call(MethodInfo method, Type type = null, Type[] optionalParameterTypes = null)
         {
             OpCode opCode = method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call;
