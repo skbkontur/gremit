@@ -115,6 +115,7 @@
     <Compile Include="StackMutators\StfldStackMutator.cs" />
     <Compile Include="StackMutators\StindStackMutator.cs" />
     <Compile Include="StackMutators\StlocStackMutator.cs" />
+    <Compile Include="StackMutators\ThrowStackMutator.cs" />
     <Compile Include="StackMutators\Unbox_AnyStackMutator.cs" />
   </ItemGroup>
   <ItemGroup />

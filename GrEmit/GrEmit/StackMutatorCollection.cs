@@ -21,6 +21,7 @@ namespace GrEmit
         private static readonly Dictionary<OpCode, StackMutator> stackMutators = new Dictionary<OpCode, StackMutator>
             {
                 {OpCodes.Ret, new RetStackMutator()},
+                {OpCodes.Throw, new ThrowStackMutator()},
                 {OpCodes.Br, new BrStackMutator()},
                 {OpCodes.Br_S, new BrStackMutator()},
                 {OpCodes.Brfalse, new BrfalseStackMutator()},

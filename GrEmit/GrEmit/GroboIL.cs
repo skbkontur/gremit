@@ -64,6 +64,11 @@ namespace GrEmit
             il.MarkLabel(label);
         }
 
+        public void Throw()
+        {
+            Emit(OpCodes.Throw);
+        }
+
         public void Ret()
         {
             Emit(OpCodes.Ret);
