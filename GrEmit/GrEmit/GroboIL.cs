@@ -191,6 +191,14 @@ namespace GrEmit
             }
         }
 
+        public void Starg(int index)
+        {
+            if(index < 256)
+                Emit(OpCodes.Starg_S, (byte)index);
+            else
+                Emit(OpCodes.Starg, index);
+        }
+
         public void Ldarga(int index)
         {
             if(index < 256)
@@ -508,21 +516,21 @@ namespace GrEmit
 
         public void Ldtoken(Type type)
         {
-            if (type == null)
+            if(type == null)
                 throw new ArgumentNullException("type");
             Emit(OpCodes.Ldtoken, type);
         }
 
         public void Ldtoken(MethodInfo method)
         {
-            if (method == null)
+            if(method == null)
                 throw new ArgumentNullException("method");
             Emit(OpCodes.Ldtoken, method);
         }
 
         public void Ldtoken(FieldInfo field)
         {
-            if (field == null)
+            if(field == null)
                 throw new ArgumentNullException("field");
             Emit(OpCodes.Ldtoken, field);
         }

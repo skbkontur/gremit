@@ -70,6 +70,8 @@ namespace GrEmit
                 {OpCodes.Ldarg_3, new Ldarg_3StackMutator()},
                 {OpCodes.Ldarg_S, new Ldarg_SStackMutator()},
                 {OpCodes.Ldarg, new LdargStackMutator()},
+                {OpCodes.Starg_S, new Starg_SStackMutator()},
+                {OpCodes.Starg, new StargStackMutator()},
                 {OpCodes.Ldarga_S, new Ldarga_SStackMutator()},
                 {OpCodes.Ldarga, new LdargaStackMutator()},
                 {OpCodes.Ldc_I4, new Ldc_I4StackMutator()},

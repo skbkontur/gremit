@@ -109,6 +109,8 @@
     <Compile Include="StackMutators\PopStackMutator.cs" />
     <Compile Include="StackMutators\RetStackMutator.cs" />
     <Compile Include="StackMutators\MarkLabelStackMutator.cs" />
+    <Compile Include="StackMutators\StargStackMutator.cs" />
+    <Compile Include="StackMutators\Starg_SStackMutator.cs" />
     <Compile Include="StackMutators\StelemStackMutator.cs" />
     <Compile Include="StackMutators\StfldStackMutator.cs" />
     <Compile Include="StackMutators\StindStackMutator.cs" />
