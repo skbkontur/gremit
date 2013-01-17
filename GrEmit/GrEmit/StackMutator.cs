@@ -130,14 +130,14 @@ namespace GrEmit
                             break;
                         ILCode.ILInstruction instruction = il.ilCode.GetInstruction(lineNumber);
                         StackMutatorCollection.Mutate(instruction.OpCode, il, instruction.Parameter, ref curStack);
-                        if (comment is StackILInstructionComment)
+                        if(!(comment is StackILInstructionComment))
+                            il.ilCode.SetComment(lineNumber, new StackILInstructionComment(curStack.Reverse().ToArray()));
+                        else
                         {
                             var instructionStack = ((StackILInstructionComment)comment).Stack;
                             if(!StacksConsistent(curStack, instructionStack))
                                 throw new InvalidOperationException("Inconsistent stacks for line " + (lineNumber + 1));
                         }
-                        else
-                            il.ilCode.SetComment(lineNumber, new StackILInstructionComment(curStack.Reverse().ToArray()));
                         ++lineNumber;
                     }
                 }

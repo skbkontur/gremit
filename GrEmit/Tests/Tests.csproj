@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test.cs" />
+    <Compile Include="TestTryCatch.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GrEmit\GrEmit.csproj">

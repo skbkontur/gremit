@@ -64,33 +64,55 @@ namespace GrEmit
             il.MarkLabel(label);
         }
 
-        public void BeginExceptionBlock()
+        public void EmitWriteLine(string str)
         {
-            il.BeginExceptionBlock();
+            il.EmitWriteLine(str);
+        }
+
+        public Label BeginExceptionBlock()
+        {
+            ilCode.BeginExceptionBlock(GetComment());
+            return new Label(il.BeginExceptionBlock(), "TRY");
         }
 
         public void BeginCatchBlock(Type exceptionType)
         {
+            if(exceptionType != null)
+            {
+                if(analyzeStack)
+                    stack = new Stack<Type>(new[] { exceptionType });
+                ilCode.BeginCatchBlock(new TypeILInstructionParameter(exceptionType), GetComment());
+            }
             il.BeginCatchBlock(exceptionType);
         }
 
         public void BeginExceptFilterBlock()
         {
+            if (analyzeStack)
+                stack = new Stack<Type>(new[] { typeof(Exception) });
+            ilCode.BeginExceptFilterBlock(GetComment());
             il.BeginExceptFilterBlock();
         }
 
         public void BeginFaultBlock()
         {
+            if(analyzeStack)
+                stack = new Stack<Type>();
+            ilCode.BeginFaultBlock(GetComment());
             il.BeginFaultBlock();
         }
 
         public void BeginFinallyBlock()
         {
+            if(analyzeStack)
+                stack = new Stack<Type>();
+            ilCode.BeginFinallyBlock(GetComment());
             il.BeginFinallyBlock();
         }
 
         public void EndExceptionBlock()
         {
+            ilCode.EndExceptionBlock(GetComment());
             il.EndExceptionBlock();
         }
 
