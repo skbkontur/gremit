@@ -64,6 +64,36 @@ namespace GrEmit
             il.MarkLabel(label);
         }
 
+        public void BeginExceptionBlock()
+        {
+            il.BeginExceptionBlock();
+        }
+
+        public void BeginCatchBlock(Type exceptionType)
+        {
+            il.BeginCatchBlock(exceptionType);
+        }
+
+        public void BeginExceptFilterBlock()
+        {
+            il.BeginExceptFilterBlock();
+        }
+
+        public void BeginFaultBlock()
+        {
+            il.BeginFaultBlock();
+        }
+
+        public void BeginFinallyBlock()
+        {
+            il.BeginFinallyBlock();
+        }
+
+        public void EndExceptionBlock()
+        {
+            il.EndExceptionBlock();
+        }
+
         public void Throw()
         {
             Emit(OpCodes.Throw);
@@ -72,6 +102,14 @@ namespace GrEmit
         public void Ret()
         {
             Emit(OpCodes.Ret);
+            stack = null;
+        }
+
+        public void Leave(Label label)
+        {
+            if (label == null)
+                throw new ArgumentNullException("label");
+            Emit(OpCodes.Leave, label);
             stack = null;
         }
 
