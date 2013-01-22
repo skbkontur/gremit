@@ -121,6 +121,15 @@ namespace GrEmit
             Emit(OpCodes.Throw);
         }
 
+        public void Switch(params Label[] labels)
+        {
+            if(labels == null)
+                throw new ArgumentNullException("labels");
+            if(labels.Length == 0)
+                throw new ArgumentException("At least one label must be specified", "labels");
+            Emit(OpCodes.Switch, labels);
+        }
+
         public void Ret()
         {
             Emit(OpCodes.Ret);
@@ -1138,6 +1147,16 @@ namespace GrEmit
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             il.Emit(opCode, label);
+        }
+
+        private void Emit(OpCode opCode, Label[] labels)
+        {
+            var parameter = new LabelsILInstructionParameter(labels);
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+            if(analyzeStack && stack != null)
+                MutateStack(opCode, parameter);
+            ilCode.SetComment(lineNumber, GetComment());
+            il.Emit(opCode, labels.Select(label => (System.Reflection.Emit.Label)label).ToArray());
         }
 
         private void Emit(OpCode opCode, FieldInfo field)

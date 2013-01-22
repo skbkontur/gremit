@@ -50,6 +50,7 @@
     <Compile Include="ILInstructionComment.cs" />
     <Compile Include="ILInstructionParameter.cs" />
     <Compile Include="InstructionParameters\LabelILInstructionParameter.cs" />
+    <Compile Include="InstructionParameters\LabelsILInstructionParameter.cs" />
     <Compile Include="InstructionParameters\LocalILInstructionParameter.cs" />
     <Compile Include="InstructionParameters\MethodByAddressILInstructionParameter.cs" />
     <Compile Include="InstructionParameters\MethodILInstructionParameter.cs" />
@@ -115,6 +116,7 @@
     <Compile Include="StackMutators\StfldStackMutator.cs" />
     <Compile Include="StackMutators\StindStackMutator.cs" />
     <Compile Include="StackMutators\StlocStackMutator.cs" />
+    <Compile Include="StackMutators\SwitchStackMutator.cs" />
     <Compile Include="StackMutators\ThrowStackMutator.cs" />
     <Compile Include="StackMutators\Unbox_AnyStackMutator.cs" />
   </ItemGroup>

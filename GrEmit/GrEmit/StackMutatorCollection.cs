@@ -22,6 +22,7 @@ namespace GrEmit
             {
                 {OpCodes.Ret, new RetStackMutator()},
                 {OpCodes.Throw, new ThrowStackMutator()},
+                {OpCodes.Switch, new SwitchStackMutator()},
                 {OpCodes.Leave, new BrStackMutator()},
                 {OpCodes.Br, new BrStackMutator()},
                 {OpCodes.Br_S, new BrStackMutator()},
