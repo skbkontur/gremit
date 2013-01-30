@@ -107,6 +107,7 @@
     <Compile Include="StackMutators\NegStackMutator.cs" />
     <Compile Include="StackMutators\NewarrStackMutator.cs" />
     <Compile Include="StackMutators\NewobjStackMutator.cs" />
+    <Compile Include="StackMutators\NopStackMutator.cs" />
     <Compile Include="StackMutators\PopStackMutator.cs" />
     <Compile Include="StackMutators\RetStackMutator.cs" />
     <Compile Include="StackMutators\MarkLabelStackMutator.cs" />

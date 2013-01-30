@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -69,6 +70,11 @@ namespace GrEmit
             il.EmitWriteLine(str);
         }
 
+        public void MarkSequencePoint(ISymbolDocumentWriter document, int startLine, int startColumn, int endLine, int endColumn)
+        {
+            il.MarkSequencePoint(document, startLine, startColumn, endLine, endColumn);
+        }
+
         public Label BeginExceptionBlock()
         {
             ilCode.BeginExceptionBlock(GetComment());
@@ -114,6 +120,11 @@ namespace GrEmit
         {
             ilCode.EndExceptionBlock(GetComment());
             il.EndExceptionBlock();
+        }
+
+        public void Nop()
+        {
+            Emit(OpCodes.Nop);
         }
 
         public void Throw()
