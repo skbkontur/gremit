@@ -11,7 +11,7 @@ namespace GrEmit
         {
             if(!type.IsGenericType)
                 return type.Name;
-            return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(Format)) + ">";
+            return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(Format).ToArray()) + ">";
         }
 
         public static string Format(FieldInfo field)
@@ -21,16 +21,16 @@ namespace GrEmit
 
         public static string Format(ConstructorInfo constructor)
         {
-            return Format(constructor.ReflectedType) + ".ctor" + "(" + string.Join(", ", constructor.GetParameters().Select(parameter => Format(parameter.ParameterType))) + ")";
+            return Format(constructor.ReflectedType) + ".ctor" + "(" + string.Join(", ", constructor.GetParameters().Select(parameter => Format(parameter.ParameterType)).ToArray()) + ")";
         }
 
         public static string Format(MethodInfo method)
         {
             if(ReferenceEquals(method.ReflectedType, null))
-                return Format(method.ReturnType) + " " + method.Name + "(" + string.Join(", ", GetParameterTypes(method).Select(Format)) + ")";
-            return Format(method.ReturnType) + " " + Format(method.ReflectedType) + "." + method.Name + "(" + string.Join(", ", GetParameterTypes(method).Select(Format)) + ")";
+                return Format(method.ReturnType) + " " + method.Name + "(" + string.Join(", ", GetParameterTypes(method).Select(Format).ToArray()) + ")";
+            return Format(method.ReturnType) + " " + Format(method.ReflectedType) + "." + method.Name + "(" + string.Join(", ", GetParameterTypes(method).Select(Format).ToArray()) + ")";
         }
-
+        
         public static Func<MethodBuilder, Type[]> BuildMethodBuilderParameterTypesExtractor()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(Type[]), new[] {typeof(MethodBuilder)}, typeof(Formatter).Module, true);

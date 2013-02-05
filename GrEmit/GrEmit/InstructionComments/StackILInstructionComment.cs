@@ -12,7 +12,7 @@ namespace GrEmit.InstructionComments
 
         public override string Format()
         {
-            return Stack == null ? "" : '[' + string.Join(", ", Stack.Select(Formatter.Format)) + ']';
+            return Stack == null ? "" : '[' + string.Join(", ", Stack.Select(Formatter.Format).ToArray()) + ']';
         }
 
         public Type[] Stack { get; private set; }

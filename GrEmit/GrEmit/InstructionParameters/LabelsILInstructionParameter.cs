@@ -11,7 +11,7 @@ namespace GrEmit.InstructionParameters
 
         public override string Format()
         {
-            return string.Format("({0})", string.Join(", ", Labels.Select(label => label.Name)));
+            return string.Format("({0})", string.Join(", ", Labels.Select(label => label.Name).ToArray()));
         }
 
         public GroboIL.Label[] Labels { get; private set; }
