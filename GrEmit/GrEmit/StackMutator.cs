@@ -68,11 +68,7 @@ namespace GrEmit
 
         protected static bool CanBeAssigned(Type to, Type from)
         {
-            if(!to.IsValueType && !from.IsValueType)
-                return true;
-            if(!to.IsValueType && from.IsValueType)
-                return false;
-            if(IsStruct(to) || IsStruct(from))
+            if (IsStruct(to) || IsStruct(from))
                 return to == from;
             return GetSize(to) == GetSize(from);
         }
@@ -98,6 +94,7 @@ namespace GrEmit
             case TypeCode.Double:
                 return 8;
             case TypeCode.Object:
+            case TypeCode.String:
                 return IntPtr.Size;
             default:
                 throw new NotSupportedException("Type '" + type + "' is not supported");

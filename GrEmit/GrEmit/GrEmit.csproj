@@ -73,6 +73,8 @@
     <Compile Include="StackMutators\ConvI8StackMutator.cs" />
     <Compile Include="StackMutators\ConvR4StackMutator.cs" />
     <Compile Include="StackMutators\ConvR8StackMutator.cs" />
+    <Compile Include="StackMutators\ConvUStackMutator.cs" />
+    <Compile Include="StackMutators\CpblkStackMutator.cs" />
     <Compile Include="StackMutators\DupStackMutator.cs" />
     <Compile Include="StackMutators\IsinstStackMutator.cs" />
     <Compile Include="StackMutators\LdargaStackMutator.cs" />

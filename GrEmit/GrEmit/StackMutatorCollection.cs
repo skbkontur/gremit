@@ -21,6 +21,7 @@ namespace GrEmit
         private static readonly Dictionary<OpCode, StackMutator> stackMutators = new Dictionary<OpCode, StackMutator>
             {
                 {OpCodes.Nop, new NopStackMutator()},
+                {OpCodes.Cpblk, new CpblkStackMutator()},
                 {OpCodes.Ret, new RetStackMutator()},
                 {OpCodes.Throw, new ThrowStackMutator()},
                 {OpCodes.Switch, new SwitchStackMutator()},
@@ -107,6 +108,7 @@ namespace GrEmit
                 {OpCodes.Stsfld, new StfldStackMutator()},
                 {OpCodes.Ldelema, new LdelemaStackMutator()},
                 {OpCodes.Ldelem, new LdelemStackMutator()},
+                {OpCodes.Ldelem_I, new LdelemStackMutator()},
                 {OpCodes.Ldelem_I1, new LdelemStackMutator()},
                 {OpCodes.Ldelem_I2, new LdelemStackMutator()},
                 {OpCodes.Ldelem_I4, new LdelemStackMutator()},
@@ -118,6 +120,7 @@ namespace GrEmit
                 {OpCodes.Ldelem_U2, new LdelemStackMutator()},
                 {OpCodes.Ldelem_U4, new LdelemStackMutator()},
                 {OpCodes.Stelem, new StelemStackMutator()},
+                {OpCodes.Stelem_I, new StelemStackMutator()},
                 {OpCodes.Stelem_I1, new StelemStackMutator()},
                 {OpCodes.Stelem_I2, new StelemStackMutator()},
                 {OpCodes.Stelem_I4, new StelemStackMutator()},
@@ -187,6 +190,7 @@ namespace GrEmit
                 {OpCodes.Conv_U2, new ConvI4StackMutator()},
                 {OpCodes.Conv_U4, new ConvI4StackMutator()},
                 {OpCodes.Conv_U8, new ConvI8StackMutator()},
+                {OpCodes.Conv_U, new ConvUStackMutator()},
                 {OpCodes.Conv_R4, new ConvR4StackMutator()},
                 {OpCodes.Conv_R8, new ConvR8StackMutator()},
                 {OpCodes.Conv_R_Un, new ConvR4StackMutator()},

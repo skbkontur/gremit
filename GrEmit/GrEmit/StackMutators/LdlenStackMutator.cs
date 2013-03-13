@@ -9,7 +9,7 @@ namespace GrEmit.StackMutators
         {
             CheckNotEmpty(il, stack);
             var peek = stack.Pop();
-            if (!peek.IsArray)
+            if (!peek.IsArray && peek != typeof(Array))
                 throw new InvalidOperationException("An array expected but was '" + peek + "'");
             stack.Push(typeof(int));
         }

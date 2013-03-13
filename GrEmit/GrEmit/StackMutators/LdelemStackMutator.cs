@@ -14,7 +14,7 @@ namespace GrEmit.StackMutators
             CheckCanBeAssigned(il, typeof(int), stack.Pop());
             CheckNotEmpty(il, stack);
             Type peek = stack.Pop();
-            if(!peek.IsArray)
+            if(!peek.IsArray && peek != typeof(Array))
                 throw new InvalidOperationException("An array expected but was '" + peek + "'");
             stack.Push(elementType);
         }

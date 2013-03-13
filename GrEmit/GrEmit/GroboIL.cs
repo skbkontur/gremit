@@ -86,7 +86,7 @@ namespace GrEmit
             if(exceptionType != null)
             {
                 if(analyzeStack)
-                    stack = new Stack<Type>(new[] { exceptionType });
+                    stack = new Stack<Type>(new[] {exceptionType});
                 ilCode.BeginCatchBlock(new TypeILInstructionParameter(exceptionType), GetComment());
             }
             il.BeginCatchBlock(exceptionType);
@@ -94,8 +94,8 @@ namespace GrEmit
 
         public void BeginExceptFilterBlock()
         {
-            if (analyzeStack)
-                stack = new Stack<Type>(new[] { typeof(Exception) });
+            if(analyzeStack)
+                stack = new Stack<Type>(new[] {typeof(Exception)});
             ilCode.BeginExceptFilterBlock(GetComment());
             il.BeginExceptFilterBlock();
         }
@@ -149,7 +149,7 @@ namespace GrEmit
 
         public void Leave(Label label)
         {
-            if (label == null)
+            if(label == null)
                 throw new ArgumentNullException("label");
             Emit(OpCodes.Leave, label);
             stack = null;
@@ -210,6 +210,13 @@ namespace GrEmit
             if(label == null)
                 throw new ArgumentNullException("label");
             Emit(OpCodes.Bne_Un, label);
+        }
+
+        public void Beq(Label label)
+        {
+            if(label == null)
+                throw new ArgumentNullException("label");
+            Emit(OpCodes.Beq, label);
         }
 
         public void Pop()
@@ -412,6 +419,8 @@ namespace GrEmit
             var parameter = new TypeILInstructionParameter(elementType);
             if(!elementType.IsValueType) // class
                 Emit(OpCodes.Ldelem_Ref, parameter);
+            else if(elementType == typeof(IntPtr) || elementType == typeof(UIntPtr))
+                Emit(OpCodes.Ldelem_I, parameter);
             else
             {
                 // Primitive
@@ -463,6 +472,8 @@ namespace GrEmit
             var parameter = new TypeILInstructionParameter(elementType);
             if(!elementType.IsValueType) // class
                 Emit(OpCodes.Stelem_Ref, parameter);
+            else if(elementType == typeof(IntPtr) || elementType == typeof(UIntPtr))
+                Emit(OpCodes.Stelem_I, parameter);
             else
             {
                 // Primitive
@@ -597,6 +608,16 @@ namespace GrEmit
                     throw new NotSupportedException("Type '" + type.Name + "' is not supported");
                 }
             }
+        }
+
+        public void Cpblk()
+        {
+            Emit(OpCodes.Cpblk);
+        }
+
+        public void Unaligned(long value)
+        {
+            il.Emit(OpCodes.Unaligned, value);
         }
 
         public void Ldtoken(Type type)
@@ -831,6 +852,11 @@ namespace GrEmit
             Emit(OpCodes.Conv_U8);
         }
 
+        public void Conv_U()
+        {
+            Emit(OpCodes.Conv_U);
+        }
+
         public void Conv_R4()
         {
             Emit(OpCodes.Conv_R4);
@@ -1007,7 +1033,7 @@ namespace GrEmit
 
         private static bool IsStruct(Type type)
         {
-            return type.IsValueType && !type.IsPrimitive && !type.IsEnum;
+            return type.IsValueType && !type.IsPrimitive && !type.IsEnum && type != typeof(IntPtr) && type != typeof(UIntPtr);
         }
 
         private static bool Unsigned(Type type)
