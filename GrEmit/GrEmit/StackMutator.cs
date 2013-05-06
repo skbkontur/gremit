@@ -133,7 +133,7 @@ namespace GrEmit
                         {
                             var instructionStack = ((StackILInstructionComment)comment).Stack;
                             if(!StacksConsistent(curStack, instructionStack))
-                                throw new InvalidOperationException("Inconsistent stacks for line " + (lineNumber + 1));
+                                throw new InvalidOperationException("Inconsistent stacks for line " + (lineNumber + 1) + "\r\n" + il.GetILCode());
                         }
                         ++lineNumber;
                     }

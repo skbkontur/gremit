@@ -21,10 +21,7 @@ namespace GrEmit.StackMutators
             {
                 Type[] labelStack;
                 if(il.labelStacks.TryGetValue(label, out labelStack))
-                {
-                    if(!StacksConsistent(stack, labelStack))
-                        throw new InvalidOperationException("Inconsistent stack for label '" + label.Name + "'");
-                }
+                    CheckStacksEqual(il, label, stack, labelStack);
                 else
                     il.labelStacks.Add(label, stack.Reverse().ToArray());
             }
