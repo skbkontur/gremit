@@ -37,6 +37,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HackHelpers.cs" />
     <Compile Include="InstructionComments\EmptyILInstructionComment.cs" />
     <Compile Include="InstructionComments\InaccessibleCodeILInstructionComment.cs" />
     <Compile Include="InstructionParameters\ConstructorILInstructionParameter.cs" />
