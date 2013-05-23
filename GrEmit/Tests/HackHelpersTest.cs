@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 
-using GrEmit;
+using GrEmit.Utils;
 
 using NUnit.Framework;
 
@@ -13,6 +15,7 @@ namespace Tests
         [Test]
         public void TestCall()
         {
+            CForCallTest.callStatic = 0;
             var c = new CForCallTest();
             HackHelpers.CallMethod(c, test => test.CallInstance(-1), null, new object[] {2});
             Assert.AreEqual(2, c.callInstance);
@@ -20,8 +23,19 @@ namespace Tests
         }
 
         [Test]
+        public void TestCallWithRet()
+        {
+            CForCallTest.callStatic = 0;
+            var c = new CForCallTest();
+            Assert.AreEqual(3, HackHelpers.CallMethod(c, test => test.CallInstanceRet(-1), null, new object[] {3}));
+            Assert.AreEqual(3, c.callInstance);
+            Assert.AreEqual(0, CForCallTest.callStatic);
+        }
+
+        [Test]
         public void TestCallStatic()
         {
+            CForCallTest.callStatic = 0;
             var c = new CForCallTest();
             HackHelpers.CallStaticMethod(() => CForCallTest.CallStatic(-1), null, new object[] {2});
             Assert.AreEqual(0, c.callInstance);
@@ -31,6 +45,13 @@ namespace Tests
                             (int)
                             HackHelpers.CallStaticMethod(() => CForCallTest.CallStaticGeneric(""), new[] {typeof(int)},
                                                          new object[] {20}));
+            Assert.AreEqual(22,
+                            (int)
+                            HackHelpers.CallStaticMethod(() => CForCallTest.CallStaticGeneric2<string>(-1), new[] {typeof(int)},
+                                                         new object[] {21}));
+            Assert.AreEqual(null,
+                            HackHelpers.CallStaticMethod(() => CForCallTest.EmitInjectServices<int>(null), new[] {typeof(HackHelpersTest)},
+                                                         new object[] {null}));
         }
 
         [Test]
@@ -169,6 +190,17 @@ namespace Tests
             throw new MissingMethodException(type.Name, name);
         }
 
+        private static FieldInfo GetField(Type type, string name)
+        {
+            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            foreach(FieldInfo info in fields)
+            {
+                if(info.Name == name)
+                    return info;
+            }
+            throw new MissingMethodException(type.Name, name);
+        }
+
         // ReSharper disable ClassNeverInstantiated.Local
 
         private class A
@@ -200,6 +232,10 @@ namespace Tests
             public void Method<T, T2>(T a, T2 b, TC c)
             {
             }
+
+            public string Prop { get; set; }
+            public int fInt;
+            public TC fGen;
         }
 
         private class ClassWithMethods
@@ -237,6 +273,16 @@ namespace Tests
                 return z;
             }
 
+            public static int CallStaticGeneric2<TZ>(int a)
+            {
+                return a + 1;
+            }
+
+            public static Action<IContainer, T> EmitInjectServices<T>(IEnumerable<FieldInfo> serviceTargets)
+            {
+                return null;
+            }
+
             public static void CallStatic(int a)
             {
                 callStatic += a;
@@ -245,6 +291,12 @@ namespace Tests
             public void CallInstance(int a)
             {
                 callInstance += a;
+            }
+
+            public int CallInstanceRet(int a)
+            {
+                callInstance += a;
+                return a;
             }
 
             public static int callStatic;

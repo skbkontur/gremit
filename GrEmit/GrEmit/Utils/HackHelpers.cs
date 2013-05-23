@@ -1,21 +1,11 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 
-namespace GrEmit
+namespace GrEmit.Utils
 {
     public static class HackHelpers
     {
-        public static T CreateDelegate<T>(DynamicMethod dm, object target) where T : class
-        {
-            Delegate @delegate = dm.CreateDelegate(typeof(T), target);
-            var result = (@delegate as T);
-            if(result == null)
-                throw new ArgumentException(String.Format("Type {0} not a delegate", typeof(T)));
-            return result;
-        }
-
         public static Type GetValueTypeForNullableOrNull(Type mayBeNullable)
         {
             if(!mayBeNullable.IsGenericType || mayBeNullable.IsGenericTypeDefinition ||
@@ -23,32 +13,23 @@ namespace GrEmit
             Type valueType = mayBeNullable.GetGenericArguments()[0];
             return valueType;
         }
-
-        public static T CreateDelegate<T>(DynamicMethod dm) where T : class
+        
+        //NOTE MetadataToken's reassigned on compilation !!! use inside appdomain
+        public static ulong GetMemberUniqueToken(MemberInfo mi)
         {
-            Delegate @delegate = dm.CreateDelegate(typeof(T));
-            var result = (@delegate as T);
-            if(result == null)
-                throw new ArgumentException(String.Format("Type {0} not a delegate", typeof(T)));
-            return result;
+            return ((ulong)mi.Module.MetadataToken) << 32 | (ulong)mi.MetadataToken;
+        }
+
+        public static ulong GetTypeUniqueToken(Type type)
+        {
+            return ((ulong)type.Module.MetadataToken) << 32 | (ulong)type.MetadataToken;
         }
 
         public static ConstructorInfo GetObjectConstruction<T>(Expression<Func<T>> constructorCall,
                                                                params Type[] classGenericArgs)
         {
             Expression expression = constructorCall.Body;
-            ConstructorInfo sourceCi;
-            switch(expression.NodeType)
-            {
-            case ExpressionType.Convert:
-                sourceCi = ObjectConstructionFromConvert(expression);
-                break;
-            case ExpressionType.New:
-                sourceCi = ObjectConstruction(expression);
-                break;
-            default:
-                throw new NotSupportedException("Bad expression " + constructorCall);
-            }
+            ConstructorInfo sourceCi = ObjectConstruction(EliminateConvert(expression));
             if(typeof(T).IsValueType && sourceCi == null)
                 throw new NotSupportedException("Struct creation without arguments");
             Type type = typeof(T);
@@ -87,14 +68,7 @@ namespace GrEmit
 
         public static MethodInfo GetMethodDefinition<T>(Expression<Func<T, object>> callExpr)
         {
-            Expression expression = callExpr.Body;
-            switch(expression.NodeType)
-            {
-            case ExpressionType.Convert:
-                return GetMethodDefinitionImpl(((UnaryExpression)expression).Operand);
-            default:
-                return GetMethodDefinitionImpl(expression);
-            }
+            return GetMethodDefinitionImpl(EliminateConvert(callExpr.Body));
         }
 
         public static object CallMethod<T>(T target, Expression<Action<T>> callExpr, Type[] methodGenericArgs,
@@ -126,14 +100,20 @@ namespace GrEmit
                                                                                     Type[] methodGenericArgs)
         {
             var methodCallExpression = (MethodCallExpression)callExpr.Body;
-            MethodInfo methodInfo = methodCallExpression.Method;
             Type type = typeof(T);
+            MethodInfo methodInfo = methodCallExpression.Method;
+            return ConstructGenericMethodDefinitionForGenericClass(type, methodInfo, classGenericArgs, methodGenericArgs);
+        }
+
+        public static MethodInfo ConstructGenericMethodDefinitionForGenericClass(Type type, MethodInfo methodInfo, Type[] classGenericArgs, Type[] methodGenericArgs)
+        {
             Type resultReflectedType = type.IsGenericType
                                            ? type.GetGenericTypeDefinition().MakeGenericType(classGenericArgs)
                                            : type;
             MethodInfo sourceMethodDefinition = methodInfo.IsGenericMethod
                                                     ? methodInfo.GetGenericMethodDefinition()
                                                     : methodInfo;
+
             MethodBase methodBase = MethodBase.GetMethodFromHandle(
                 sourceMethodDefinition.MethodHandle, resultReflectedType.TypeHandle);
             var constructedMethodForResultType = (MethodInfo)methodBase;
@@ -142,11 +122,33 @@ namespace GrEmit
             return constructedMethodForResultType;
         }
 
-        private static ConstructorInfo ObjectConstructionFromConvert(Expression expression)
+        //public static FieldInfo ConstructFieldDefinitionForGenericClass<T>(Expression<Func<T, object>> callExpr, Type[] classGenericArgs)
+        //{
+        //    var methodCallExpression = (MemberExpression)EliminateConvert(callExpr.Body);
+        //    Type type = typeof(T);
+        //    MemberInfo memberInfo = methodCallExpression.Member;
+        //    var fieldInfo = memberInfo as FieldInfo;
+        //    if(fieldInfo != null)
+        //        return ConstructFieldForGenericClass(type, fieldInfo, classGenericArgs);
+        //    throw new ArgumentException("Expression access not a field");
+        //}
+
+        //public static FieldInfo ConstructFieldForGenericClass(Type classType, FieldInfo fieldInfo, Type[] classGenericArgs)
+        //{
+        //    Type resultReflectedType = classType.IsGenericType
+        //                                   ? classType.GetGenericTypeDefinition().MakeGenericType(classGenericArgs)
+        //                                   : classType;
+        //BUG not works same as MethodBase.GetMethodFromHandle
+        //    FieldInfo result = FieldInfo.GetFieldFromHandle(
+        //        fieldInfo.FieldHandle, resultReflectedType.TypeHandle);
+        //    return result;
+        //}
+
+        private static Expression EliminateConvert(Expression expression)
         {
-            var unaryExpression = (UnaryExpression)expression;
-            var newExpression = (NewExpression)unaryExpression.Operand;
-            return newExpression.Constructor;
+            if(expression.NodeType == ExpressionType.Convert)
+                return ((UnaryExpression)expression).Operand;
+            return expression;
         }
 
         private static ConstructorInfo ObjectConstruction(Expression expression)
