@@ -10,12 +10,12 @@ namespace GrEmit.StackMutators
             if(il.methodReturnType == typeof(void))
             {
                 if(stack.Count != 0)
-                    throw new InvalidOperationException("At the end stack must be empty");
+                    throw new InvalidOperationException("At the end stack must be empty\r\n" + il.GetILCode());
             }
             else if(stack.Count == 0)
-                throw new InvalidOperationException("Stack is empty");
+                throw new InvalidOperationException("Stack is empty\r\n" + il.GetILCode());
             else if(stack.Count > 1)
-                throw new InvalidOperationException("At the end stack must contain exactly one element");
+                throw new InvalidOperationException("At the end stack must contain exactly one element\r\n" + il.GetILCode());
             else
             {
                 var peek = stack.Pop();
