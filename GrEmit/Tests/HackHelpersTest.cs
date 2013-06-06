@@ -55,6 +55,27 @@ namespace Tests
         }
 
         [Test]
+        public void TestUniqueTokens()
+        {
+            Assert.AreEqual(
+                HackHelpers.GetMemberUniqueToken(HackHelpers.GetMethodDefinition<ClassWithMethods>(o => o.Method<int>())),
+                HackHelpers.GetMemberUniqueToken(HackHelpers.GetMethodDefinition<ClassWithMethods>(o => o.Method<long>())));
+            Assert.AreEqual(
+                HackHelpers.GetTypeUniqueToken(typeof(CGeneric<int>)),
+                HackHelpers.GetTypeUniqueToken(typeof(CGeneric<long>)));
+            Assert.AreEqual(
+                HackHelpers.GetMemberUniqueToken(HackHelpers.GetMethodDefinition<CGeneric<int>>(o => o.Method<string>())),
+                HackHelpers.GetMemberUniqueToken(HackHelpers.GetMethodDefinition<CGeneric<long>>(o => o.Method<bool>())));
+        }
+
+        [Test]
+        public void TestGetProp()
+        {
+            Assert.AreEqual(GetProp(typeof(ClassWithMethods), "P1"), HackHelpers.GetProp<ClassWithMethods>(x => x.P1));
+            Assert.AreEqual(GetProp(typeof(ClassWithMethods), "PS"), HackHelpers.GetProp<ClassWithMethods>(x => x.PS));
+        }
+
+        [Test]
         public void TestConstructGenericMethodDefinitionForGenericClass()
         {
             MethodInfo constructedMethod =
@@ -200,6 +221,16 @@ namespace Tests
             }
             throw new MissingMethodException(type.Name, name);
         }
+        private static PropertyInfo GetProp(Type type, string name)
+        {
+            PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            foreach (PropertyInfo info in props)
+            {
+                if(info.Name == name)
+                    return info;
+            }
+            throw new MissingMethodException(type.Name, name);
+        }
 
         // ReSharper disable ClassNeverInstantiated.Local
 
@@ -258,6 +289,9 @@ namespace Tests
             {
                 return null;
             }
+
+            public int P1 { get; set; }
+            public string PS { get; set; }
 
             // ReSharper restore MemberCanBeMadeStatic.Local
         }

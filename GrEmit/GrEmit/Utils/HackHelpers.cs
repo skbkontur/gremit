@@ -13,13 +13,14 @@ namespace GrEmit.Utils
             Type valueType = mayBeNullable.GetGenericArguments()[0];
             return valueType;
         }
-        
+
         //NOTE MetadataToken's reassigned on compilation !!! use inside appdomain
         public static ulong GetMemberUniqueToken(MemberInfo mi)
         {
             return ((ulong)mi.Module.MetadataToken) << 32 | (ulong)mi.MetadataToken;
         }
 
+        //BUG может быть одинаков для типов из разных сборок
         public static ulong GetTypeUniqueToken(Type type)
         {
             return ((ulong)type.Module.MetadataToken) << 32 | (ulong)type.MetadataToken;
@@ -85,9 +86,9 @@ namespace GrEmit.Utils
             return methodInfo.Invoke(null, methodArgs);
         }
 
-        public static PropertyInfo GetProp<T, TProp>(Expression<Func<T, TProp>> readPropFunc)
+        public static PropertyInfo GetProp<T>(Expression<Func<T, object>> readPropFunc)
         {
-            Expression expression = readPropFunc.Body;
+            Expression expression = EliminateConvert(readPropFunc.Body);
             MemberInfo memberInfo = ((MemberExpression)expression).Member;
             var propertyInfo = memberInfo as PropertyInfo;
             if(propertyInfo == null)
