@@ -33,6 +33,13 @@ namespace Tests
         }
 
         [Test]
+        public void TestGetStaticProperty()
+        {
+            PropertyInfo staticProperty = HackHelpers.GetStaticProperty(() => CGeneric<int>.SProp);
+            Assert.AreEqual(staticProperty, GetProp(typeof(CGeneric<int>), "SProp"));
+        }
+
+        [Test]
         public void TestCallStatic()
         {
             CForCallTest.callStatic = 0;
@@ -221,10 +228,11 @@ namespace Tests
             }
             throw new MissingMethodException(type.Name, name);
         }
+
         private static PropertyInfo GetProp(Type type, string name)
         {
             PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
-            foreach (PropertyInfo info in props)
+            foreach(PropertyInfo info in props)
             {
                 if(info.Name == name)
                     return info;
@@ -264,6 +272,7 @@ namespace Tests
             {
             }
 
+            public static string SProp { get; set; }
             public string Prop { get; set; }
             public int fInt;
             public TC fGen;

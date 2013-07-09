@@ -61,6 +61,7 @@ namespace GrEmit.Utils
             return methodInfo.GetGenericMethodDefinition().MakeGenericMethod(methodGenericArgs);
         }
 
+
         public static MethodInfo GetMethodDefinition<T>(Expression<Action<T>> callExpr)
         {
             var methodCallExpression = (MethodCallExpression)callExpr.Body;
@@ -84,6 +85,26 @@ namespace GrEmit.Utils
         {
             MethodInfo methodInfo = ConstructStaticMethodDefinition(callExpr, methodGenericArgs);
             return methodInfo.Invoke(null, methodArgs);
+        }
+
+        public static PropertyInfo GetStaticProperty(Expression<Func<object>> callExpr)
+        {
+            Expression expression = EliminateConvert(callExpr.Body);
+            MemberInfo memberInfo = ((MemberExpression)expression).Member;
+            var propertyInfo = memberInfo as PropertyInfo;
+            if (propertyInfo == null)
+                throw new ArgumentException(string.Format("Bad expression. {0} is not a PropertyInfo", memberInfo));
+            return propertyInfo;
+        }
+
+        public static FieldInfo GetStaticField(Expression<Func<object>> callExpr)
+        {
+            Expression expression = EliminateConvert(callExpr.Body);
+            MemberInfo memberInfo = ((MemberExpression)expression).Member;
+            var fi = memberInfo as FieldInfo;
+            if (fi == null)
+                throw new ArgumentException(string.Format("Bad expression. {0} is not a FieldInfo", memberInfo));
+            return fi;
         }
 
         public static PropertyInfo GetProp<T>(Expression<Func<T, object>> readPropFunc)
