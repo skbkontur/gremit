@@ -44,17 +44,17 @@ namespace GrEmit
 
         public Local DeclareLocal(Type localType, string name, bool pinned = false)
         {
-            return new Local(il.DeclareLocal(localType, pinned), (string.IsNullOrEmpty(name) ? "local" : name) + "_" + locals++);
+            return new Local(il.DeclareLocal(localType, pinned), (string.IsNullOrEmpty(name) ? "local" : name) + "_" + localId++);
         }
 
         public Local DeclareLocal(Type localType, bool pinned = false)
         {
-            return new Local(il.DeclareLocal(localType, pinned), "local_" + locals++);
+            return new Local(il.DeclareLocal(localType, pinned), "local_" + localId++);
         }
 
         public Label DefineLabel(string name)
         {
-            return new Label(il.DefineLabel(), name + "_" + labels++);
+            return new Label(il.DefineLabel(), name + "_" + labelId++);
         }
 
         public void MarkLabel(Label label)
@@ -1226,8 +1226,8 @@ namespace GrEmit
             il.Emit(opCode, constructor);
         }
 
-        private int locals;
-        private int labels;
+        private int localId;
+        private int labelId;
 
         private Stack<Type> stack = new Stack<Type>();
 

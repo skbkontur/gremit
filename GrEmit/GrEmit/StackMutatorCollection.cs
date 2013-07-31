@@ -11,7 +11,7 @@ namespace GrEmit
         public static void Mutate(OpCode opCode, GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
         {
             StackMutator stackMutator;
-            if(opCode == default(OpCode))
+            if(string.IsNullOrEmpty(opCode.Name))
                 stackMutator = markLabelStackMutator;
             else if(!stackMutators.TryGetValue(opCode, out stackMutator))
                 throw new NotSupportedException("OpCode '" + opCode + "' is not supported");
