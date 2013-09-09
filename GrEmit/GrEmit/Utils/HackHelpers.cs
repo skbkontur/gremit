@@ -61,7 +61,6 @@ namespace GrEmit.Utils
             return methodInfo.GetGenericMethodDefinition().MakeGenericMethod(methodGenericArgs);
         }
 
-
         public static MethodInfo GetMethodDefinition<T>(Expression<Action<T>> callExpr)
         {
             var methodCallExpression = (MethodCallExpression)callExpr.Body;
@@ -92,7 +91,7 @@ namespace GrEmit.Utils
             Expression expression = EliminateConvert(callExpr.Body);
             MemberInfo memberInfo = ((MemberExpression)expression).Member;
             var propertyInfo = memberInfo as PropertyInfo;
-            if (propertyInfo == null)
+            if(propertyInfo == null)
                 throw new ArgumentException(string.Format("Bad expression. {0} is not a PropertyInfo", memberInfo));
             return propertyInfo;
         }
@@ -102,7 +101,7 @@ namespace GrEmit.Utils
             Expression expression = EliminateConvert(callExpr.Body);
             MemberInfo memberInfo = ((MemberExpression)expression).Member;
             var fi = memberInfo as FieldInfo;
-            if (fi == null)
+            if(fi == null)
                 throw new ArgumentException(string.Format("Bad expression. {0} is not a FieldInfo", memberInfo));
             return fi;
         }
@@ -125,6 +124,18 @@ namespace GrEmit.Utils
             Type type = typeof(T);
             MethodInfo methodInfo = methodCallExpression.Method;
             return ConstructGenericMethodDefinitionForGenericClass(type, methodInfo, classGenericArgs, methodGenericArgs);
+        }
+
+        public static MethodInfo GetMethodByMetadataToken(Type type, int methodMetedataToken)
+        {
+            MethodInfo[] methodInfos = type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            //todo сделать нормально
+            foreach(MethodInfo methodInfo in methodInfos)
+            {
+                if(methodInfo.MetadataToken == methodMetedataToken)
+                    return methodInfo;
+            }
+            return null;
         }
 
         public static MethodInfo ConstructGenericMethodDefinitionForGenericClass(Type type, MethodInfo methodInfo, Type[] classGenericArgs, Type[] methodGenericArgs)
