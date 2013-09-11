@@ -429,6 +429,10 @@ namespace GrEmit
         /// </param>
         public void Ldarg(int index)
         {
+            if(index < 0)
+                throw new ArgumentOutOfRangeException("index", "Argument index cannot be less than zero");
+            if(index >= methodParameterTypes.Length)
+                throw new ArgumentOutOfRangeException("index", "Argument index cannot be greater or equal than number of parameters");
             switch(index)
             {
             case 0:
@@ -462,6 +466,10 @@ namespace GrEmit
         /// </param>
         public void Starg(int index)
         {
+            if(index < 0)
+                throw new ArgumentOutOfRangeException("index", "Argument index cannot be less than zero");
+            if(index >= methodParameterTypes.Length)
+                throw new ArgumentOutOfRangeException("index", "Argument index cannot be greater or equal than number of parameters");
             if(index < 256)
                 Emit(OpCodes.Starg_S, (byte)index);
             else
@@ -478,6 +486,10 @@ namespace GrEmit
         /// </param>
         public void Ldarga(int index)
         {
+            if(index < 0)
+                throw new ArgumentOutOfRangeException("index", "Argument index cannot be less than zero");
+            if(index >= methodParameterTypes.Length)
+                throw new ArgumentOutOfRangeException("index", "Argument index cannot be greater or equal than number of parameters");
             if(index < 256)
                 Emit(OpCodes.Ldarga_S, (byte)index);
             else
