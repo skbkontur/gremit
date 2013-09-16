@@ -1526,6 +1526,20 @@ namespace GrEmit
         }
 
         /// <summary>
+        /// Calls the constructor indicated by the passed constructor descriptor.
+        /// </summary>
+        /// <param name="constructor">The <see cref="ConstructorInfo">Constructor</see> to be called.</param>
+        public void Call(ConstructorInfo constructor)
+        {
+            var parameter = new ConstructorILInstructionParameter(constructor);
+            var lineNumber = ilCode.Append(OpCodes.Call, parameter, new EmptyILInstructionComment());
+            if(analyzeStack && stack != null)
+                MutateStack(OpCodes.Call, parameter);
+            ilCode.SetComment(lineNumber, GetComment());
+            il.Emit(OpCodes.Call, constructor);
+        }
+
+        /// <summary>
         /// Calls a late-bound method on an object, pushing the return value onto the evaluation stack.
         /// </summary>
         /// <param name="method">The <see cref="MethodInfo">Method</see> to be called.</param>

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection.Emit;
 
+using GrEmit;
+
 using NUnit.Framework;
 
 namespace Tests
@@ -93,6 +95,32 @@ namespace Tests
             il.MarkLabel(label3); // stack: [cur]
             il.Ret(); // return cur; stack: []
             Console.Write(il.GetILCode());
+        }
+
+
+        private class Zzz
+        {
+            public Zzz(int x)
+            {
+                X = x;
+            }
+
+            public int X { get; private set; }
+        }
+
+        [Test]
+        public void TestConstructorCall()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(Zzz)}, typeof(Test));
+            var il = new GroboIL(method);
+            il.Ldarg(0);
+            il.Ldc_I4(8);
+            il.Call(typeof(Zzz).GetConstructor(new[] {typeof(int)}));
+            il.Ret();
+            var action = (Action<Zzz>)method.CreateDelegate(typeof(Action<Zzz>));
+            var zzz = new Zzz(3);
+            action(zzz);
+            Assert.AreEqual(8, zzz.X);
         }
 
     }
