@@ -11,7 +11,8 @@ namespace GrEmit
         {
             if(!type.IsGenericType)
                 return type.Name;
-            return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(Format).ToArray()) + ">";
+            var index = type.Name.LastIndexOf('`');
+            return (index < 0 ? type.Name : type.Name.Substring(0, index)) + "<" + string.Join(", ", type.GetGenericArguments().Select(Format).ToArray()) + ">";
         }
 
         public static string Format(FieldInfo field)
@@ -24,11 +25,18 @@ namespace GrEmit
             return Format(constructor.ReflectedType) + ".ctor" + "(" + string.Join(", ", constructor.GetParameters().Select(parameter => Format(parameter.ParameterType)).ToArray()) + ")";
         }
 
+        private static string FormatMethodWithoutParameters(MethodInfo method)
+        {
+            if(!method.IsGenericMethod)
+                return method.Name;
+            return method.Name + "<" + string.Join(", ", method.GetGenericArguments().Select(Format).ToArray()) + ">";
+        }
+
         public static string Format(MethodInfo method)
         {
             if(ReferenceEquals(method.ReflectedType, null))
-                return Format(method.ReturnType) + " " + method.Name + "(" + string.Join(", ", GetParameterTypes(method).Select(Format).ToArray()) + ")";
-            return Format(method.ReturnType) + " " + Format(method.ReflectedType) + "." + method.Name + "(" + string.Join(", ", GetParameterTypes(method).Select(Format).ToArray()) + ")";
+                return Format(method.ReturnType) + " " + FormatMethodWithoutParameters(method) + "(" + string.Join(", ", GetParameterTypes(method).Select(Format).ToArray()) + ")";
+            return Format(method.ReturnType) + " " + Format(method.ReflectedType) + "." + FormatMethodWithoutParameters(method) + "(" + string.Join(", ", GetParameterTypes(method).Select(Format).ToArray()) + ")";
         }
         
         public static Func<MethodBuilder, Type[]> BuildMethodBuilderParameterTypesExtractor()
