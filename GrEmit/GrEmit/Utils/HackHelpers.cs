@@ -33,7 +33,7 @@ namespace GrEmit.Utils
             ConstructorInfo sourceCi = ObjectConstruction(EliminateConvert(expression));
             if(typeof(T).IsValueType && sourceCi == null)
                 throw new NotSupportedException("Struct creation without arguments");
-            Type type = typeof(T);
+            Type type = sourceCi.ReflectedType;
             Type resultReflectedType = type.IsGenericType
                                            ? type.GetGenericTypeDefinition().MakeGenericType(classGenericArgs)
                                            : type;
@@ -116,14 +116,23 @@ namespace GrEmit.Utils
             return propertyInfo;
         }
 
+        public static FieldInfo GetField<T>(Expression<Func<T, object>> readPropFunc)
+        {
+            Expression expression = EliminateConvert(readPropFunc.Body);
+            MemberInfo memberInfo = ((MemberExpression)expression).Member;
+            var propertyInfo = memberInfo as FieldInfo;
+            if(propertyInfo == null)
+                throw new ArgumentException(string.Format("Bad expression. {0} is not a FieldInfo", memberInfo));
+            return propertyInfo;
+        }
+
         public static MethodInfo ConstructGenericMethodDefinitionForGenericClass<T>(Expression<Action<T>> callExpr,
                                                                                     Type[] classGenericArgs,
                                                                                     Type[] methodGenericArgs)
         {
             var methodCallExpression = (MethodCallExpression)callExpr.Body;
-            Type type = typeof(T);
             MethodInfo methodInfo = methodCallExpression.Method;
-            return ConstructGenericMethodDefinitionForGenericClass(type, methodInfo, classGenericArgs, methodGenericArgs);
+            return ConstructGenericMethodDefinitionForGenericClass(methodInfo.ReflectedType, methodInfo, classGenericArgs, methodGenericArgs);
         }
 
         public static MethodInfo GetMethodByMetadataToken(Type type, int methodMetedataToken)

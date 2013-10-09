@@ -83,6 +83,12 @@ namespace Tests
         }
 
         [Test]
+        public void TestGetField()
+        {
+            Assert.AreEqual(GetField(typeof(ClassWithMethods), "f"), HackHelpers.GetField<ClassWithMethods>(x => x.f));
+        }
+
+        [Test]
         public void TestConstructGenericMethodDefinitionForGenericClass()
         {
             MethodInfo constructedMethod =
@@ -97,6 +103,18 @@ namespace Tests
             Assert.AreNotEqual(HackHelpers.GetMethodDefinition<CGeneric<int>>(generic => generic.Method<long>()),
                                constructedMethod);
             Assert.AreNotEqual(HackHelpers.GetMethodDefinition<CGeneric<string>>(generic => generic.Method<long>()),
+                               constructedMethod);
+        }
+
+        [Test]
+        public void TestConstructGenericMethodDefinitionForGenericClassHard()
+        {
+            MethodInfo constructedMethod =
+                HackHelpers.ConstructGenericMethodDefinitionForGenericClass<IGenericChild<int>>(x => x.Meth<long>(),
+                                                                                           new[] {typeof(string)},
+                                                                                           new[] {typeof(object)});
+
+            Assert.AreEqual(HackHelpers.GetMethodDefinition<IGeneric<string>>(generic => generic.Meth<object>()),
                                constructedMethod);
         }
 
@@ -250,6 +268,10 @@ namespace Tests
         {
         }
 
+        private interface IGenericChild<T> : IGeneric<T>
+        {
+        }
+
         private class CGeneric<TC>
         {
             public CGeneric(TC c)
@@ -301,6 +323,7 @@ namespace Tests
 
             public int P1 { get; set; }
             public string PS { get; set; }
+            public int f;
 
             // ReSharper restore MemberCanBeMadeStatic.Local
         }
@@ -351,6 +374,11 @@ namespace Tests
             public CStruct(int x)
             {
             }
+        }
+
+        private interface IGeneric<T>
+        {
+            void Meth<TM>();
         }
     }
 }
