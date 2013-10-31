@@ -81,6 +81,13 @@ namespace Tests
             Assert.AreEqual(GetProp(typeof(ClassWithMethods), "P1"), HackHelpers.GetProp<ClassWithMethods>(x => x.P1));
             Assert.AreEqual(GetProp(typeof(ClassWithMethods), "PS"), HackHelpers.GetProp<ClassWithMethods>(x => x.PS));
         }
+        
+        [Test]
+        public void TestGetPropGeneric()
+        {
+            Assert.AreEqual(GetProp(typeof(CGeneric<long>), "Prop"), HackHelpers.GetProp<CGeneric<int>>(x => x.Prop, new[] { typeof(long) }));
+            Assert.AreEqual(GetProp(typeof(CGeneric<long>), "GProp"), HackHelpers.GetProp<CGeneric<int>>(x => x.GProp, new[] { typeof(long) }));
+        }
 
         [Test]
         public void TestGetField()
@@ -296,6 +303,7 @@ namespace Tests
 
             public static string SProp { get; set; }
             public string Prop { get; set; }
+            public TC GProp { get; set; }
             public int fInt;
             public TC fGen;
         }

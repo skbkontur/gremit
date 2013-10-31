@@ -106,14 +106,26 @@ namespace GrEmit.Utils
             return fi;
         }
 
-        public static PropertyInfo GetProp<T>(Expression<Func<T, object>> readPropFunc)
+        public static PropertyInfo GetProp<T>(Expression<Func<T, object>> readPropFunc, params Type[] classGenericArgs)
         {
             Expression expression = EliminateConvert(readPropFunc.Body);
             MemberInfo memberInfo = ((MemberExpression)expression).Member;
             var propertyInfo = memberInfo as PropertyInfo;
             if(propertyInfo == null)
                 throw new ArgumentException(string.Format("Bad expression. {0} is not a PropertyInfo", memberInfo));
-            return propertyInfo;
+            if(classGenericArgs.Length == 0)
+                return propertyInfo;
+            int mt = propertyInfo.MetadataToken;
+            Type type = propertyInfo.ReflectedType;
+            Type resultReflectedType = type.GetGenericTypeDefinition().MakeGenericType(classGenericArgs);
+            PropertyInfo[] propertyInfos = resultReflectedType.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+
+            foreach(PropertyInfo info in propertyInfos)
+            {
+                if(info.MetadataToken == mt)
+                    return info;
+            }
+            throw new NotSupportedException("not found");
         }
 
         public static FieldInfo GetField<T>(Expression<Func<T, object>> readPropFunc)
