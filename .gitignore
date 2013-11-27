@@ -4,4 +4,6 @@ obj
 [Rr]elease
 *.user
 *.suo
+GrEmit.dll
+GrEmit.pdb
 _ReSharper.GrEmit
