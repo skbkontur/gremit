@@ -36,6 +36,19 @@ namespace GrEmit.Utils
             var dynamicMethod = new DynamicMethod(name, methodInfo.ReturnType, GetParameterTypes(methodInfo.GetParameters()), m, true);
             emitCode(new GroboIL(dynamicMethod));
             return CreateDelegate<T>(dynamicMethod);
+        }        
+        
+        public static T EmitDynamicMethod<T>(string name, Module m, Action<GroboIL> emitCode, object target) where T : class
+        {
+            Type delegateType = typeof(T);
+            //HACK
+            MethodInfo methodInfo = delegateType.GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
+            if(methodInfo == null)
+                throw new ArgumentException(String.Format("Type {0} not a Delegate", delegateType));
+
+            var dynamicMethod = new DynamicMethod(name, methodInfo.ReturnType, GetParameterTypes(methodInfo.GetParameters()), m, true);
+            emitCode(new GroboIL(dynamicMethod));
+            return CreateDelegate<T>(dynamicMethod, target);
         }
 
         public static Type[] GetParameterTypes(ParameterInfo[] parameters)
