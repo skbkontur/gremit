@@ -6,7 +6,7 @@ using GrEmit.InstructionParameters;
 
 namespace GrEmit
 {
-    internal class ILCode
+    public class ILCode
     {
         public int MarkLabel(GroboIL.Label label, ILInstructionComment comment)
         {
@@ -88,7 +88,6 @@ namespace GrEmit
         public override string ToString()
         {
             var lines = new List<string>();
-            var result = new StringBuilder();
             int maxLen = 0;
             foreach(var instruction in instructions)
             {
@@ -126,7 +125,8 @@ namespace GrEmit
                 maxLen = maxCommentStart;
             InitMargins(maxCommentStart + margin.Length);
             maxLen += margin.Length;
-            for(int i = 0; i < instructions.Count; ++i)
+            var result = new StringBuilder();
+            for (int i = 0; i < instructions.Count; ++i)
             {
                 string line = lines[i];
                 result.Append(line);
@@ -152,7 +152,7 @@ namespace GrEmit
             return result.ToString();
         }
 
-        internal class ILInstruction
+        public class ILInstruction
         {
             public ILInstruction(InstructionKind kind, OpCode opCode, ILInstructionParameter parameter, ILInstructionComment comment)
             {
@@ -168,7 +168,7 @@ namespace GrEmit
             public ILInstructionComment Comment { get; set; }
         }
 
-        internal enum InstructionKind
+        public enum InstructionKind
         {
             Instruction,
             Label,

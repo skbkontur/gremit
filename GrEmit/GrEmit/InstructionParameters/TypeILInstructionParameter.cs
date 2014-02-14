@@ -2,7 +2,7 @@ using System;
 
 namespace GrEmit.InstructionParameters
 {
-    internal class TypeILInstructionParameter : ILInstructionParameter
+    public class TypeILInstructionParameter : ILInstructionParameter
     {
         public TypeILInstructionParameter(Type type)
         {

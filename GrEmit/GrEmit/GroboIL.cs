@@ -38,9 +38,9 @@ namespace GrEmit
             methodParameterTypes = new[] {constructor.ReflectedType}.Concat(Formatter.GetParameterTypes(constructor)).ToArray();
         }
 
-        public string GetILCode()
+        public ILCode GetILCode()
         {
-            return ilCode.ToString();
+            return ilCode;
         }
 
         /// <summary>

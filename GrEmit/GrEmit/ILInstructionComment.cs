@@ -1,6 +1,6 @@
 namespace GrEmit
 {
-    internal abstract class ILInstructionComment : ILInstructionParameter
+    public abstract class ILInstructionComment : ILInstructionParameter
     {
     }
 }
