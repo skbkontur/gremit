@@ -41,7 +41,7 @@ namespace Tests
             il.Ldc_I4(0);
             il.Starg(1);
             il.Ldc_I4(0);
-            Assert.Throws<ArgumentOutOfRangeException>(() => il.Ldarg(-2));
+            Assert.Throws<ArgumentOutOfRangeException>(() => il.Starg(-2));
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace Tests
             il.Ldc_I4(0);
             il.Starg(1);
             il.Ldc_I4(0);
-            Assert.Throws<ArgumentOutOfRangeException>(() => il.Ldarg(2));
+            Assert.Throws<ArgumentOutOfRangeException>(() => il.Starg(2));
         }
 
         [Test]

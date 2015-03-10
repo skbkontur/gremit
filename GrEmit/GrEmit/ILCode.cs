@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 
@@ -17,13 +18,37 @@ namespace GrEmit
 
         public int Append(OpCode opCode, ILInstructionComment comment)
         {
-            instructions.Add(new ILInstruction(InstructionKind.Instruction, opCode, null, comment));
-            return lineNumber++;
+            var lastInstructionPrefix = lineNumber > 0 ? instructions[lineNumber - 1] as ILInstructionPrefix : null;
+            if(lastInstructionPrefix == null)
+            {
+                instructions.Add(new ILInstruction(InstructionKind.Instruction, opCode, null, comment));
+                return lineNumber++;
+            }
+            instructions[lineNumber - 1] = new ILInstruction(InstructionKind.Instruction, opCode, null, comment) {Prefixes = lastInstructionPrefix.Prefixes};
+            return lineNumber - 1;
         }
 
         public int Append(OpCode opCode, ILInstructionParameter parameter, ILInstructionComment comment)
         {
-            instructions.Add(new ILInstruction(InstructionKind.Instruction, opCode, parameter, comment));
+            var lastInstructionPrefix = lineNumber > 0 ? instructions[lineNumber - 1] as ILInstructionPrefix : null;
+            if (lastInstructionPrefix == null)
+            {
+                instructions.Add(new ILInstruction(InstructionKind.Instruction, opCode, parameter, comment));
+                return lineNumber++;
+            }
+            instructions[lineNumber - 1] = new ILInstruction(InstructionKind.Instruction, opCode, null, comment) {Prefixes = lastInstructionPrefix.Prefixes};
+            return lineNumber - 1;
+        }
+
+        public int AppendPrefix(OpCode prefix)
+        {
+            var lastInstructionPrefix = instructions[lineNumber - 1] as ILInstructionPrefix;
+            if(lastInstructionPrefix != null)
+            {
+                lastInstructionPrefix.Prefixes.Add(prefix);
+                return lineNumber - 1;
+            }
+            instructions.Add(new ILInstructionPrefix {Prefixes = new List<OpCode> {prefix}});
             return lineNumber++;
         }
 
@@ -80,7 +105,7 @@ namespace GrEmit
                 instructions[lineNumber].Comment = comment;
         }
 
-        public ILInstruction GetInstruction(int lineNumber)
+        public ILInstructionBase GetInstruction(int lineNumber)
         {
             return lineNumber < instructions.Count ? instructions[lineNumber] : null;
         }
@@ -91,32 +116,41 @@ namespace GrEmit
             int maxLen = 0;
             foreach(var instruction in instructions)
             {
-                switch(instruction.Kind)
+                var ilInstruction = instruction as ILInstruction;
+                if(ilInstruction != null)
                 {
-                case InstructionKind.Instruction:
-                    lines.Add(margin + instruction.OpCode + (instruction.Parameter == null ? "" : " " + instruction.Parameter.Format()));
-                    break;
-                case InstructionKind.Label:
-                    lines.Add((instruction.Parameter == null ? "" : instruction.Parameter.Format()) + ':');
-                    break;
-                case InstructionKind.TryStart:
-                    lines.Add("TRY");
-                    break;
-                case InstructionKind.Catch:
-                    lines.Add("CATCH <" + (instruction.Parameter == null ? "" : instruction.Parameter.Format()) + '>');
-                    break;
-                case InstructionKind.FilteredException:
-                    lines.Add("CATCH");
-                    break;
-                case InstructionKind.Fault:
-                    lines.Add("FAULT");
-                    break;
-                case InstructionKind.Finally:
-                    lines.Add("FINALLY");
-                    break;
-                case InstructionKind.TryEnd:
-                    lines.Add("END TRY");
-                    break;
+                    switch(ilInstruction.Kind)
+                    {
+                    case InstructionKind.Instruction:
+                        lines.Add(margin + string.Join("", (ilInstruction.Prefixes ?? new List<OpCode>()).Concat(new[] {ilInstruction.OpCode}).Select(opcode => opcode.ToString()).ToArray()) + (ilInstruction.Parameter == null ? "" : " " + ilInstruction.Parameter.Format()));
+                        break;
+                    case InstructionKind.Label:
+                        lines.Add((ilInstruction.Parameter == null ? "" : ilInstruction.Parameter.Format()) + ':');
+                        break;
+                    case InstructionKind.TryStart:
+                        lines.Add("TRY");
+                        break;
+                    case InstructionKind.Catch:
+                        lines.Add("CATCH <" + (ilInstruction.Parameter == null ? "" : ilInstruction.Parameter.Format()) + '>');
+                        break;
+                    case InstructionKind.FilteredException:
+                        lines.Add("CATCH");
+                        break;
+                    case InstructionKind.Fault:
+                        lines.Add("FAULT");
+                        break;
+                    case InstructionKind.Finally:
+                        lines.Add("FINALLY");
+                        break;
+                    case InstructionKind.TryEnd:
+                        lines.Add("END TRY");
+                        break;
+                    }
+                }
+                else
+                {
+                    var prefix = (ILInstructionPrefix)instruction;
+                    lines.Add(margin + string.Join("", prefix.Prefixes.Select(opcode => opcode.ToString()).ToArray()) + ".");
                 }
                 if(maxLen < lines[lines.Count - 1].Length)
                     maxLen = lines[lines.Count - 1].Length;
@@ -126,7 +160,7 @@ namespace GrEmit
             InitMargins(maxCommentStart + margin.Length);
             maxLen += margin.Length;
             var result = new StringBuilder();
-            for (int i = 0; i < instructions.Count; ++i)
+            for(int i = 0; i < instructions.Count; ++i)
             {
                 string line = lines[i];
                 result.Append(line);
@@ -152,7 +186,14 @@ namespace GrEmit
             return result.ToString();
         }
 
-        public class ILInstruction
+        public int Count { get { return lineNumber; } }
+
+        public class ILInstructionBase
+        {
+            public ILInstructionComment Comment { get; set; }
+        }
+
+        public class ILInstruction : ILInstructionBase
         {
             public ILInstruction(InstructionKind kind, OpCode opCode, ILInstructionParameter parameter, ILInstructionComment comment)
             {
@@ -163,9 +204,14 @@ namespace GrEmit
             }
 
             public InstructionKind Kind { get; set; }
-            public OpCode OpCode { get; private set; }
+            public OpCode OpCode { get; set; }
             public ILInstructionParameter Parameter { get; private set; }
-            public ILInstructionComment Comment { get; set; }
+            public List<OpCode> Prefixes { get; set; }
+        }
+
+        public class ILInstructionPrefix : ILInstructionBase
+        {
+            public List<OpCode> Prefixes { get; set; }
         }
 
         public enum InstructionKind
@@ -198,7 +244,7 @@ namespace GrEmit
 
         private static string[] margins;
 
-        private readonly List<ILInstruction> instructions = new List<ILInstruction>();
+        private readonly List<ILInstructionBase> instructions = new List<ILInstructionBase>();
 
         private readonly Dictionary<Label, int> labelLineNumbers = new Dictionary<Label, int>();
 

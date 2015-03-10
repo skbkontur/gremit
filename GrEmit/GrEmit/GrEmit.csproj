@@ -39,6 +39,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StackMutators\ArglistStackMutator.cs" />
+    <Compile Include="StackMutators\CkfiniteStackMutator.cs" />
+    <Compile Include="StackMutators\CpobjStackMutator.cs" />
+    <Compile Include="StackMutators\InitblkStackMutator.cs" />
+    <Compile Include="StackMutators\JmpStackMutator.cs" />
     <Compile Include="Utils\EmitHelpers.cs" />
     <Compile Include="Utils\HackHelpers.cs" />
     <Compile Include="InstructionComments\EmptyILInstructionComment.cs" />
@@ -72,7 +77,6 @@
     <Compile Include="StackMutators\CastclassStackMutator.cs" />
     <Compile Include="StackMutators\CeqStackMutator.cs" />
     <Compile Include="StackMutators\CgtStackMutator.cs" />
-    <Compile Include="StackMutators\ConstrainedStackMutator.cs" />
     <Compile Include="StackMutators\ConvI4StackMutator.cs" />
     <Compile Include="StackMutators\ConvI8StackMutator.cs" />
     <Compile Include="StackMutators\ConvR4StackMutator.cs" />

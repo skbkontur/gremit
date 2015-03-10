@@ -6,6 +6,19 @@ using GrEmit.InstructionComments;
 
 namespace GrEmit
 {
+    internal enum ILStackType
+    {
+        Undefined,
+        Int32,
+        Int64,
+        NativeInt,
+        Float,
+        ObjectReference,
+        ManagedPointer,
+        UnmanagedPointer,
+        UserDefinedValueType
+    }
+
     internal abstract class StackMutator
     {
         public abstract void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack);
@@ -27,6 +40,17 @@ namespace GrEmit
                 throw new InvalidOperationException("Stack is empty\r\n" + il.GetILCode());
         }
 
+        protected static bool TypesConsistent(Type type1, Type type2)
+        {
+            var ilStackType1 = ToILStackType(type1);
+            var ilStackType2 = ToILStackType(type2);
+            if (ilStackType1 != ilStackType2)
+                return false;
+            if (ilStackType1 == ILStackType.UserDefinedValueType && type1 != type2)
+                return false;
+            return true;
+        }
+
         protected static bool StacksConsistent(Stack<Type> stack, Type[] otherStack)
         {
             if(otherStack.Length != stack.Count)
@@ -36,7 +60,9 @@ namespace GrEmit
             {
                 Type type1 = currentStack[i];
                 Type type2 = otherStack[i];
-                if(!type1.IsValueType && !type2.IsValueType)
+                if (!TypesConsistent(type1, type2))
+                    return false;
+/*                if(!type1.IsValueType && !type2.IsValueType)
                     continue;
                 if(IsStruct(type1) || IsStruct(type2))
                 {
@@ -44,7 +70,7 @@ namespace GrEmit
                         return false;
                 }
                 else if(GetSize(type1) != GetSize(type2))
-                    return false;
+                    return false;*/
             }
             return true;
         }
@@ -68,7 +94,7 @@ namespace GrEmit
 
         protected static bool CanBeAssigned(Type to, Type from)
         {
-            if (IsStruct(to) || IsStruct(from))
+            if(IsStruct(to) || IsStruct(from))
                 return to == from;
             return GetSize(to) == GetSize(from);
         }
@@ -125,7 +151,7 @@ namespace GrEmit
                         var comment = il.ilCode.GetComment(lineNumber);
                         if(comment == null)
                             break;
-                        ILCode.ILInstruction instruction = il.ilCode.GetInstruction(lineNumber);
+                        var instruction = (ILCode.ILInstruction)il.ilCode.GetInstruction(lineNumber);
                         StackMutatorCollection.Mutate(instruction.OpCode, il, instruction.Parameter, ref curStack);
                         if(!(comment is StackILInstructionComment))
                             il.ilCode.SetComment(lineNumber, new StackILInstructionComment(curStack.Reverse().ToArray()));
@@ -139,6 +165,43 @@ namespace GrEmit
                     }
                 }
             }
+        }
+
+        protected static ILStackType ToILStackType(Type type)
+        {
+            if(!type.IsValueType)
+            {
+                if(type.IsByRef)
+                    return ILStackType.ManagedPointer;
+                return type.IsPointer ? ILStackType.UnmanagedPointer : ILStackType.ObjectReference;
+            }
+            if(type.IsPrimitive)
+            {
+                if(type == typeof(IntPtr) || type == typeof(UIntPtr))
+                    return ILStackType.NativeInt;
+                var typeCode = Type.GetTypeCode(type);
+                switch(typeCode)
+                {
+                case TypeCode.Boolean:
+                case TypeCode.Byte:
+                case TypeCode.Char:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.SByte:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                    return ILStackType.Int32;
+                case TypeCode.Int64:
+                case TypeCode.UInt64:
+                    return ILStackType.Int64;
+                case TypeCode.Double:
+                case TypeCode.Single:
+                    return ILStackType.Float;
+                default:
+                    return ILStackType.UserDefinedValueType;
+                }
+            }
+            return type.IsEnum ? ToILStackType(Enum.GetUnderlyingType(type)) : ILStackType.UserDefinedValueType;
         }
     }
 }

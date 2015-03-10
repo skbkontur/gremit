@@ -4,6 +4,7 @@ using System.Diagnostics.SymbolStore;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 
 using GrEmit.InstructionComments;
 using GrEmit.InstructionParameters;
@@ -11,31 +12,52 @@ using GrEmit.InstructionParameters;
 namespace GrEmit
 {
     // ReSharper disable InconsistentNaming
-    public class GroboIL
+    public class GroboIL : IDisposable
     {
-        public GroboIL(DynamicMethod method, bool analyzeStack = true)
+        private GroboIL(ILGenerator il, Type returnType, Type[] parameterTypes, bool analyzeStack)
         {
+            this.il = il;
             this.analyzeStack = analyzeStack;
-            il = method.GetILGenerator();
-            methodReturnType = method.ReturnType;
-            methodParameterTypes = Formatter.GetParameterTypes(method);
+            methodReturnType = returnType;
+            methodParameterTypes = parameterTypes;
+/*
+            OpCodes.Localloc;
+            OpCodes.Mkrefany;
+            OpCodes.Refanytype;
+            OpCodes.Refanyval;
+            OpCodes.Rethrow;
+            OpCodes.Sizeof;
+            OpCodes.
+*/
+        }
+
+        public GroboIL(DynamicMethod method, bool analyzeStack = true)
+            : this(method.GetILGenerator(), method.ReturnType, Formatter.GetParameterTypes(method), analyzeStack)
+        {
         }
 
         public GroboIL(MethodBuilder method, bool analyzeStack = true)
+            : this(method.GetILGenerator(),
+                   method.ReturnType,
+                   method.IsStatic
+                       ? Formatter.GetParameterTypes(method)
+                       : new[] {method.ReflectedType}.Concat(Formatter.GetParameterTypes(method)).ToArray(),
+                   analyzeStack)
         {
-            this.analyzeStack = analyzeStack;
-            il = method.GetILGenerator();
-            methodReturnType = method.ReturnType;
-            Type[] parameterTypes = Formatter.GetParameterTypes(method);
-            methodParameterTypes = method.IsStatic ? parameterTypes : new[] {method.ReflectedType}.Concat(parameterTypes).ToArray();
         }
 
         public GroboIL(ConstructorBuilder constructor, bool analyzeStack = true)
+            : this(constructor.GetILGenerator(), typeof(void), new[] {constructor.ReflectedType}.Concat(Formatter.GetParameterTypes(constructor)).ToArray(), analyzeStack)
         {
-            this.analyzeStack = analyzeStack;
-            il = constructor.GetILGenerator();
-            methodReturnType = typeof(void);
-            methodParameterTypes = new[] {constructor.ReflectedType}.Concat(Formatter.GetParameterTypes(constructor)).ToArray();
+        }
+
+        public void Dispose()
+        {
+            if(!analyzeStack || Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
+                return;
+            var lastInstruction = ilCode.GetInstruction(ilCode.Count - 1) as ILCode.ILInstruction;
+            if(lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw))
+                throw new InvalidOperationException("An IL program must end with one of the following instructions: 'ret', 'br', 'br.s', 'throw'");
         }
 
         public ILCode GetILCode()
@@ -91,10 +113,19 @@ namespace GrEmit
         /// <summary>
         /// Emits the Common intermediate language (CIL) to call System.Console.WriteLine with a string.
         /// </summary>
-        /// <param name="str">The string to be printed. </param>
+        /// <param name="str">The string to be printed.</param>
         public void EmitWriteLine(string str)
         {
             il.EmitWriteLine(str);
+        }
+
+        /// <summary>
+        /// Emits the Common intermediate language (CIL) to call System.Console.WriteLine with the given local variable.
+        /// </summary>
+        /// <param name="local">The local variable whose value is to be written to the console.</param>
+        public void EmitWriteLine(Local local)
+        {
+            il.EmitWriteLine(local);
         }
 
         /// <summary>
@@ -178,6 +209,14 @@ namespace GrEmit
         }
 
         /// <summary>
+        /// Signals the Common Language Infrastructore (CLI) to inform the debugger that a break point has been tripped
+        /// </summary>
+        public void Break()
+        {
+            Emit(OpCodes.Break);
+        }
+
+        /// <summary>
         /// Fills space if opcodes are patched. No meaningful operation is performed although a processing cycle can be consumed.
         /// </summary>
         public void Nop()
@@ -225,6 +264,44 @@ namespace GrEmit
                 throw new ArgumentNullException("label");
             Emit(OpCodes.Leave, label);
             stack = null;
+        }
+
+        /// <summary>
+        /// Exits current method and jumps to specified method.
+        /// <param name="method">The <see cref="MethodInfo">Method</see> to jump to.</param>
+        /// </summary>
+        public void Jmp(MethodInfo method)
+        {
+            if(method == null)
+                throw new ArgumentNullException("method");
+            if(method.ReturnType != methodReturnType)
+                throw new ArgumentException(string.Format("Return type must be '{0}'", methodReturnType), "method");
+            var parameterTypes = method.GetParameters().Select(info => info.ParameterType).ToArray();
+            if(parameterTypes.Length != methodParameterTypes.Length)
+                throw new ArgumentException(string.Format("The number of arguments must be {0}", methodParameterTypes.Length), "method");
+            for(int i = 0; i < parameterTypes.Length; ++i)
+                if(parameterTypes[i] != methodParameterTypes[i])
+                    throw new ArgumentException(string.Format("Argument #{0} must be of type '{1}'", i + 1, methodParameterTypes[i]), "method");
+            Emit(OpCodes.Jmp, method);
+        }
+
+        /// <summary>
+        /// Performs a postfixed method call instruction such that the current method's stack frame is removed before the actual call instruction is executed.
+        /// <param name="method">The <see cref="MethodInfo">Method</see> to call.</param>
+        /// </summary>
+        public void Tailcall(MethodInfo method)
+        {
+            if(method == null)
+                throw new ArgumentNullException("method");
+            if(method.ReturnType != methodReturnType)
+                throw new ArgumentException(string.Format("Return type must be '{0}'", methodReturnType), "method");
+            var parameterTypes = method.GetParameters().Select(info => info.ParameterType).ToArray();
+            if(parameterTypes.Length != methodParameterTypes.Length)
+                throw new ArgumentException(string.Format("The number of arguments must be {0}", methodParameterTypes.Length), "method");
+            for(int i = 0; i < parameterTypes.Length; ++i)
+                if(parameterTypes[i] != methodParameterTypes[i])
+                    throw new ArgumentException(string.Format("Argument #{0} must be of type '{1}'", i + 1, methodParameterTypes[i]), "method");
+            Emit(OpCodes.Tailcall, method);
         }
 
         /// <summary>
@@ -398,9 +475,9 @@ namespace GrEmit
         /// <para></para>
         /// Needed only for increasing readability of the IL code being generated.
         /// </param>
-        public void Ldnull(Type type)
+        public void Ldnull(Type type = null)
         {
-            Emit(OpCodes.Ldnull, new TypeILInstructionParameter(type));
+            Emit(OpCodes.Ldnull, new TypeILInstructionParameter(type ?? typeof(object)));
         }
 
         /// <summary>
@@ -414,6 +491,19 @@ namespace GrEmit
             if(!type.IsValueType)
                 throw new ArgumentException("A value type expected", "type");
             Emit(OpCodes.Initobj, type);
+        }
+
+        /// <summary>
+        /// Copies the value type located at the address of an object (type &, * or native int) to the address of the destination object (type &, * or native int).
+        /// </summary>
+        /// <param name="type">The <see cref="Type">Type</see> of objects being copied. Must be a value type.</param>
+        public void Cpobj(Type type)
+        {
+            if (type == null)
+                throw new ArgumentNullException("type");
+            if (!type.IsValueType)
+                throw new ArgumentException("A value type expected", "type");
+            Emit(OpCodes.Cpobj, type);
         }
 
         /// <summary>
@@ -494,6 +584,14 @@ namespace GrEmit
                 Emit(OpCodes.Ldarga_S, (byte)index);
             else
                 Emit(OpCodes.Ldarga, index);
+        }
+
+        /// <summary>
+        /// Returns an unmanaged pointer to the argument list of the current method
+        /// </summary>
+        public void Arglist()
+        {
+            Emit(OpCodes.Arglist);
         }
 
         /// <summary>
@@ -617,10 +715,15 @@ namespace GrEmit
         /// <para></para>
         /// Depending on whether the field is static or not emits either <see cref="OpCodes.Stsfld">Stsfld</see> or <see cref="OpCodes.Stfld">Stfld</see> respectively.
         /// </param>
-        public void Stfld(FieldInfo field)
+        /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
+        /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
+        public void Stfld(FieldInfo field, bool isVolatile = false, int? unaligned = null)
         {
             if(field == null)
                 throw new ArgumentNullException("field");
+            if(field.IsStatic && unaligned != null)
+                throw new ArgumentException("Static fields are always aligned to the natural size", "unaligned");
+            InsertPrefixes(isVolatile, unaligned);
             Emit(field.IsStatic ? OpCodes.Stsfld : OpCodes.Stfld, field);
         }
 
@@ -632,10 +735,15 @@ namespace GrEmit
         /// <para></para>
         /// Depending on whether the field is static or not emits either <see cref="OpCodes.Ldsfld">Ldsfld</see> or <see cref="OpCodes.Ldfld">Ldfld</see> respectively.
         /// </param>
-        public void Ldfld(FieldInfo field)
+        /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
+        /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
+        public void Ldfld(FieldInfo field, bool isVolatile = false, int? unaligned = null)
         {
             if(field == null)
                 throw new ArgumentNullException("field");
+            if(field.IsStatic && unaligned != null)
+                throw new ArgumentException("Static fields are always aligned to the natural size", "unaligned");
+            InsertPrefixes(isVolatile, unaligned);
             Emit(field.IsStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, field);
         }
 
@@ -658,10 +766,17 @@ namespace GrEmit
         /// Loads the address of the array element at a specified array index onto the top of the evaluation stack as type &amp; (managed pointer).
         /// </summary>
         /// <param name="elementType">The element type of the array.</param>
-        public void Ldelema(Type elementType)
+        /// <param name="asReadonly">True if the result address should be read only. Emits the <see cref="OpCodes.Readonly">Readonly</see> prefix.</param>
+        public void Ldelema(Type elementType, bool asReadonly = false)
         {
             if(elementType == null)
                 throw new ArgumentNullException("elementType");
+            if(asReadonly)
+            {
+                if (analyzeStack)
+                    ilCode.AppendPrefix(OpCodes.Readonly);
+                il.Emit(OpCodes.Readonly);
+            }
             Emit(OpCodes.Ldelema, elementType);
         }
 
@@ -809,15 +924,19 @@ namespace GrEmit
         /// <para></para>
         /// If the value is of a user-defined value type emits <see cref="OpCodes.Stobj">Stobj</see> instruction.
         /// </param>
-        public void Stind(Type type)
+        /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
+        /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
+        public void Stind(Type type, bool isVolatile = false, int? unaligned = null)
         {
             if(type == null)
                 throw new ArgumentNullException("type");
             if(IsStruct(type))
             {
-                Stobj(type);
+                Stobj(type, isVolatile, unaligned);
                 return;
             }
+
+            InsertPrefixes(isVolatile, unaligned);
 
             var parameter = new TypeILInstructionParameter(type);
             if(!type.IsValueType) // class
@@ -871,15 +990,19 @@ namespace GrEmit
         /// <para></para>
         /// If the value is of a user-defined value type emits <see cref="OpCodes.Ldobj">Ldobj</see> instruction.
         /// </param>
-        public void Ldind(Type type)
+        /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
+        /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
+        public void Ldind(Type type, bool isVolatile = false, int? unaligned = null)
         {
             if(type == null)
                 throw new ArgumentNullException("type");
             if(IsStruct(type))
             {
-                Ldobj(type);
+                Ldobj(type, isVolatile, unaligned);
                 return;
             }
+
+            InsertPrefixes(isVolatile, unaligned);
 
             var parameter = new TypeILInstructionParameter(type);
             if(!type.IsValueType) // class
@@ -925,20 +1048,25 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Copies a specified number bytes from a source address to a destination address.
+        /// Copies a specified number of bytes from a source address to a destination address.
         /// </summary>
-        public void Cpblk()
+        /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
+        /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
+        public void Cpblk(bool isVolatile = false, int? unaligned = null)
         {
+            InsertPrefixes(isVolatile, unaligned);
             Emit(OpCodes.Cpblk);
         }
 
         /// <summary>
-        /// Indicates that an address currently atop the evaluation stack might not be aligned to the natural size of the immediately following ldind, stind, ldfld, stfld, ldobj, stobj, initblk, or cpblk instruction.
+        /// Initializes a specified block of memory at a specific address to a given size and initial value.
         /// </summary>
-        /// <param name="value">The value of alignment. Must be 1, 2 or 4.</param>
-        public void Unaligned(long value)
+        /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
+        /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
+        public void Initblk(bool isVolatile = false, int? unaligned = null)
         {
-            il.Emit(OpCodes.Unaligned, value);
+            InsertPrefixes(isVolatile, unaligned);
+            Emit(OpCodes.Initblk);
         }
 
         /// <summary>
@@ -1025,46 +1153,52 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Emits the Common Intermediate Language (CIL) necessary to call System.Console.WriteLine with the given local variable.
-        /// </summary>
-        /// <param name="local">The <see cref="Local">Local</see> to write.</param>
-        public void WriteLine(Local local)
-        {
-            il.EmitWriteLine(local);
-        }
-
-        /// <summary>
-        /// Emits the Common Intermediate Language (CIL) to call System.Console.WriteLine with a string.
-        /// </summary>
-        /// <param name="str">The <see cref="String">String</see> to write.</param>
-        public void WriteLine(string str)
-        {
-            il.EmitWriteLine(str);
-        }
-
-        /// <summary>
         /// Copies a value of a specified type from the evaluation stack into a supplied memory address.
         /// </summary>
         /// <param name="type">The <see cref="Type">Type</see> of object to be stored.</param>
-        public void Stobj(Type type)
+        /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
+        /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
+        public void Stobj(Type type, bool isVolatile = false, int? unaligned = null)
         {
             if(type == null)
                 throw new ArgumentNullException("type");
             if(!type.IsValueType)
                 throw new ArgumentException("A value type expected", "type");
+            InsertPrefixes(isVolatile, unaligned);
             Emit(OpCodes.Stobj, type);
+        }
+
+        private void InsertPrefixes(bool isVolatile, int? unaligned)
+        {
+            if(isVolatile)
+            {
+                if (analyzeStack)
+                    ilCode.AppendPrefix(OpCodes.Volatile);
+                il.Emit(OpCodes.Volatile);
+            }
+            if(unaligned != null)
+            {
+                if(unaligned != 1 && unaligned != 2 && unaligned != 4)
+                    throw new ArgumentException("Value of alignment must be 1, 2 or 4.", "unaligned");
+                if (analyzeStack)
+                    ilCode.AppendPrefix(OpCodes.Unaligned);
+                il.Emit(OpCodes.Unaligned, (long)unaligned.Value);
+            }
         }
 
         /// <summary>
         /// Copies the value type object pointed to by an address to the top of the evaluation stack.
         /// </summary>
         /// <param name="type">The <see cref="Type">Type</see> of object to be loaded.</param>
-        public void Ldobj(Type type)
+        /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
+        /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
+        public void Ldobj(Type type, bool isVolatile = false, int? unaligned = null)
         {
             if(type == null)
                 throw new ArgumentNullException("type");
             if(!type.IsValueType)
                 throw new ArgumentException("A value type expected", "type");
+            InsertPrefixes(isVolatile, unaligned);
             Emit(OpCodes.Ldobj, type);
         }
 
@@ -1122,6 +1256,14 @@ namespace GrEmit
         public void Clt(Type type)
         {
             Emit(Unsigned(type) ? OpCodes.Clt_Un : OpCodes.Clt);
+        }
+
+        /// <summary>
+        /// Throws <see cref="ArithmeticException">ArithmeticException</see> if value is not a finite number.
+        /// </summary>
+        public void Ckfinite()
+        {
+            Emit(OpCodes.Ckfinite);
         }
 
         /// <summary>
@@ -1505,17 +1647,26 @@ namespace GrEmit
         /// Emits a <see cref="OpCodes.Call">Call</see> or <see cref="OpCodes.Callvirt">Callvirt</see> instruction depending on whether the method is a virtual or not.
         /// </summary>
         /// <param name="method">The <see cref="MethodInfo">Method</see> to be called.</param>
-        /// <param name="type">The <see cref="Type">Type</see> of an object to call the method on</param>
+        /// <param name="constrained">The <see cref="Type">Type</see> of an object to constrain the method call on. Emits the <see cref="OpCodes.Constrained">Constrained</see> prefix.</param>
+        /// <param name="tailcall">True if the method call is a tail call. Emits the <see cref="OpCodes.Tailcall">Tailcall</see> prefix.</param>
         /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
-        public void Call(MethodInfo method, Type type = null, Type[] optionalParameterTypes = null)
+        public void Call(MethodInfo method, Type constrained = null, bool tailcall = false, Type[] optionalParameterTypes = null)
         {
             OpCode opCode = method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call;
             if(opCode == OpCodes.Callvirt)
             {
-                if(type == null)
-                    throw new ArgumentNullException("type", "Type must be specified for a virtual method call");
-                if(type.IsValueType)
-                    Emit(OpCodes.Constrained, type);
+                if (constrained != null && constrained.IsValueType)
+                {
+                    if(analyzeStack)
+                        ilCode.AppendPrefix(OpCodes.Constrained);
+                    il.Emit(OpCodes.Constrained, constrained);
+                }
+            }
+            if(tailcall)
+            {
+                if (analyzeStack)
+                    ilCode.AppendPrefix(OpCodes.Tailcall);
+                il.Emit(OpCodes.Tailcall);
             }
             var parameter = new MethodILInstructionParameter(method);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
@@ -1539,34 +1690,41 @@ namespace GrEmit
             il.Emit(OpCodes.Call, constructor);
         }
 
-        /// <summary>
-        /// Calls a late-bound method on an object, pushing the return value onto the evaluation stack.
-        /// </summary>
-        /// <param name="method">The <see cref="MethodInfo">Method</see> to be called.</param>
-        /// <param name="type">The <see cref="Type">Type</see> of an object to call the method on</param>
-        /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
-        public void Callvirt(MethodInfo method, Type type, Type[] optionalParameterTypes = null)
-        {
-            OpCode opCode = OpCodes.Callvirt;
-            if(type == null)
-                throw new ArgumentNullException("type", "Type must be specified for a virtual method call");
-            if(type.IsValueType)
-                Emit(OpCodes.Constrained, type);
-            var parameter = new MethodILInstructionParameter(method);
-            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-            if(analyzeStack && stack != null)
-                MutateStack(opCode, parameter);
-            ilCode.SetComment(lineNumber, GetComment());
-            il.EmitCall(opCode, method, optionalParameterTypes);
-        }
-
+//        /// <summary>
+//        /// Calls a late-bound method on an object, pushing the return value onto the evaluation stack.
+//        /// </summary>
+//        /// <param name="method">The <see cref="MethodInfo">Method</see> to be called.</param>
+//        /// <param name="type">The <see cref="Type">Type</see> of an object to call the method on</param>
+//        /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
+//        public void Callvirt(MethodInfo method, Type type, Type[] optionalParameterTypes = null)
+//        {
+//            OpCode opCode = OpCodes.Callvirt;
+//            if(type == null)
+//                throw new ArgumentNullException("type", "Type must be specified for a virtual method call");
+//            if(type.IsValueType)
+//                Emit(OpCodes.Constrained, type);
+//            var parameter = new MethodILInstructionParameter(method);
+//            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
+//            if(analyzeStack && stack != null)
+//                MutateStack(opCode, parameter);
+//            ilCode.SetComment(lineNumber, GetComment());
+//            il.EmitCall(opCode, method, optionalParameterTypes);
+//        }
+//
         /// <summary>
         /// Statically calls the method indicated by the passed method descriptor.
         /// </summary>
         /// <param name="method">The <see cref="MethodInfo">Method</see> to be called.</param>
+        /// <param name="tailcall">True if the method call is a tail call. Emits the <see cref="OpCodes.Tailcall">Tailcall</see> prefix.</param>
         /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
-        public void Callnonvirt(MethodInfo method, Type[] optionalParameterTypes = null)
+        public void Callnonvirt(MethodInfo method, bool tailcall = false, Type[] optionalParameterTypes = null)
         {
+            if (tailcall)
+            {
+                if (analyzeStack)
+                    ilCode.AppendPrefix(OpCodes.Tailcall);
+                il.Emit(OpCodes.Tailcall);
+            }
             OpCode opCode = OpCodes.Call;
             var parameter = new MethodILInstructionParameter(method);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
@@ -1582,9 +1740,16 @@ namespace GrEmit
         /// <param name="callingConvention">The managed calling convention to be used.</param>
         /// <param name="returnType">The <see cref="Type">Type</see> of the result.</param>
         /// <param name="parameterTypes">The types of the required arguments to the instruction.</param>
+        /// <param name="tailcall">True if the method call is a tail call. Emits the <see cref="OpCodes.Tailcall">Tailcall</see> prefix.</param>
         /// <param name="optionalParameterTypes">The types of the optional arguments for varargs calls.</param>
-        public void Calli(CallingConventions callingConvention, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes = null)
+        public void Calli(CallingConventions callingConvention, Type returnType, Type[] parameterTypes, bool tailcall = false, Type[] optionalParameterTypes = null)
         {
+            if (tailcall)
+            {
+                if (analyzeStack)
+                    ilCode.AppendPrefix(OpCodes.Tailcall);
+                il.Emit(OpCodes.Tailcall);
+            }
             var parameter = new MethodByAddressILInstructionParameter(returnType, parameterTypes);
             var lineNumber = ilCode.Append(OpCodes.Calli, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
@@ -1670,7 +1835,7 @@ namespace GrEmit
             case TypeCode.Double:
                 return false;
             default:
-                throw new NotSupportedException("Type '" + type.Name + "' is not supported");
+                throw new NotSupportedException(string.Format("Type '{0}' is not supported", type.Name));
             }
         }
 
