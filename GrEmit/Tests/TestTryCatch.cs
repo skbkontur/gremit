@@ -50,7 +50,7 @@ namespace Tests
                 //
                 il.Ldarg(0);
                 il.Ldc_I4(100);
-                il.Bgt(typeof(int), failed);
+                il.Bgt(failed, false);
 
                 // Now, check to see if argument 1 was greater than 100. If it was,
                 // branch to "failed." Otherwise, fall through and perform the addition,
@@ -58,11 +58,11 @@ namespace Tests
                 //
                 il.Ldarg(1);
                 il.Ldc_I4(100);
-                il.Bgt(typeof(int), failed);
+                il.Bgt(failed, false);
 
                 il.Ldarg(0);
                 il.Ldarg(1);
-                il.Add_Ovf(typeof(uint));
+                il.Add_Ovf(true);
                 // Store the result of the addition.
                 il.Stloc(tmp1);
                 il.Br(endOfMthd);
@@ -175,15 +175,15 @@ namespace Tests
 
                 il.Ldarg(0);
                 il.Ldc_I4(10);
-                il.Bgt(typeof(int), myFailedLabel);
+                il.Bgt(myFailedLabel, false);
 
                 il.Ldarg(1);
                 il.Ldc_I4(10);
-                il.Bgt(typeof(int), myFailedLabel);
+                il.Bgt(myFailedLabel, false);
 
                 il.Ldarg(0);
                 il.Ldarg(1);
-                il.Add_Ovf(typeof(uint));
+                il.Add_Ovf(true);
                 il.Stloc(myLocalBuilder1);
                 il.Br(myEndOfMethodLabel);
 
@@ -199,7 +199,7 @@ namespace Tests
 
                 // Call 'BeginExceptFilterBlock'.
                 il.BeginExceptFilterBlock();
-                il.EmitWriteLine("Except filter block called.");
+                il.WriteLine("Except filter block called.");
 
                 // Call catch block.
                 il.BeginCatchBlock(null);
@@ -216,7 +216,7 @@ namespace Tests
 
                 // Call finally block.
                 il.BeginFinallyBlock();
-                il.EmitWriteLine("Finally block called.");
+                il.WriteLine("Finally block called.");
 
                 // End the exception block.
                 il.EndExceptionBlock();
@@ -272,15 +272,15 @@ namespace Tests
 
                 il.Ldarg(0);
                 il.Ldc_I4(10);
-                il.Bgt(typeof(int), myFailedLabel);
+                il.Bgt(myFailedLabel, false);
 
                 il.Ldarg(1);
                 il.Ldc_I4(10);
-                il.Bgt(typeof(int), myFailedLabel);
+                il.Bgt(myFailedLabel, false);
 
                 il.Ldarg(0);
                 il.Ldarg(1);
-                il.Add_Ovf(typeof(uint));
+                il.Add_Ovf(true);
                 il.Stloc(myLocalBuilder1);
                 il.Br(myEndOfMethodLabel);
 

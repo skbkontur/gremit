@@ -11,7 +11,7 @@ namespace GrEmit.StackMutators
         {
             var constructor = ((ConstructorILInstructionParameter)parameter).Constructor;
             var parameterTypes = Formatter.GetParameterTypes(constructor);
-            for(int i = parameterTypes.Length - 1; i >= 0; --i)
+            for(var i = parameterTypes.Length - 1; i >= 0; --i)
             {
                 CheckNotEmpty(il, stack);
                 CheckCanBeAssigned(il, parameterTypes[i], stack.Pop());

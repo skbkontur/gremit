@@ -1,15 +1,14 @@
 using System;
-using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace GrEmit.StackMutators
 {
-    internal class ConvUStackMutator : StackMutator
+    internal class ConvUStackMutator : ConvertStackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public ConvUStackMutator()
+            : base(OpCodes.Conv_U, typeof(UIntPtr))
         {
-            CheckNotEmpty(il, stack);
-            CheckNotStruct(il, stack.Pop());
-            stack.Push(IntPtr.Size == 4 ? typeof(int) : typeof(long));
+            Allow(CLIType.Int32, CLIType.Int64, CLIType.NativeInt, CLIType.Float, CLIType.Pointer, CLIType.Object, CLIType.Zero);
         }
     }
 }

@@ -12,10 +12,10 @@ namespace GrEmit.StackMutators
             var field = ((FieldILInstructionParameter)parameter).Field;
             CheckNotEmpty(il, stack);
             CheckCanBeAssigned(il, field.FieldType, stack.Pop());
-            if (!field.IsStatic)
+            if(!field.IsStatic)
             {
                 CheckNotEmpty(il, stack);
-                CheckNotStruct(il, stack.Pop());
+                CheckCanBeAssigned(il, field.DeclaringType, stack.Pop());
             }
         }
     }

@@ -13,13 +13,15 @@ namespace GrEmit.StackMutators
             var returnType = calliParameter.ReturnType;
             var parameterTypes = calliParameter.ParameterTypes;
             CheckNotEmpty(il, stack);
-            CheckIsAddress(il, stack.Pop());
-            for (int i = parameterTypes.Length - 1; i >= 0; --i)
+            var entryPoint = stack.Pop();
+            if(ToCLIType(entryPoint) != CLIType.NativeInt)
+                ThrowError(il, string.Format("An entry point must be a native int but was '{0}'", entryPoint));
+            for(var i = parameterTypes.Length - 1; i >= 0; --i)
             {
                 CheckNotEmpty(il, stack);
                 CheckCanBeAssigned(il, parameterTypes[i], stack.Pop());
             }
-            if (returnType != typeof(void))
+            if(returnType != typeof(void))
                 stack.Push(returnType);
         }
     }

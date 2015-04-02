@@ -12,7 +12,7 @@ namespace GrEmit.StackMutators
             var type = ((TypeILInstructionParameter)parameter).Type;
             CheckNotEmpty(il, stack);
             CheckCanBeAssigned(il, typeof(object), stack.Pop());
-            stack.Push(typeof(object));
+            stack.Push(type);
         }
     }
 }

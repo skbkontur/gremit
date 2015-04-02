@@ -9,8 +9,8 @@ namespace GrEmit.StackMutators
         {
             CheckNotEmpty(il, stack);
             var peek = stack.Peek();
-            if(ToILStackType(peek) != ILStackType.Float)
-                throw new InvalidOperationException(string.Format("It is only allowed to check if value is finite for floating point values but was '{0}'\r\n{1}", peek, il.GetILCode()));
+            if(ToCLIType(peek) != CLIType.Float)
+                ThrowError(il, string.Format("It is only allowed to check if value is finite for floating point values but was '{0}'", peek));
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Reflection.Emit;
 
 using GrEmit;
+using GrEmit.Utils;
 
 using NUnit.Framework;
 
@@ -67,6 +68,64 @@ namespace Tests
         }
 
         [Test]
+        public void TestZ()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] {typeof(bool), typeof(float), typeof(double)}, typeof(Test));
+            using (var il = new GroboIL(method))
+            {
+                il.Ldarg(0);
+                var label1 = il.DefineLabel("label");
+                il.Brfalse(label1);
+                il.Ldarg(1);
+                var label2 = il.DefineLabel("label");
+                il.Br(label2);
+                il.MarkLabel(label1);
+                il.Ldarg(2);
+                il.MarkLabel(label2);
+                il.Ldc_I4(1);
+                il.Conv<float>();
+                il.Add();
+                il.Conv<int>();
+                il.Ret();
+                Console.Write(il.GetILCode());
+            }
+        }
+
+
+        private class A
+        {
+            
+        }
+
+        private class B : A
+        {
+        }
+
+        private class C : A
+        {
+        }
+
+        [Test]
+        public void TestZ2()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(A), new[] {typeof(bool), typeof(B), typeof(C)}, typeof(Test));
+            using (var il = new GroboIL(method))
+            {
+                il.Ldarg(0);
+                var label1 = il.DefineLabel("label");
+                il.Brfalse(label1);
+                il.Ldarg(1);
+                var label2 = il.DefineLabel("label");
+                il.Br(label2);
+                il.MarkLabel(label1);
+                il.Ldarg(2);
+                il.MarkLabel(label2);
+                il.Ret();
+                Console.Write(il.GetILCode());
+            }
+        }
+
+        [Test]
         public void TestHelloWorld()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(string), Type.EmptyTypes, typeof(Test));
@@ -87,7 +146,7 @@ namespace Tests
                 il.Ldarg(0);
                 il.Ldarg(1);
                 var returnSecondLabel = il.DefineLabel("returnSecond");
-                il.Ble(typeof(int), returnSecondLabel);
+                il.Ble(returnSecondLabel, false);
                 il.Ldarg(0);
                 il.Ret();
                 il.MarkLabel(returnSecondLabel);
@@ -141,7 +200,7 @@ namespace Tests
                 il.Stloc(temp); // temp = temp - 1; stack: [cur]
                 il.Ldloc(temp); // stack: [cur, temp]
                 il.Ldc_I4(0); // stack: [cur, temp, 0]
-                il.Bgt(typeof(int), label2); // if(temp > 0) goto L_2; stack: [cur]
+                il.Bgt(label2, false); // if(temp > 0) goto L_2; stack: [cur]
                 var label3 = il.DefineLabel("L");
                 il.Br(label3); // goto L_3; stack: [cur]
                 il.MarkLabel(label0); // stack: [x]
@@ -180,6 +239,51 @@ namespace Tests
             var zzz = new Zzz(3);
             action(zzz);
             Assert.AreEqual(8, zzz.X);
+        }
+
+        public interface I1
+        {
+        }
+
+        public interface I2
+        {
+        }
+
+        public class C1 : I1, I2
+        {
+        }
+
+        public class C2 : I1, I2
+        {
+        }
+
+        public static void F1(I1 i1)
+        {
+        }
+
+        public static void F2(I2 i2)
+        {
+        }
+
+        [Test]
+        public void TestDifferentPaths()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(bool), typeof(C1), typeof(C2)}, typeof(string), true);
+            var il = new GroboIL(method);
+            il.Ldarg(0);
+            var label1 = il.DefineLabel("L1");
+            il.Brfalse(label1);
+            il.Ldarg(1);
+            var label2 = il.DefineLabel("L2");
+            il.Br(label2);
+            il.MarkLabel(label1);
+            il.Ldarg(2);
+            il.MarkLabel(label2);
+            il.Dup();
+            il.Call(HackHelpers.GetMethodDefinition<I1>(x => F1(x)));
+            il.Call(HackHelpers.GetMethodDefinition<I2>(x => F2(x)));
+            il.Ret();
+            var action = method.CreateDelegate(typeof(Action<bool, C1, C2>));
         }
 
     }

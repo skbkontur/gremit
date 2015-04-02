@@ -10,7 +10,7 @@ namespace GrEmit.Utils
         {
             if(!mayBeNullable.IsGenericType || mayBeNullable.IsGenericTypeDefinition ||
                mayBeNullable.GetGenericTypeDefinition() != typeof(Nullable<>)) return null;
-            Type valueType = mayBeNullable.GetGenericArguments()[0];
+            var valueType = mayBeNullable.GetGenericArguments()[0];
             return valueType;
         }
 
@@ -29,15 +29,15 @@ namespace GrEmit.Utils
         public static ConstructorInfo GetObjectConstruction<T>(Expression<Func<T>> constructorCall,
                                                                params Type[] classGenericArgs)
         {
-            Expression expression = constructorCall.Body;
-            ConstructorInfo sourceCi = ObjectConstruction(EliminateConvert(expression));
+            var expression = constructorCall.Body;
+            var sourceCi = ObjectConstruction(EliminateConvert(expression));
             if(typeof(T).IsValueType && sourceCi == null)
                 throw new NotSupportedException("Struct creation without arguments");
-            Type type = sourceCi.ReflectedType;
-            Type resultReflectedType = type.IsGenericType
-                                           ? type.GetGenericTypeDefinition().MakeGenericType(classGenericArgs)
-                                           : type;
-            MethodBase methodBase = MethodBase.GetMethodFromHandle(
+            var type = sourceCi.ReflectedType;
+            var resultReflectedType = type.IsGenericType
+                                          ? type.GetGenericTypeDefinition().MakeGenericType(classGenericArgs)
+                                          : type;
+            var methodBase = MethodBase.GetMethodFromHandle(
                 sourceCi.MethodHandle, resultReflectedType.TypeHandle);
             var constructedCtorForResultType = (ConstructorInfo)methodBase;
             return constructedCtorForResultType;
@@ -46,7 +46,7 @@ namespace GrEmit.Utils
         public static MethodInfo ConstructMethodDefinition<T>(Expression<Action<T>> callExpr, Type[] methodGenericArgs)
         {
             var methodCallExpression = (MethodCallExpression)callExpr.Body;
-            MethodInfo methodInfo = methodCallExpression.Method;
+            var methodInfo = methodCallExpression.Method;
             if(!methodInfo.IsGenericMethod)
                 return methodInfo;
             return methodInfo.GetGenericMethodDefinition().MakeGenericMethod(methodGenericArgs);
@@ -55,7 +55,7 @@ namespace GrEmit.Utils
         public static MethodInfo ConstructStaticMethodDefinition(Expression<Action> callExpr, Type[] methodGenericArgs)
         {
             var methodCallExpression = (MethodCallExpression)callExpr.Body;
-            MethodInfo methodInfo = methodCallExpression.Method;
+            var methodInfo = methodCallExpression.Method;
             if(!methodInfo.IsGenericMethod)
                 return methodInfo;
             return methodInfo.GetGenericMethodDefinition().MakeGenericMethod(methodGenericArgs);
@@ -75,21 +75,21 @@ namespace GrEmit.Utils
         public static object CallMethod<T>(T target, Expression<Action<T>> callExpr, Type[] methodGenericArgs,
                                            object[] methodArgs)
         {
-            MethodInfo methodInfo = ConstructMethodDefinition(callExpr, methodGenericArgs);
+            var methodInfo = ConstructMethodDefinition(callExpr, methodGenericArgs);
             return methodInfo.Invoke(target, methodArgs);
         }
 
         public static object CallStaticMethod(Expression<Action> callExpr, Type[] methodGenericArgs,
                                               object[] methodArgs)
         {
-            MethodInfo methodInfo = ConstructStaticMethodDefinition(callExpr, methodGenericArgs);
+            var methodInfo = ConstructStaticMethodDefinition(callExpr, methodGenericArgs);
             return methodInfo.Invoke(null, methodArgs);
         }
 
         public static PropertyInfo GetStaticProperty(Expression<Func<object>> callExpr)
         {
-            Expression expression = EliminateConvert(callExpr.Body);
-            MemberInfo memberInfo = ((MemberExpression)expression).Member;
+            var expression = EliminateConvert(callExpr.Body);
+            var memberInfo = ((MemberExpression)expression).Member;
             var propertyInfo = memberInfo as PropertyInfo;
             if(propertyInfo == null)
                 throw new ArgumentException(string.Format("Bad expression. {0} is not a PropertyInfo", memberInfo));
@@ -98,8 +98,8 @@ namespace GrEmit.Utils
 
         public static FieldInfo GetStaticField(Expression<Func<object>> callExpr)
         {
-            Expression expression = EliminateConvert(callExpr.Body);
-            MemberInfo memberInfo = ((MemberExpression)expression).Member;
+            var expression = EliminateConvert(callExpr.Body);
+            var memberInfo = ((MemberExpression)expression).Member;
             var fi = memberInfo as FieldInfo;
             if(fi == null)
                 throw new ArgumentException(string.Format("Bad expression. {0} is not a FieldInfo", memberInfo));
@@ -108,19 +108,19 @@ namespace GrEmit.Utils
 
         public static PropertyInfo GetProp<T>(Expression<Func<T, object>> readPropFunc, params Type[] classGenericArgs)
         {
-            Expression expression = EliminateConvert(readPropFunc.Body);
-            MemberInfo memberInfo = ((MemberExpression)expression).Member;
+            var expression = EliminateConvert(readPropFunc.Body);
+            var memberInfo = ((MemberExpression)expression).Member;
             var propertyInfo = memberInfo as PropertyInfo;
             if(propertyInfo == null)
                 throw new ArgumentException(string.Format("Bad expression. {0} is not a PropertyInfo", memberInfo));
             if(classGenericArgs.Length == 0)
                 return propertyInfo;
-            int mt = propertyInfo.MetadataToken;
-            Type type = propertyInfo.ReflectedType;
-            Type resultReflectedType = type.GetGenericTypeDefinition().MakeGenericType(classGenericArgs);
-            PropertyInfo[] propertyInfos = resultReflectedType.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+            var mt = propertyInfo.MetadataToken;
+            var type = propertyInfo.ReflectedType;
+            var resultReflectedType = type.GetGenericTypeDefinition().MakeGenericType(classGenericArgs);
+            var propertyInfos = resultReflectedType.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
 
-            foreach(PropertyInfo info in propertyInfos)
+            foreach(var info in propertyInfos)
             {
                 if(info.MetadataToken == mt)
                     return info;
@@ -130,8 +130,8 @@ namespace GrEmit.Utils
 
         public static FieldInfo GetField<T>(Expression<Func<T, object>> readPropFunc)
         {
-            Expression expression = EliminateConvert(readPropFunc.Body);
-            MemberInfo memberInfo = ((MemberExpression)expression).Member;
+            var expression = EliminateConvert(readPropFunc.Body);
+            var memberInfo = ((MemberExpression)expression).Member;
             var propertyInfo = memberInfo as FieldInfo;
             if(propertyInfo == null)
                 throw new ArgumentException(string.Format("Bad expression. {0} is not a FieldInfo", memberInfo));
@@ -143,15 +143,15 @@ namespace GrEmit.Utils
                                                                                     Type[] methodGenericArgs)
         {
             var methodCallExpression = (MethodCallExpression)callExpr.Body;
-            MethodInfo methodInfo = methodCallExpression.Method;
+            var methodInfo = methodCallExpression.Method;
             return ConstructGenericMethodDefinitionForGenericClass(methodInfo.ReflectedType, methodInfo, classGenericArgs, methodGenericArgs);
         }
 
         public static MethodInfo GetMethodByMetadataToken(Type type, int methodMetedataToken)
         {
-            MethodInfo[] methodInfos = type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            var methodInfos = type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             //todo сделать нормально
-            foreach(MethodInfo methodInfo in methodInfos)
+            foreach(var methodInfo in methodInfos)
             {
                 if(methodInfo.MetadataToken == methodMetedataToken)
                     return methodInfo;
@@ -161,14 +161,14 @@ namespace GrEmit.Utils
 
         public static MethodInfo ConstructGenericMethodDefinitionForGenericClass(Type type, MethodInfo methodInfo, Type[] classGenericArgs, Type[] methodGenericArgs)
         {
-            Type resultReflectedType = type.IsGenericType
-                                           ? type.GetGenericTypeDefinition().MakeGenericType(classGenericArgs)
-                                           : type;
-            MethodInfo sourceMethodDefinition = methodInfo.IsGenericMethod
-                                                    ? methodInfo.GetGenericMethodDefinition()
-                                                    : methodInfo;
+            var resultReflectedType = type.IsGenericType
+                                          ? type.GetGenericTypeDefinition().MakeGenericType(classGenericArgs)
+                                          : type;
+            var sourceMethodDefinition = methodInfo.IsGenericMethod
+                                             ? methodInfo.GetGenericMethodDefinition()
+                                             : methodInfo;
 
-            MethodBase methodBase = MethodBase.GetMethodFromHandle(
+            var methodBase = MethodBase.GetMethodFromHandle(
                 sourceMethodDefinition.MethodHandle, resultReflectedType.TypeHandle);
             var constructedMethodForResultType = (MethodInfo)methodBase;
             if(methodInfo.IsGenericMethod)

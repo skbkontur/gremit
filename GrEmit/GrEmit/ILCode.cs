@@ -31,7 +31,7 @@ namespace GrEmit
         public int Append(OpCode opCode, ILInstructionParameter parameter, ILInstructionComment comment)
         {
             var lastInstructionPrefix = lineNumber > 0 ? instructions[lineNumber - 1] as ILInstructionPrefix : null;
-            if (lastInstructionPrefix == null)
+            if(lastInstructionPrefix == null)
             {
                 instructions.Add(new ILInstruction(InstructionKind.Instruction, opCode, parameter, comment));
                 return lineNumber++;
@@ -113,7 +113,7 @@ namespace GrEmit
         public override string ToString()
         {
             var lines = new List<string>();
-            int maxLen = 0;
+            var maxLen = 0;
             foreach(var instruction in instructions)
             {
                 var ilInstruction = instruction as ILInstruction;
@@ -160,11 +160,11 @@ namespace GrEmit
             InitMargins(maxCommentStart + margin.Length);
             maxLen += margin.Length;
             var result = new StringBuilder();
-            for(int i = 0; i < instructions.Count; ++i)
+            for(var i = 0; i < instructions.Count; ++i)
             {
-                string line = lines[i];
+                var line = lines[i];
                 result.Append(line);
-                ILInstructionComment comment = instructions[i].Comment;
+                var comment = instructions[i].Comment;
                 if(comment != null)
                 {
                     if(line.Length <= maxLen)
@@ -232,7 +232,7 @@ namespace GrEmit
             {
                 margins = new string[length + 1];
                 margins[0] = "";
-                for(int i = 1; i <= length; ++i)
+                for(var i = 1; i <= length; ++i)
                     margins[i] = new string(' ', i);
             }
         }

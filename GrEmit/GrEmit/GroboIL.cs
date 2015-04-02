@@ -66,70 +66,86 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Declares a local variable of the specified type, optionally pinning the object referred to by the variable.
+        ///     Declares a local variable of the specified type, optionally pinning the object referred to by the variable.
         /// </summary>
-        /// <param name="localType">A <see cref="System.Type">Type</see> object that represents the type of the local variable.</param>
+        /// <param name="localType">
+        ///     A <see cref="System.Type">Type</see> object that represents the type of the local variable.
+        /// </param>
         /// <param name="name">Name of the local being declared.</param>
         /// <param name="pinned">true to pin the object in memory; otherwise, false.</param>
-        /// <returns>A <see cref="Local">Local</see> object that represents the local variable.</returns>
+        /// <returns>
+        ///     A <see cref="Local">Local</see> object that represents the local variable.
+        /// </returns>
         public Local DeclareLocal(Type localType, string name, bool pinned = false)
         {
             return new Local(il.DeclareLocal(localType, pinned), (string.IsNullOrEmpty(name) ? "local" : name) + "_" + localId++);
         }
 
         /// <summary>
-        /// Declares a local variable of the specified type, optionally pinning the object referred to by the variable.
+        ///     Declares a local variable of the specified type, optionally pinning the object referred to by the variable.
         /// </summary>
-        /// <param name="localType">A <see cref="System.Type">Type</see> object that represents the type of the local variable.</param>
+        /// <param name="localType">
+        ///     A <see cref="System.Type">Type</see> object that represents the type of the local variable.
+        /// </param>
         /// <param name="pinned">true to pin the object in memory; otherwise, false.</param>
-        /// <returns>A <see cref="Local">Local</see> object that represents the local variable.</returns>
+        /// <returns>
+        ///     A <see cref="Local">Local</see> object that represents the local variable.
+        /// </returns>
         public Local DeclareLocal(Type localType, bool pinned = false)
         {
             return new Local(il.DeclareLocal(localType, pinned), "local_" + localId++);
         }
 
         /// <summary>
-        /// Declares a new label.
+        ///     Declares a new label.
         /// </summary>
         /// <param name="name">Name of label.</param>
-        /// <returns>A <see cref="Label">Label</see> object that can be used as a token for branching.</returns>
+        /// <returns>
+        ///     A <see cref="Label">Label</see> object that can be used as a token for branching.
+        /// </returns>
         public Label DefineLabel(string name)
         {
             return new Label(il.DefineLabel(), name + "_" + labelId++);
         }
 
         /// <summary>
-        /// Marks the Common intermediate language (CIL) stream's current position with the given label.
+        ///     Marks the Common intermediate language (CIL) stream's current position with the given label.
         /// </summary>
-        /// <param name="label">The <see cref="Label">Label</see> object to mark the CIL stream's current position with.</param>
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to mark the CIL stream's current position with.
+        /// </param>
         public void MarkLabel(Label label)
         {
+            var stackIsNull = stack == null;
+            if(!stackIsNull)
+                ilCode.MarkLabel(label, GetComment());
             if(analyzeStack)
                 MutateStack(default(OpCode), new LabelILInstructionParameter(label));
-            ilCode.MarkLabel(label, GetComment());
+            if(stackIsNull)
+                ilCode.MarkLabel(label, GetComment());
             il.MarkLabel(label);
         }
 
         /// <summary>
-        /// Emits the Common intermediate language (CIL) to call System.Console.WriteLine with a string.
+        ///     Emits the Common intermediate language (CIL) to call System.Console.WriteLine with a string.
         /// </summary>
         /// <param name="str">The string to be printed.</param>
-        public void EmitWriteLine(string str)
+        public void WriteLine(string str)
         {
             il.EmitWriteLine(str);
         }
 
         /// <summary>
-        /// Emits the Common intermediate language (CIL) to call System.Console.WriteLine with the given local variable.
+        ///     Emits the Common intermediate language (CIL) to call System.Console.WriteLine with the given local variable.
         /// </summary>
         /// <param name="local">The local variable whose value is to be written to the console.</param>
-        public void EmitWriteLine(Local local)
+        public void WriteLine(Local local)
         {
             il.EmitWriteLine(local);
         }
 
         /// <summary>
-        /// Marks a sequence point in the Common intermediate language (CIL) stream.
+        ///     Marks a sequence point in the Common intermediate language (CIL) stream.
         /// </summary>
         /// <param name="document">The document for which the sequence point is being defined.</param>
         /// <param name="startLine">The line where the sequence point begins.</param>
@@ -142,9 +158,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Begins an exception block for a non-filtered exception.
+        ///     Begins an exception block for a non-filtered exception.
         /// </summary>
-        /// <returns>The <see cref="Label">Label</see> object for the end of the block. This will leave you in the correct place to execute finally blocks or to finish the try.</returns>
+        /// <returns>
+        ///     The <see cref="Label">Label</see> object for the end of the block. This will leave you in the correct place to execute finally blocks or to finish the try.
+        /// </returns>
         public Label BeginExceptionBlock()
         {
             ilCode.BeginExceptionBlock(GetComment());
@@ -152,9 +170,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Begins a catch block.
+        ///     Begins a catch block.
         /// </summary>
-        /// <param name="exceptionType">The <see cref="Type">Type</see> object that represents the exception. </param>
+        /// <param name="exceptionType">
+        ///     The <see cref="Type">Type</see> object that represents the exception.
+        /// </param>
         public void BeginCatchBlock(Type exceptionType)
         {
             if(exceptionType != null)
@@ -167,7 +187,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Begins an exception block for a filtered exception.
+        ///     Begins an exception block for a filtered exception.
         /// </summary>
         public void BeginExceptFilterBlock()
         {
@@ -178,7 +198,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Begins an exception fault block in the Common intermediate language (CIL) stream.
+        ///     Begins an exception fault block in the Common intermediate language (CIL) stream.
         /// </summary>
         public void BeginFaultBlock()
         {
@@ -189,7 +209,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Begins a finally block in the Common intermediate language (CIL) instruction stream.
+        ///     Begins a finally block in the Common intermediate language (CIL) instruction stream.
         /// </summary>
         public void BeginFinallyBlock()
         {
@@ -200,7 +220,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Ends an exception block.
+        ///     Ends an exception block.
         /// </summary>
         public void EndExceptionBlock()
         {
@@ -209,7 +229,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Signals the Common Language Infrastructore (CLI) to inform the debugger that a break point has been tripped
+        ///     Signals the Common Language Infrastructore (CLI) to inform the debugger that a break point has been tripped
         /// </summary>
         public void Break()
         {
@@ -217,7 +237,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Fills space if opcodes are patched. No meaningful operation is performed although a processing cycle can be consumed.
+        ///     Fills space if opcodes are patched. No meaningful operation is performed although a processing cycle can be consumed.
         /// </summary>
         public void Nop()
         {
@@ -225,7 +245,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Throws the exception object currently on the evaluation stack.
+        ///     Throws the exception object currently on the evaluation stack.
         /// </summary>
         public void Throw()
         {
@@ -233,9 +253,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Implements a jump table.
+        ///     Implements a jump table.
         /// </summary>
-        /// <param name="labels">The array of <see cref="Label">Label</see> object to jump to.</param>
+        /// <param name="labels">
+        ///     The array of <see cref="Label">Label</see> object to jump to.
+        /// </param>
         public void Switch(params Label[] labels)
         {
             if(labels == null)
@@ -246,7 +268,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Returns from the current method, pushing a return value (if present) from the callee's evaluation stack onto the caller's evaluation stack.
+        ///     Returns from the current method, pushing a return value (if present) from the callee's evaluation stack onto the caller's evaluation stack.
         /// </summary>
         public void Ret()
         {
@@ -255,9 +277,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Exits a protected region of code, unconditionally transferring control to a specific target instruction.
+        ///     Exits a protected region of code, unconditionally transferring control to a specific target instruction.
         /// </summary>
-        /// <param name="label">The <see cref="Label">Label</see> object to jump to.</param>
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to jump to.
+        /// </param>
         public void Leave(Label label)
         {
             if(label == null)
@@ -267,8 +291,10 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Exits current method and jumps to specified method.
-        /// <param name="method">The <see cref="MethodInfo">Method</see> to jump to.</param>
+        ///     Exits current method and jumps to specified method.
+        ///     <param name="method">
+        ///         The <see cref="MethodInfo">Method</see> to jump to.
+        ///     </param>
         /// </summary>
         public void Jmp(MethodInfo method)
         {
@@ -279,35 +305,20 @@ namespace GrEmit
             var parameterTypes = method.GetParameters().Select(info => info.ParameterType).ToArray();
             if(parameterTypes.Length != methodParameterTypes.Length)
                 throw new ArgumentException(string.Format("The number of arguments must be {0}", methodParameterTypes.Length), "method");
-            for(int i = 0; i < parameterTypes.Length; ++i)
+            for(var i = 0; i < parameterTypes.Length; ++i)
+            {
                 if(parameterTypes[i] != methodParameterTypes[i])
                     throw new ArgumentException(string.Format("Argument #{0} must be of type '{1}'", i + 1, methodParameterTypes[i]), "method");
+            }
             Emit(OpCodes.Jmp, method);
         }
 
         /// <summary>
-        /// Performs a postfixed method call instruction such that the current method's stack frame is removed before the actual call instruction is executed.
-        /// <param name="method">The <see cref="MethodInfo">Method</see> to call.</param>
+        ///     Unconditionally transfers control to a target instruction.
         /// </summary>
-        public void Tailcall(MethodInfo method)
-        {
-            if(method == null)
-                throw new ArgumentNullException("method");
-            if(method.ReturnType != methodReturnType)
-                throw new ArgumentException(string.Format("Return type must be '{0}'", methodReturnType), "method");
-            var parameterTypes = method.GetParameters().Select(info => info.ParameterType).ToArray();
-            if(parameterTypes.Length != methodParameterTypes.Length)
-                throw new ArgumentException(string.Format("The number of arguments must be {0}", methodParameterTypes.Length), "method");
-            for(int i = 0; i < parameterTypes.Length; ++i)
-                if(parameterTypes[i] != methodParameterTypes[i])
-                    throw new ArgumentException(string.Format("Argument #{0} must be of type '{1}'", i + 1, methodParameterTypes[i]), "method");
-            Emit(OpCodes.Tailcall, method);
-        }
-
-        /// <summary>
-        /// Unconditionally transfers control to a target instruction.
-        /// </summary>
-        /// <param name="label">The <see cref="Label">Label</see> object to jump to.</param>
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to jump to.
+        /// </param>
         public void Br(Label label)
         {
             if(label == null)
@@ -317,9 +328,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Transfers control to a target instruction if value is false, a null reference, or zero.
+        ///     Transfers control to a target instruction if value is false, a null reference, or zero.
         /// </summary>
-        /// <param name="label">The <see cref="Label">Label</see> object to jump to.</param>
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to jump to.
+        /// </param>
         public void Brfalse(Label label)
         {
             if(label == null)
@@ -328,9 +341,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Transfers control to a target instruction if value is true, not null, or non-zero.
+        ///     Transfers control to a target instruction if value is true, not null, or non-zero.
         /// </summary>
-        /// <param name="label">The <see cref="Label">Label</see> object to jump to.</param>
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to jump to.
+        /// </param>
         public void Brtrue(Label label)
         {
             if(label == null)
@@ -339,74 +354,84 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Transfers control to a target instruction if the first value is less than or equal to the second value.
+        ///     Transfers control to a target instruction if the first value is less than or equal to the second value.
         /// </summary>
-        /// <param name="type">
-        /// A <see cref="Type">Type</see> object representing the type of values being compared.
-        /// <para></para>
-        /// Depending on whether the <paramref name="type"/> is signed or unsigned either <see cref="OpCodes.Ble">Ble</see> or <see cref="OpCodes.Ble_Un">Ble_Un</see> instruction will be emitted.
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to jump to.
         /// </param>
-        /// <param name="label">The <see cref="Label">Label</see> object to jump to.</param>
-        public void Ble(Type type, Label label)
+        /// <param name="unsigned">
+        ///     True if treat values being compared as unsigned.
+        ///     <para></para>
+        ///     Depending on that flag either <see cref="OpCodes.Ble">Ble</see> or <see cref="OpCodes.Ble_Un">Ble_Un</see> instruction will be emitted.
+        /// </param>
+        public void Ble(Label label, bool unsigned)
         {
             if(label == null)
                 throw new ArgumentNullException("label");
-            Emit(Unsigned(type) ? OpCodes.Ble_Un : OpCodes.Ble, label);
+            Emit(unsigned ? OpCodes.Ble_Un : OpCodes.Ble, label);
         }
 
         /// <summary>
-        /// Transfers control to a target instruction if the first value is greater than or equal to the second value.
+        ///     Transfers control to a target instruction if the first value is greater than or equal to the second value.
         /// </summary>
-        /// <param name="type">
-        /// A <see cref="Type">Type</see> object representing the type of values being compared.
-        /// <para></para>
-        /// Depending on whether the <paramref name="type"/> is signed or unsigned either <see cref="OpCodes.Bge">Bge</see> or <see cref="OpCodes.Bge_Un">Bge_Un</see> instruction will be emitted.
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to jump to.
         /// </param>
-        /// <param name="label">The <see cref="Label">Label</see> object to jump to.</param>
-        public void Bge(Type type, Label label)
+        /// <param name="unsigned">
+        ///     True if treat values being compared as unsigned.
+        ///     <para></para>
+        ///     Depending on that flag either <see cref="OpCodes.Bge">Bge</see> or <see cref="OpCodes.Bge_Un">Bge_Un</see> instruction will be emitted.
+        /// </param>
+        public void Bge(Label label, bool unsigned)
         {
             if(label == null)
                 throw new ArgumentNullException("label");
-            Emit(Unsigned(type) ? OpCodes.Bge_Un : OpCodes.Bge, label);
+            Emit(unsigned ? OpCodes.Bge_Un : OpCodes.Bge, label);
         }
 
         /// <summary>
-        /// Transfers control to a target instruction if the first value is less than the second value.
+        ///     Transfers control to a target instruction if the first value is less than the second value.
         /// </summary>
-        /// <param name="type">
-        /// A <see cref="Type">Type</see> object representing the type of values being compared.
-        /// <para></para>
-        /// Depending on whether the <paramref name="type"/> is signed or unsigned either <see cref="OpCodes.Blt">Blt</see> or <see cref="OpCodes.Blt_Un">Blt_Un</see> instruction will be emitted.
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to jump to.
         /// </param>
-        /// <param name="label">The <see cref="Label">Label</see> object to jump to.</param>
-        public void Blt(Type type, Label label)
+        /// <param name="unsigned">
+        ///     True if treat values being compared as unsigned.
+        ///     <para></para>
+        ///     Depending on that flag either <see cref="OpCodes.Blt">Blt</see> or <see cref="OpCodes.Blt_Un">Blt_Un</see> instruction will be emitted.
+        /// </param>
+        public void Blt(Label label, bool unsigned)
         {
             if(label == null)
                 throw new ArgumentNullException("label");
-            Emit(Unsigned(type) ? OpCodes.Blt_Un : OpCodes.Blt, label);
+            Emit(unsigned ? OpCodes.Blt_Un : OpCodes.Blt, label);
         }
 
         /// <summary>
-        /// Transfers control to a target instruction if the first value is greater than the second value.
+        ///     Transfers control to a target instruction if the first value is greater than the second value.
         /// </summary>
-        /// <param name="type">
-        /// A <see cref="Type">Type</see> object representing the type of values being compared.
-        /// <para></para>
-        /// Depending on whether the <paramref name="type"/> is signed or unsigned either <see cref="OpCodes.Bgt">Bgt</see> or <see cref="OpCodes.Bgt_Un">Bgt_Un</see> instruction will be emitted.
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to jump to.
         /// </param>
-        /// <param name="label">The <see cref="Label">Label</see> object to jump to.</param>
-        public void Bgt(Type type, Label label)
+        /// <param name="unsigned">
+        ///     True if treat values being compared as unsigned.
+        ///     <para></para>
+        ///     Depending on that flag either <see cref="OpCodes.Bgt">Bgt</see> or <see cref="OpCodes.Bgt_Un">Bgt_Un</see> instruction will be emitted.
+        /// </param>
+        public void Bgt(Label label, bool unsigned)
         {
             if(label == null)
                 throw new ArgumentNullException("label");
-            Emit(Unsigned(type) ? OpCodes.Bgt_Un : OpCodes.Bgt, label);
+            Emit(unsigned ? OpCodes.Bgt_Un : OpCodes.Bgt, label);
         }
 
         /// <summary>
-        /// Transfers control to a target instruction when two unsigned integer values or unordered float values are not equal.
+        ///     Transfers control to a target instruction when two unsigned integer values or unordered float values are not equal.
         /// </summary>
-        /// <param name="label">The <see cref="Label">Label</see> object to jump to.</param>
-        public void Bne(Label label)
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to jump to.
+        /// </param>
+        public void Bne_Un(Label label)
         {
             if(label == null)
                 throw new ArgumentNullException("label");
@@ -414,9 +439,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Transfers control to a target instruction if two values are equal.
+        ///     Transfers control to a target instruction if two values are equal.
         /// </summary>
-        /// <param name="label">The <see cref="Label">Label</see> object to jump to.</param>
+        /// <param name="label">
+        ///     The <see cref="Label">Label</see> object to jump to.
+        /// </param>
         public void Beq(Label label)
         {
             if(label == null)
@@ -425,7 +452,41 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Removes the value currently on top of the evaluation stack.
+        ///     Compares two values. If they are equal, the integer value 1 (int32) is pushed onto the evaluation stack; otherwise 0 (int32) is pushed onto the evaluation stack.
+        /// </summary>
+        public void Ceq()
+        {
+            Emit(OpCodes.Ceq);
+        }
+
+        /// <summary>
+        ///     Compares two values. If the first value is greater than the second, the integer value 1 (int32) is pushed onto the evaluation stack; otherwise 0 (int32) is pushed onto the evaluation stack.
+        /// </summary>
+        /// <param name="unsigned">
+        ///     True if treat values being compared as unsigned.
+        ///     <para></para>
+        ///     Depending on that flag either <see cref="OpCodes.Cgt">Cgt</see> or <see cref="OpCodes.Cgt_Un">Cgt_Un</see> instruction will be emitted.
+        /// </param>
+        public void Cgt(bool unsigned)
+        {
+            Emit(unsigned ? OpCodes.Cgt_Un : OpCodes.Cgt);
+        }
+
+        /// <summary>
+        ///     Compares two values. If the first value is less than the second, the integer value 1 (int32) is pushed onto the evaluation stack; otherwise 0 (int32) is pushed onto the evaluation stack.
+        /// </summary>
+        /// <param name="unsigned">
+        ///     True if treat values being compared as unsigned.
+        ///     <para></para>
+        ///     Depending on that flag either <see cref="OpCodes.Clt">Clt</see> or <see cref="OpCodes.Clt_Un">Clt_Un</see> instruction will be emitted.
+        /// </param>
+        public void Clt(bool unsigned)
+        {
+            Emit(unsigned ? OpCodes.Clt_Un : OpCodes.Clt);
+        }
+
+        /// <summary>
+        ///     Removes the value currently on top of the evaluation stack.
         /// </summary>
         public void Pop()
         {
@@ -433,7 +494,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Copies the current topmost value on the evaluation stack, and then pushes the copy onto the evaluation stack.
+        ///     Copies the current topmost value on the evaluation stack, and then pushes the copy onto the evaluation stack.
         /// </summary>
         public void Dup()
         {
@@ -441,49 +502,52 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Loads the address of the local variable at a specific index onto the evaluation stack.
+        ///     Loads the address of the local variable at a specific index onto the evaluation stack.
         /// </summary>
-        /// <param name="local">The <see cref="Local">Local</see> object whose address needs to be loaded onto the evaluation stack.</param>
+        /// <param name="local">
+        ///     The <see cref="Local">Local</see> object whose address needs to be loaded onto the evaluation stack.
+        /// </param>
         public void Ldloca(Local local)
         {
             Emit(OpCodes.Ldloca, local);
         }
 
         /// <summary>
-        /// Loads the local variable at a specific index onto the evaluation stack.
+        ///     Loads the local variable at a specific index onto the evaluation stack.
         /// </summary>
-        /// <param name="local">The <see cref="Local">Local</see> object which needs to be loaded onto the evaluation stack.</param>
+        /// <param name="local">
+        ///     The <see cref="Local">Local</see> object which needs to be loaded onto the evaluation stack.
+        /// </param>
         public void Ldloc(Local local)
         {
             Emit(OpCodes.Ldloc, local);
         }
 
         /// <summary>
-        /// Pops the current value from the top of the evaluation stack and stores it in a the local variable list at a specified index.
+        ///     Pops the current value from the top of the evaluation stack and stores it in a the local variable list at a specified index.
         /// </summary>
-        /// <param name="local">The <see cref="Local">Local</see> object in which the value must be stored.</param>
+        /// <param name="local">
+        ///     The <see cref="Local">Local</see> object in which the value must be stored.
+        /// </param>
         public void Stloc(Local local)
         {
             Emit(OpCodes.Stloc, local);
         }
 
         /// <summary>
-        /// Pushes a null reference (type O) onto the evaluation stack.
+        ///     Pushes a null reference (type O) onto the evaluation stack.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of object being pushed onto the evaluation stack.
-        /// <para></para>
-        /// Needed only for increasing readability of the IL code being generated.
-        /// </param>
-        public void Ldnull(Type type = null)
+        public void Ldnull()
         {
-            Emit(OpCodes.Ldnull, new TypeILInstructionParameter(type ?? typeof(object)));
+            Emit(OpCodes.Ldnull, new TypeILInstructionParameter(null));
         }
 
         /// <summary>
-        /// Initializes each field of the value type at a specified address to a null reference or a 0 of the appropriate primitive type.
+        ///     Initializes each field of the value type at a specified address to a null reference or a 0 of the appropriate primitive type.
         /// </summary>
-        /// <param name="type">The <see cref="Type">Type</see> of object being initialized. Must be a value type.</param>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> of object being initialized. Must be a value type.
+        /// </param>
         public void Initobj(Type type)
         {
             if(type == null)
@@ -494,28 +558,30 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Copies the value type located at the address of an object (type &, * or native int) to the address of the destination object (type &, * or native int).
+        ///     Copies the value type located at the address of an object (type &, * or native int) to the address of the destination object (type &, * or native int).
         /// </summary>
-        /// <param name="type">The <see cref="Type">Type</see> of objects being copied. Must be a value type.</param>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> of objects being copied. Must be a value type.
+        /// </param>
         public void Cpobj(Type type)
         {
-            if (type == null)
+            if(type == null)
                 throw new ArgumentNullException("type");
-            if (!type.IsValueType)
+            if(!type.IsValueType)
                 throw new ArgumentException("A value type expected", "type");
             Emit(OpCodes.Cpobj, type);
         }
 
         /// <summary>
-        /// Loads an argument (referenced by a specified index value) onto the evaluation stack.
+        ///     Loads an argument (referenced by a specified index value) onto the evaluation stack.
         /// </summary>
         /// <param name="index">
-        /// Index of the argument being pushed.
-        /// <para></para>
-        /// Depending on that index emits on of the following instructions:
-        /// <para></para>
-        /// <see cref="OpCodes.Ldarg_0">Ldarg_0</see>, <see cref="OpCodes.Ldarg_1">Ldarg_1</see>, <see cref="OpCodes.Ldarg_2">Ldarg_2</see>,
-        /// <see cref="OpCodes.Ldarg_3">Ldarg_3</see>, <see cref="OpCodes.Ldarg_S">Ldarg_S</see>, <see cref="OpCodes.Ldarg">Ldarg</see>
+        ///     Index of the argument being pushed.
+        ///     <para></para>
+        ///     Depending on that index emits on of the following instructions:
+        ///     <para></para>
+        ///     <see cref="OpCodes.Ldarg_0">Ldarg_0</see>, <see cref="OpCodes.Ldarg_1">Ldarg_1</see>, <see cref="OpCodes.Ldarg_2">Ldarg_2</see>,
+        ///     <see cref="OpCodes.Ldarg_3">Ldarg_3</see>, <see cref="OpCodes.Ldarg_S">Ldarg_S</see>, <see cref="OpCodes.Ldarg">Ldarg</see>
         /// </param>
         public void Ldarg(int index)
         {
@@ -547,12 +613,12 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Stores the value on top of the evaluation stack in the argument slot at a specified index.
+        ///     Stores the value on top of the evaluation stack in the argument slot at a specified index.
         /// </summary>
         /// <param name="index">
-        /// Index of the argument to store the value in.
-        /// <para></para>
-        /// Depending on that index emits either <see cref="OpCodes.Starg_S">Starg_S</see> or <see cref="OpCodes.Starg">Starg</see> instruction.
+        ///     Index of the argument to store the value in.
+        ///     <para></para>
+        ///     Depending on that index emits either <see cref="OpCodes.Starg_S">Starg_S</see> or <see cref="OpCodes.Starg">Starg</see> instruction.
         /// </param>
         public void Starg(int index)
         {
@@ -567,12 +633,12 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Load an argument address onto the evaluation stack.
+        ///     Load an argument address onto the evaluation stack.
         /// </summary>
         /// <param name="index">
-        /// Index of the argument to load address of.
-        /// <para></para>
-        /// Depending on that index emits either <see cref="OpCodes.Ldarga_S">Ldarga_S</see> or <see cref="OpCodes.Ldarga">Ldarga</see> instruction.
+        ///     Index of the argument to load address of.
+        ///     <para></para>
+        ///     Depending on that index emits either <see cref="OpCodes.Ldarga_S">Ldarga_S</see> or <see cref="OpCodes.Ldarga">Ldarga</see> instruction.
         /// </param>
         public void Ldarga(int index)
         {
@@ -587,7 +653,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Returns an unmanaged pointer to the argument list of the current method
+        ///     Returns an unmanaged pointer to the argument list of the current method
         /// </summary>
         public void Arglist()
         {
@@ -595,16 +661,16 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Pushes a supplied value of type int32 onto the evaluation stack as an int32.
+        ///     Pushes a supplied value of type int32 onto the evaluation stack as an int32.
         /// </summary>
         /// <param name="value">
-        /// The value to push.
-        /// <para></para>
-        /// Depending on the value emits one of the following instructions:
-        /// <para></para>
-        /// <see cref="OpCodes.Ldc_I4_0">Ldc_I4_0</see>, <see cref="OpCodes.Ldc_I4_1">Ldc_I4_1</see>, <see cref="OpCodes.Ldc_I4_2">Ldc_I4_2</see>, <see cref="OpCodes.Ldc_I4_3">Ldc_I4_3</see>,
-        /// <see cref="OpCodes.Ldc_I4_4">Ldc_I4_4</see>, <see cref="OpCodes.Ldc_I4_5">Ldc_I4_5</see>, <see cref="OpCodes.Ldc_I4_6">Ldc_I4_6</see>, <see cref="OpCodes.Ldc_I4_7">Ldc_I4_7</see>,
-        /// <see cref="OpCodes.Ldc_I4_8">Ldc_I4_8</see>, <see cref="OpCodes.Ldc_I4_M1">Ldc_I4_M1</see>, <see cref="OpCodes.Ldc_I4_S">Ldc_I4_S</see>, <see cref="OpCodes.Ldc_I4">Ldc_I4</see>
+        ///     The value to push.
+        ///     <para></para>
+        ///     Depending on the value emits one of the following instructions:
+        ///     <para></para>
+        ///     <see cref="OpCodes.Ldc_I4_0">Ldc_I4_0</see>, <see cref="OpCodes.Ldc_I4_1">Ldc_I4_1</see>, <see cref="OpCodes.Ldc_I4_2">Ldc_I4_2</see>, <see cref="OpCodes.Ldc_I4_3">Ldc_I4_3</see>,
+        ///     <see cref="OpCodes.Ldc_I4_4">Ldc_I4_4</see>, <see cref="OpCodes.Ldc_I4_5">Ldc_I4_5</see>, <see cref="OpCodes.Ldc_I4_6">Ldc_I4_6</see>, <see cref="OpCodes.Ldc_I4_7">Ldc_I4_7</see>,
+        ///     <see cref="OpCodes.Ldc_I4_8">Ldc_I4_8</see>, <see cref="OpCodes.Ldc_I4_M1">Ldc_I4_M1</see>, <see cref="OpCodes.Ldc_I4_S">Ldc_I4_S</see>, <see cref="OpCodes.Ldc_I4">Ldc_I4</see>
         /// </param>
         public void Ldc_I4(int value)
         {
@@ -650,7 +716,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Pushes a supplied value of type int64 onto the evaluation stack as an int64.
+        ///     Pushes a supplied value of type int64 onto the evaluation stack as an int64.
         /// </summary>
         /// <param name="value">The value to push.</param>
         public void Ldc_I8(long value)
@@ -659,7 +725,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Pushes a supplied value of type float32 onto the evaluation stack as type F (float).
+        ///     Pushes a supplied value of type float32 onto the evaluation stack as type F (float).
         /// </summary>
         /// <param name="value">The value to push.</param>
         public void Ldc_R4(float value)
@@ -668,7 +734,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Pushes a supplied value of type float64 onto the evaluation stack as type F (float).
+        ///     Pushes a supplied value of type float64 onto the evaluation stack as type F (float).
         /// </summary>
         /// <param name="value">The value to push.</param>
         public void Ldc_R8(double value)
@@ -676,20 +742,17 @@ namespace GrEmit
             Emit(OpCodes.Ldc_R8, value);
         }
 
-        /// <summary>
-        /// Pushes a supplied value of type IntPtr onto the evaluation stack as type native int
-        /// </summary>
-        /// <param name="value">The value to push.</param>
         public void Ldc_IntPtr(IntPtr value)
         {
             if(IntPtr.Size == 4)
                 Ldc_I4(value.ToInt32());
             else
                 Ldc_I8(value.ToInt64());
+            Conv<IntPtr>();
         }
 
         /// <summary>
-        /// Pushes the number of elements of a zero-based, one-dimensional array onto the evaluation stack.
+        ///     Pushes the number of elements of a zero-based, one-dimensional array onto the evaluation stack.
         /// </summary>
         public void Ldlen()
         {
@@ -697,7 +760,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Pushes an unmanaged pointer (type native int) to the native code implementing a specific method onto the evaluation stack.
+        ///     Pushes an unmanaged pointer (type native int) to the native code implementing a specific method onto the evaluation stack.
         /// </summary>
         /// <param name="method">The method to load address of.</param>
         public void Ldftn(MethodInfo method)
@@ -708,12 +771,12 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Replaces the value of a field with a value from the evaluation stack.
+        ///     Replaces the value of a field with a value from the evaluation stack.
         /// </summary>
         /// <param name="field">
-        /// The field to store value in.
-        /// <para></para>
-        /// Depending on whether the field is static or not emits either <see cref="OpCodes.Stsfld">Stsfld</see> or <see cref="OpCodes.Stfld">Stfld</see> respectively.
+        ///     The field to store value in.
+        ///     <para></para>
+        ///     Depending on whether the field is static or not emits either <see cref="OpCodes.Stsfld">Stsfld</see> or <see cref="OpCodes.Stfld">Stfld</see> respectively.
         /// </param>
         /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
         /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
@@ -728,12 +791,12 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Pushes the value of a field onto the evaluation stack.
+        ///     Pushes the value of a field onto the evaluation stack.
         /// </summary>
         /// <param name="field">
-        /// The field to load value of.
-        /// <para></para>
-        /// Depending on whether the field is static or not emits either <see cref="OpCodes.Ldsfld">Ldsfld</see> or <see cref="OpCodes.Ldfld">Ldfld</see> respectively.
+        ///     The field to load value of.
+        ///     <para></para>
+        ///     Depending on whether the field is static or not emits either <see cref="OpCodes.Ldsfld">Ldsfld</see> or <see cref="OpCodes.Ldfld">Ldfld</see> respectively.
         /// </param>
         /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
         /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
@@ -748,12 +811,12 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Pushes the address of a field onto the evaluation stack.
+        ///     Pushes the address of a field onto the evaluation stack.
         /// </summary>
         /// <param name="field">
-        /// The field to load address of.
-        /// <para></para>
-        /// Depending on whether the field is static or not emits either <see cref="OpCodes.Ldsflda">Ldsflda</see> or <see cref="OpCodes.Ldflda">Ldflda</see> respectively.
+        ///     The field to load address of.
+        ///     <para></para>
+        ///     Depending on whether the field is static or not emits either <see cref="OpCodes.Ldsflda">Ldsflda</see> or <see cref="OpCodes.Ldflda">Ldflda</see> respectively.
         /// </param>
         public void Ldflda(FieldInfo field)
         {
@@ -763,17 +826,19 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Loads the address of the array element at a specified array index onto the top of the evaluation stack as type &amp; (managed pointer).
+        ///     Loads the address of the array element at a specified array index onto the top of the evaluation stack as type &amp; (managed pointer).
         /// </summary>
         /// <param name="elementType">The element type of the array.</param>
-        /// <param name="asReadonly">True if the result address should be read only. Emits the <see cref="OpCodes.Readonly">Readonly</see> prefix.</param>
+        /// <param name="asReadonly">
+        ///     True if the result address should be read only. Emits the <see cref="OpCodes.Readonly">Readonly</see> prefix.
+        /// </param>
         public void Ldelema(Type elementType, bool asReadonly = false)
         {
             if(elementType == null)
                 throw new ArgumentNullException("elementType");
             if(asReadonly)
             {
-                if (analyzeStack)
+                if(analyzeStack)
                     ilCode.AppendPrefix(OpCodes.Readonly);
                 il.Emit(OpCodes.Readonly);
             }
@@ -781,18 +846,18 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Loads the element at a specified array index onto the top of the evaluation stack.
+        ///     Loads the element at a specified array index onto the top of the evaluation stack.
         /// </summary>
         /// <param name="elementType">
-        /// The element type of the array.
-        /// <para></para>
-        /// Depending on that type emits one of the following instructions:
-        /// <para></para>
-        /// <see cref="OpCodes.Ldelem_Ref">Ldelem_Ref</see>, <see cref="OpCodes.Ldelem_I">Ldelem_I</see>, <see cref="OpCodes.Ldelem_I1">Ldelem_I1</see>, <see cref="OpCodes.Ldelem_I2">Ldelem_I2</see>, 
-        /// <see cref="OpCodes.Ldelem_I4">Ldelem_I4</see>, <see cref="OpCodes.Ldelem_I8">Ldelem_I8</see>, <see cref="OpCodes.Ldelem_U1">Ldelem_U1</see>, <see cref="OpCodes.Ldelem_U2">Ldelem_U2</see>, 
-        /// <see cref="OpCodes.Ldelem_U4">Ldelem_U4</see>, <see cref="OpCodes.Ldelem_R4">Ldelem_R4</see>, <see cref="OpCodes.Ldelem_R8">Ldelem_R8</see>
-        /// <para></para>
-        /// If the element type is a user-defined value type emits <see cref="OpCodes.Ldelema">Ldelema</see> &amp; <see cref="OpCodes.Ldobj">Ldobj</see> instructions.
+        ///     The element type of the array.
+        ///     <para></para>
+        ///     Depending on that type emits one of the following instructions:
+        ///     <para></para>
+        ///     <see cref="OpCodes.Ldelem_Ref">Ldelem_Ref</see>, <see cref="OpCodes.Ldelem_I">Ldelem_I</see>, <see cref="OpCodes.Ldelem_I1">Ldelem_I1</see>, <see cref="OpCodes.Ldelem_I2">Ldelem_I2</see>,
+        ///     <see cref="OpCodes.Ldelem_I4">Ldelem_I4</see>, <see cref="OpCodes.Ldelem_I8">Ldelem_I8</see>, <see cref="OpCodes.Ldelem_U1">Ldelem_U1</see>, <see cref="OpCodes.Ldelem_U2">Ldelem_U2</see>,
+        ///     <see cref="OpCodes.Ldelem_U4">Ldelem_U4</see>, <see cref="OpCodes.Ldelem_R4">Ldelem_R4</see>, <see cref="OpCodes.Ldelem_R8">Ldelem_R8</see>
+        ///     <para></para>
+        ///     If the element type is a user-defined value type emits <see cref="OpCodes.Ldelema">Ldelema</see> &amp; <see cref="OpCodes.Ldobj">Ldobj</see> instructions.
         /// </param>
         public void Ldelem(Type elementType)
         {
@@ -852,17 +917,17 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Replaces the array element at a given index with the value on the evaluation stack.
+        ///     Replaces the array element at a given index with the value on the evaluation stack.
         /// </summary>
         /// <param name="elementType">
-        /// The element type of the array.
-        /// <para></para>
-        /// Depending on that type emits one of the following instructions:
-        /// <para></para>
-        /// <see cref="OpCodes.Stelem_Ref">Stelem_Ref</see>, <see cref="OpCodes.Stelem_I">Stelem_I</see>, <see cref="OpCodes.Stelem_I1">Stelem_I1</see>, <see cref="OpCodes.Stelem_I2">Stelem_I2</see>, 
-        /// <see cref="OpCodes.Stelem_I4">Stelem_I4</see>, <see cref="OpCodes.Stelem_I8">Stelem_I8</see>, <see cref="OpCodes.Stelem_R4">Stelem_R4</see>, <see cref="OpCodes.Stelem_R8">Stelem_R8</see>
-        /// <para></para>
-        /// DOES NOT WORK if the element type is a user-defined value type. In such a case emit <see cref="OpCodes.Ldelema">Ldelema</see> &amp; <see cref="OpCodes.Stobj">Stobj</see> instructions.
+        ///     The element type of the array.
+        ///     <para></para>
+        ///     Depending on that type emits one of the following instructions:
+        ///     <para></para>
+        ///     <see cref="OpCodes.Stelem_Ref">Stelem_Ref</see>, <see cref="OpCodes.Stelem_I">Stelem_I</see>, <see cref="OpCodes.Stelem_I1">Stelem_I1</see>, <see cref="OpCodes.Stelem_I2">Stelem_I2</see>,
+        ///     <see cref="OpCodes.Stelem_I4">Stelem_I4</see>, <see cref="OpCodes.Stelem_I8">Stelem_I8</see>, <see cref="OpCodes.Stelem_R4">Stelem_R4</see>, <see cref="OpCodes.Stelem_R8">Stelem_R8</see>
+        ///     <para></para>
+        ///     DOES NOT WORK if the element type is a user-defined value type. In such a case emit <see cref="OpCodes.Ldelema">Ldelema</see> &amp; <see cref="OpCodes.Stobj">Stobj</see> instructions.
         /// </param>
         public void Stelem(Type elementType)
         {
@@ -912,17 +977,17 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Stores a value of a specified type at a specified address.
+        ///     Stores a value of a specified type at a specified address.
         /// </summary>
         /// <param name="type">
-        /// The type of a value being stored.
-        /// <para></para>
-        /// Depending on that type emits one of the following instructions:
-        /// <para></para>
-        /// <see cref="OpCodes.Stind_Ref">Stind_Ref</see>, <see cref="OpCodes.Stind_I1">Stind_I1</see>, <see cref="OpCodes.Stind_I2">Stind_I2</see>, <see cref="OpCodes.Stind_I4">Stind_I4</see>, 
-        /// <see cref="OpCodes.Stind_I8">Stind_I8</see>, <see cref="OpCodes.Stind_R4">Stind_R4</see>, <see cref="OpCodes.Stind_R8">Stind_R8</see>
-        /// <para></para>
-        /// If the value is of a user-defined value type emits <see cref="OpCodes.Stobj">Stobj</see> instruction.
+        ///     The type of a value being stored.
+        ///     <para></para>
+        ///     Depending on that type emits one of the following instructions:
+        ///     <para></para>
+        ///     <see cref="OpCodes.Stind_Ref">Stind_Ref</see>, <see cref="OpCodes.Stind_I1">Stind_I1</see>, <see cref="OpCodes.Stind_I2">Stind_I2</see>, <see cref="OpCodes.Stind_I4">Stind_I4</see>,
+        ///     <see cref="OpCodes.Stind_I8">Stind_I8</see>, <see cref="OpCodes.Stind_R4">Stind_R4</see>, <see cref="OpCodes.Stind_R8">Stind_R8</see>
+        ///     <para></para>
+        ///     If the value is of a user-defined value type emits <see cref="OpCodes.Stobj">Stobj</see> instruction.
         /// </param>
         /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
         /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
@@ -977,18 +1042,18 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Loads a value of a specifed type onto the evaluation stack indirectly.
+        ///     Loads a value of a specifed type onto the evaluation stack indirectly.
         /// </summary>
         /// <param name="type">
-        /// The <see cref="Type">Type</see> of a value being loaded.
-        /// <para></para>
-        /// Depending on that type emits one of the following instructions:
-        /// <para></para>
-        /// <see cref="OpCodes.Ldind_Ref">Ldind_Ref</see>, <see cref="OpCodes.Ldind_I1">Ldind_I1</see>, <see cref="OpCodes.Ldind_I2">Ldind_I2</see>, <see cref="OpCodes.Ldind_I4">Ldind_I4</see>, 
-        /// <see cref="OpCodes.Ldind_I8">Ldind_I8</see>, <see cref="OpCodes.Ldind_U1">Ldind_U1</see>, <see cref="OpCodes.Ldind_U2">Ldind_U2</see>, <see cref="OpCodes.Ldind_U4">Ldind_U4</see>,
-        /// <see cref="OpCodes.Ldind_R4">Ldind_R4</see>, <see cref="OpCodes.Ldind_R8">Ldind_R8</see>
-        /// <para></para>
-        /// If the value is of a user-defined value type emits <see cref="OpCodes.Ldobj">Ldobj</see> instruction.
+        ///     The <see cref="Type">Type</see> of a value being loaded.
+        ///     <para></para>
+        ///     Depending on that type emits one of the following instructions:
+        ///     <para></para>
+        ///     <see cref="OpCodes.Ldind_Ref">Ldind_Ref</see>, <see cref="OpCodes.Ldind_I1">Ldind_I1</see>, <see cref="OpCodes.Ldind_I2">Ldind_I2</see>, <see cref="OpCodes.Ldind_I4">Ldind_I4</see>,
+        ///     <see cref="OpCodes.Ldind_I8">Ldind_I8</see>, <see cref="OpCodes.Ldind_U1">Ldind_U1</see>, <see cref="OpCodes.Ldind_U2">Ldind_U2</see>, <see cref="OpCodes.Ldind_U4">Ldind_U4</see>,
+        ///     <see cref="OpCodes.Ldind_R4">Ldind_R4</see>, <see cref="OpCodes.Ldind_R8">Ldind_R8</see>
+        ///     <para></para>
+        ///     If the value is of a user-defined value type emits <see cref="OpCodes.Ldobj">Ldobj</see> instruction.
         /// </param>
         /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
         /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
@@ -1048,7 +1113,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Copies a specified number of bytes from a source address to a destination address.
+        ///     Copies a specified number of bytes from a source address to a destination address.
         /// </summary>
         /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
         /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
@@ -1059,7 +1124,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Initializes a specified block of memory at a specific address to a given size and initial value.
+        ///     Initializes a specified block of memory at a specific address to a given size and initial value.
         /// </summary>
         /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
         /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
@@ -1070,9 +1135,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Converts a metadata token of a specified type to its runtime representation, pushing it onto the evaluation stack.
+        ///     Converts a metadata token of a specified type to its runtime representation, pushing it onto the evaluation stack.
         /// </summary>
-        /// <param name="type">The <see cref="Type">Type</see> object metadata token of which is being pushed onto the evaluation stack.</param>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> object metadata token of which is being pushed onto the evaluation stack.
+        /// </param>
         public void Ldtoken(Type type)
         {
             if(type == null)
@@ -1081,9 +1148,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Converts a metadata token of a specified method to its runtime representation, pushing it onto the evaluation stack.
+        ///     Converts a metadata token of a specified method to its runtime representation, pushing it onto the evaluation stack.
         /// </summary>
-        /// <param name="method">The <see cref="MethodInfo">MethodInfo</see> object metadata token of which is being pushed onto the evaluation stack.</param>
+        /// <param name="method">
+        ///     The <see cref="MethodInfo">MethodInfo</see> object metadata token of which is being pushed onto the evaluation stack.
+        /// </param>
         public void Ldtoken(MethodInfo method)
         {
             if(method == null)
@@ -1092,9 +1161,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Converts a metadata token of a specified field to its runtime representation, pushing it onto the evaluation stack.
+        ///     Converts a metadata token of a specified field to its runtime representation, pushing it onto the evaluation stack.
         /// </summary>
-        /// <param name="field">The <see cref="FieldInfo">FieldInfo</see> object metadata token of which is being pushed onto the evaluation stack.</param>
+        /// <param name="field">
+        ///     The <see cref="FieldInfo">FieldInfo</see> object metadata token of which is being pushed onto the evaluation stack.
+        /// </param>
         public void Ldtoken(FieldInfo field)
         {
             if(field == null)
@@ -1103,9 +1174,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Attempts to cast an object passed by reference to the specified class.
+        ///     Attempts to cast an object passed by reference to the specified class.
         /// </summary>
-        /// <param name="type">The <see cref="Type">Type</see> to cast an object to.</param>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> to cast an object to.
+        /// </param>
         public void Castclass(Type type)
         {
             if(type == null)
@@ -1116,9 +1189,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Tests whether an object reference (type O) is an instance of a particular class.
+        ///     Tests whether an object reference (type O) is an instance of a particular class.
         /// </summary>
-        /// <param name="type">The <see cref="Type">Type</see> to test.</param>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> to test.
+        /// </param>
         public void Isinst(Type type)
         {
             if(type == null)
@@ -1127,9 +1202,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Converts the boxed representation of a type specified in the instruction to its unboxed form.
+        ///     Converts the boxed representation of a type specified in the instruction to its unboxed form.
         /// </summary>
-        /// <param name="type">The <see cref="Type">Type</see> of boxed object. Must be a value type.</param>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> of boxed object. Must be a value type.
+        /// </param>
         public void Unbox_Any(Type type)
         {
             if(type == null)
@@ -1140,9 +1217,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Converts a value type to an object reference (type O).
+        ///     Converts a value type to an object reference (type O).
         /// </summary>
-        /// <param name="type">The <see cref="Type">Type</see> of object to box.</param>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> of object to box.
+        /// </param>
         public void Box(Type type)
         {
             if(type == null)
@@ -1153,9 +1232,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Copies a value of a specified type from the evaluation stack into a supplied memory address.
+        ///     Copies a value of a specified type from the evaluation stack into a supplied memory address.
         /// </summary>
-        /// <param name="type">The <see cref="Type">Type</see> of object to be stored.</param>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> of object to be stored.
+        /// </param>
         /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
         /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
         public void Stobj(Type type, bool isVolatile = false, int? unaligned = null)
@@ -1168,28 +1249,12 @@ namespace GrEmit
             Emit(OpCodes.Stobj, type);
         }
 
-        private void InsertPrefixes(bool isVolatile, int? unaligned)
-        {
-            if(isVolatile)
-            {
-                if (analyzeStack)
-                    ilCode.AppendPrefix(OpCodes.Volatile);
-                il.Emit(OpCodes.Volatile);
-            }
-            if(unaligned != null)
-            {
-                if(unaligned != 1 && unaligned != 2 && unaligned != 4)
-                    throw new ArgumentException("Value of alignment must be 1, 2 or 4.", "unaligned");
-                if (analyzeStack)
-                    ilCode.AppendPrefix(OpCodes.Unaligned);
-                il.Emit(OpCodes.Unaligned, (long)unaligned.Value);
-            }
-        }
-
         /// <summary>
-        /// Copies the value type object pointed to by an address to the top of the evaluation stack.
+        ///     Copies the value type object pointed to by an address to the top of the evaluation stack.
         /// </summary>
-        /// <param name="type">The <see cref="Type">Type</see> of object to be loaded.</param>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> of object to be loaded.
+        /// </param>
         /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
         /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
         public void Ldobj(Type type, bool isVolatile = false, int? unaligned = null)
@@ -1203,9 +1268,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Creates a new object or a new instance of a value type, pushing an object reference (type O) onto the evaluation stack.
+        ///     Creates a new object or a new instance of a value type, pushing an object reference (type O) onto the evaluation stack.
         /// </summary>
-        /// <param name="constructor">The <see cref="ConstructorInfo">Constructor</see> to be called.</param>
+        /// <param name="constructor">
+        ///     The <see cref="ConstructorInfo">Constructor</see> to be called.
+        /// </param>
         public void Newobj(ConstructorInfo constructor)
         {
             if(constructor == null)
@@ -1214,9 +1281,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Pushes an object reference to a new zero-based, one-dimensional array whose elements are of a specific type onto the evaluation stack.
+        ///     Pushes an object reference to a new zero-based, one-dimensional array whose elements are of a specific type onto the evaluation stack.
         /// </summary>
-        /// <param name="type">The <see cref="Type">Type</see> of elements.</param>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> of elements.
+        /// </param>
         public void Newarr(Type type)
         {
             if(type == null)
@@ -1225,41 +1294,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Compares two values. If they are equal, the integer value 1 (int32) is pushed onto the evaluation stack; otherwise 0 (int32) is pushed onto the evaluation stack.
-        /// </summary>
-        public void Ceq()
-        {
-            Emit(OpCodes.Ceq);
-        }
-
-        /// <summary>
-        /// Compares two values. If the first value is greater than the second, the integer value 1 (int32) is pushed onto the evaluation stack; otherwise 0 (int32) is pushed onto the evaluation stack.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the values being compared.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Cgt">Cgt</see> or <see cref="OpCodes.Cgt_Un">Cgt_Un</see> instruction depending on whether the type is signed or not.
-        /// </param>
-        public void Cgt(Type type)
-        {
-            Emit(Unsigned(type) ? OpCodes.Cgt_Un : OpCodes.Cgt);
-        }
-
-        /// <summary>
-        /// Compares two values. If the first value is less than the second, the integer value 1 (int32) is pushed onto the evaluation stack; otherwise 0 (int32) is pushed onto the evaluation stack.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the values being compared.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Clt">Clt</see> or <see cref="OpCodes.Clt_Un">Clt_Un</see> instruction depending on whether the type is signed or not.
-        /// </param>
-        public void Clt(Type type)
-        {
-            Emit(Unsigned(type) ? OpCodes.Clt_Un : OpCodes.Clt);
-        }
-
-        /// <summary>
-        /// Throws <see cref="ArithmeticException">ArithmeticException</see> if value is not a finite number.
+        ///     Throws <see cref="ArithmeticException">ArithmeticException</see> if value is not a finite number.
         /// </summary>
         public void Ckfinite()
         {
@@ -1267,7 +1302,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Computes the bitwise AND of two values and pushes the result onto the evaluation stack.
+        ///     Computes the bitwise AND of two values and pushes the result onto the evaluation stack.
         /// </summary>
         public void And()
         {
@@ -1275,7 +1310,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Compute the bitwise complement of the two integer values on top of the stack and pushes the result onto the evaluation stack.
+        ///     Compute the bitwise complement of the two integer values on top of the stack and pushes the result onto the evaluation stack.
         /// </summary>
         public void Or()
         {
@@ -1283,7 +1318,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Computes the bitwise XOR of the top two values on the evaluation stack, pushing the result onto the evaluation stack.
+        ///     Computes the bitwise XOR of the top two values on the evaluation stack, pushing the result onto the evaluation stack.
         /// </summary>
         public void Xor()
         {
@@ -1291,7 +1326,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Adds two values and pushes the result onto the evaluation stack.
+        ///     Adds two values and pushes the result onto the evaluation stack.
         /// </summary>
         public void Add()
         {
@@ -1299,20 +1334,20 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Adds two integers, performs an overflow check, and pushes the result onto the evaluation stack.
+        ///     Adds two integers, performs an overflow check, and pushes the result onto the evaluation stack.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the values being added.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Add_Ovf">Add_Ovf</see> or <see cref="OpCodes.Add_Ovf_Un">Add_Ovf_Un</see> instruction depending on whether the type is signed or not.
+        /// <param name="unsigned">
+        ///     True if treat the parameters of operation as unsigned.
+        ///     <para></para>
+        ///     Depending in that flag emits either <see cref="OpCodes.Add_Ovf">Add_Ovf</see> or <see cref="OpCodes.Add_Ovf_Un">Add_Ovf_Un</see> instruction.
         /// </param>
-        public void Add_Ovf(Type type)
+        public void Add_Ovf(bool unsigned)
         {
-            Emit(Unsigned(type) ? OpCodes.Add_Ovf_Un : OpCodes.Add_Ovf);
+            Emit(unsigned ? OpCodes.Add_Ovf_Un : OpCodes.Add_Ovf);
         }
 
         /// <summary>
-        /// Subtracts one value from another and pushes the result onto the evaluation stack.
+        ///     Subtracts one value from another and pushes the result onto the evaluation stack.
         /// </summary>
         public void Sub()
         {
@@ -1320,20 +1355,20 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Subtracts one integer value from another, performs an overflow check, and pushes the result onto the evaluation stack.
+        ///     Subtracts one integer value from another, performs an overflow check, and pushes the result onto the evaluation stack.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the values being subtracted.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Sub_Ovf">Sub_Ovf</see> or <see cref="OpCodes.Sub_Ovf_Un">Sub_Ovf_Un</see> instruction depending on whether the type is signed or not.
+        /// <param name="unsigned">
+        ///     True if treat the parameters of operation as unsigned.
+        ///     <para></para>
+        ///     Depending in that flag emits either <see cref="OpCodes.Sub_Ovf">Sub_Ovf</see> or <see cref="OpCodes.Sub_Ovf_Un">Sub_Ovf_Un</see> instruction.
         /// </param>
-        public void Sub_Ovf(Type type)
+        public void Sub_Ovf(bool unsigned)
         {
-            Emit(Unsigned(type) ? OpCodes.Sub_Ovf_Un : OpCodes.Sub_Ovf);
+            Emit(unsigned ? OpCodes.Sub_Ovf_Un : OpCodes.Sub_Ovf);
         }
 
         /// <summary>
-        /// Multiplies two values and pushes the result on the evaluation stack.
+        ///     Multiplies two values and pushes the result on the evaluation stack.
         /// </summary>
         public void Mul()
         {
@@ -1341,46 +1376,46 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Multiplies two integer values, performs an overflow check, and pushes the result onto the evaluation stack.
+        ///     Multiplies two integer values, performs an overflow check, and pushes the result onto the evaluation stack.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the values being multiplied.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Mul_Ovf">Mul_Ovf</see> or <see cref="OpCodes.Mul_Ovf_Un">Mul_Ovf_Un</see> instruction depending on whether the type is signed or not.
+        /// <param name="unsigned">
+        ///     True if treat the parameters of operation as unsigned.
+        ///     <para></para>
+        ///     Depending in that flag emits either <see cref="OpCodes.Mul_Ovf">Mul_Ovf</see> or <see cref="OpCodes.Mul_Ovf_Un">Mul_Ovf_Un</see> instruction.
         /// </param>
-        public void Mul_Ovf(Type type)
+        public void Mul_Ovf(bool unsigned)
         {
-            Emit(Unsigned(type) ? OpCodes.Mul_Ovf_Un : OpCodes.Mul_Ovf);
+            Emit(unsigned ? OpCodes.Mul_Ovf_Un : OpCodes.Mul_Ovf);
         }
 
         /// <summary>
-        /// Divides two values and pushes the result as a floating-point (type F) or quotient (type int32) onto the evaluation stack.
+        ///     Divides two values and pushes the result as a floating-point (type F) or quotient (type int32) onto the evaluation stack.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the values being divided.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Div">Div</see> or <see cref="OpCodes.Div_Un">Div_Un</see> instruction depending on whether the type is signed or not.
+        /// <param name="unsigned">
+        ///     True if treat the parameters of operation as unsigned.
+        ///     <para></para>
+        ///     Depending in that flag emits either <see cref="OpCodes.Div">Div</see> or <see cref="OpCodes.Div_Un">Div_Un</see> instruction.
         /// </param>
-        public void Div(Type type)
+        public void Div(bool unsigned)
         {
-            Emit(Unsigned(type) ? OpCodes.Div_Un : OpCodes.Div);
+            Emit(unsigned ? OpCodes.Div_Un : OpCodes.Div);
         }
 
         /// <summary>
-        /// Divides two values and pushes the remainder onto the evaluation stack.
+        ///     Divides two values and pushes the remainder onto the evaluation stack.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the values being divided.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Rem">Rem</see> or <see cref="OpCodes.Rem_Un">Rem_Un</see> instruction depending on whether the type is signed or not.
+        /// <param name="unsigned">
+        ///     True if treat the parameters of operation as unsigned.
+        ///     <para></para>
+        ///     Depending in that flag emits either <see cref="OpCodes.Rem">Rem</see> or <see cref="OpCodes.Rem_Un">Rem_Un</see> instruction.
         /// </param>
-        public void Rem(Type type)
+        public void Rem(bool unsigned)
         {
-            Emit(Unsigned(type) ? OpCodes.Rem_Un : OpCodes.Rem);
+            Emit(unsigned ? OpCodes.Rem_Un : OpCodes.Rem);
         }
 
         /// <summary>
-        /// Shifts an integer value to the left (in zeroes) by a specified number of bits, pushing the result onto the evaluation stack.
+        ///     Shifts an integer value to the left (in zeroes) by a specified number of bits, pushing the result onto the evaluation stack.
         /// </summary>
         public void Shl()
         {
@@ -1388,20 +1423,20 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Shifts an integer value to the right by a specified number of bits, pushing the result onto the evaluation stack.
+        ///     Shifts an integer value to the right by a specified number of bits, pushing the result onto the evaluation stack.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the value being shifted.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Shr">Shr</see> or <see cref="OpCodes.Shr_Un">Shr_Un</see> instruction depending on whether the type is signed or not.
+        /// <param name="unsigned">
+        ///     True if treat the parameters of operation as unsigned.
+        ///     <para></para>
+        ///     Depending in that flag emits either <see cref="OpCodes.Shr">Shr</see> or <see cref="OpCodes.Shr_Un">Shr_Un</see> instruction.
         /// </param>
-        public void Shr(Type type)
+        public void Shr(bool unsigned)
         {
-            Emit(Unsigned(type) ? OpCodes.Shr_Un : OpCodes.Shr);
+            Emit(unsigned ? OpCodes.Shr_Un : OpCodes.Shr);
         }
 
         /// <summary>
-        /// Negates a value and pushes the result onto the evaluation stack.
+        ///     Negates a value and pushes the result onto the evaluation stack.
         /// </summary>
         public void Neg()
         {
@@ -1409,7 +1444,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Computes the bitwise complement of the integer value on top of the stack and pushes the result onto the evaluation stack as the same type.
+        ///     Computes the bitwise complement of the integer value on top of the stack and pushes the result onto the evaluation stack as the same type.
         /// </summary>
         public void Not()
         {
@@ -1417,7 +1452,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Pushes a new object reference to a string literal stored in the metadata.
+        ///     Pushes a new object reference to a string literal stored in the metadata.
         /// </summary>
         /// <param name="value">The value to push.</param>
         public void Ldstr(string value)
@@ -1426,95 +1461,70 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Converts the value on top of the evaluation stack to int8, then extends (pads) it to int32.
+        ///     Converts the value on top of the evaluation stack to a specified numeric type.
         /// </summary>
-        public void Conv_I1()
+        /// <typeparam name="T">
+        ///     The <see cref="Type">Type</see> to convert to.
+        ///     <para>
+        ///         Depending on that type one of the following instructions will be emitted:
+        ///         <para></para>
+        ///         <see cref="OpCodes.Conv_I1">Conv_I1</see>, <see cref="OpCodes.Conv_U1">Conv_U1</see>, <see cref="OpCodes.Conv_I2">Conv_I2</see>, <see cref="OpCodes.Conv_U2">Conv_U2</see>,
+        ///         <see cref="OpCodes.Conv_I4">Conv_I4</see>, <see cref="OpCodes.Conv_U4">Conv_U4</see>, <see cref="OpCodes.Conv_I8">Conv_I8</see>, <see cref="OpCodes.Conv_U8">Conv_U8</see>,
+        ///         <see cref="OpCodes.Conv_I">Conv_I</see>, <see cref="OpCodes.Conv_U">Conv_U</see>, <see cref="OpCodes.Conv_R4">Conv_R4</see>, <see cref="OpCodes.Conv_R8">Conv_R8</see>
+        ///         <para></para>
+        ///     </para>
+        /// </typeparam>
+        public void Conv<T>()
         {
-            Emit(OpCodes.Conv_I1);
+            var type = typeof(T);
+            OpCode opCode;
+            if(type == typeof(IntPtr))
+                opCode = OpCodes.Conv_I;
+            else if(type == typeof(UIntPtr))
+                opCode = OpCodes.Conv_U;
+            else
+            {
+                switch(Type.GetTypeCode(type))
+                {
+                case TypeCode.SByte:
+                    opCode = OpCodes.Conv_I1;
+                    break;
+                case TypeCode.Byte:
+                    opCode = OpCodes.Conv_U1;
+                    break;
+                case TypeCode.Int16:
+                    opCode = OpCodes.Conv_I2;
+                    break;
+                case TypeCode.UInt16:
+                    opCode = OpCodes.Conv_U2;
+                    break;
+                case TypeCode.Int32:
+                    opCode = OpCodes.Conv_I4;
+                    break;
+                case TypeCode.UInt32:
+                    opCode = OpCodes.Conv_U4;
+                    break;
+                case TypeCode.Int64:
+                    opCode = OpCodes.Conv_I8;
+                    break;
+                case TypeCode.UInt64:
+                    opCode = OpCodes.Conv_U8;
+                    break;
+                case TypeCode.Single:
+                    opCode = OpCodes.Conv_R4;
+                    break;
+                case TypeCode.Double:
+                    opCode = OpCodes.Conv_R8;
+                    break;
+                default:
+                    throw new ArgumentException(string.Format("Expected numeric type but was '{0}'", type), "type");
+                }
+            }
+            Emit(opCode);
         }
 
         /// <summary>
-        /// Converts the value on top of the evaluation stack to unsigned int8, and extends it to int32.
-        /// </summary>
-        public void Conv_U1()
-        {
-            Emit(OpCodes.Conv_U1);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to int16, then extends (pads) it to int32.
-        /// </summary>
-        public void Conv_I2()
-        {
-            Emit(OpCodes.Conv_I2);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to unsigned int16, and extends it to int32.
-        /// </summary>
-        public void Conv_U2()
-        {
-            Emit(OpCodes.Conv_U2);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to int32.
-        /// </summary>
-        public void Conv_I4()
-        {
-            Emit(OpCodes.Conv_I4);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to unsigned int32, and extends it to int32.
-        /// </summary>
-        public void Conv_U4()
-        {
-            Emit(OpCodes.Conv_U4);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to int64.
-        /// </summary>
-        public void Conv_I8()
-        {
-            Emit(OpCodes.Conv_I8);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to unsigned int64, and extends it to int64.
-        /// </summary>
-        public void Conv_U8()
-        {
-            Emit(OpCodes.Conv_U8);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to unsigned native int, and extends it to native int.
-        /// </summary>
-        public void Conv_U()
-        {
-            Emit(OpCodes.Conv_U);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to float32.
-        /// </summary>
-        public void Conv_R4()
-        {
-            Emit(OpCodes.Conv_R4);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to float64.
-        /// </summary>
-        public void Conv_R8()
-        {
-            Emit(OpCodes.Conv_R8);
-        }
-
-        /// <summary>
-        /// Converts the unsigned integer value on top of the evaluation stack to float32.
+        ///     Converts the unsigned integer value on top of the evaluation stack to float32.
         /// </summary>
         public void Conv_R_Un()
         {
@@ -1522,140 +1532,130 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Converts the value on top of the evaluation stack to signed int8 and extends it to int32, throwing <see cref="OverflowException">OverflowException</see> on overflow.
+        ///     Converts the signed value on top of the evaluation stack to a specified integer type throwing <see cref="OverflowException">OverflowException</see>.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the value being converted.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Conv_Ovf_I1">Conv_Ovf_I1</see> or <see cref="OpCodes.Conv_Ovf_I1_Un">Conv_Ovf_I1_Un</see> instruction depending on whether the type is signed or not.
+        /// <param name="unsigned">
+        ///     True if treat the parameters of operation as unsigned.
+        ///     <para></para>
+        ///     Depending in that flag emits either Conv_Ovf_* or Conv_Ovf_*_Un instruction.
         /// </param>
-        public void Conv_Ovf_I1(Type type)
+        /// <typeparam name="T">
+        ///     The <see cref="Type">Type</see> to convert to.
+        ///     <para>
+        ///         Depending on that type one of the following instructions will be emitted:
+        ///         <para></para>
+        ///         <see cref="OpCodes.Conv_Ovf_I1">Conv_Ovf_I1</see>, <see cref="OpCodes.Conv_Ovf_U1">Conv_Ovf_U1</see>, <see cref="OpCodes.Conv_Ovf_I2">Conv_Ovf_I2</see>, <see cref="OpCodes.Conv_Ovf_U2">Conv_Ovf_U2</see>,
+        ///         <see cref="OpCodes.Conv_Ovf_I4">Conv_Ovf_I4</see>, <see cref="OpCodes.Conv_Ovf_U4">Conv_Ovf_U4</see>, <see cref="OpCodes.Conv_Ovf_I8">Conv_Ovf_I8</see>, <see cref="OpCodes.Conv_Ovf_U8">Conv_Ovf_U8</see>,
+        ///         <see cref="OpCodes.Conv_Ovf_I">Conv_Ovf_I</see>, <see cref="OpCodes.Conv_Ovf_U">Conv_Ovf_U</see>
+        ///         <para></para>
+        ///     </para>
+        /// </typeparam>
+        public void Conv_Ovf<T>(bool unsigned)
         {
-            if(type == null)
-                throw new ArgumentNullException("type");
-            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_I1_Un : OpCodes.Conv_Ovf_I1);
+            var type = typeof(T);
+            OpCode opCode;
+            if (!unsigned)
+            {
+                if(type == typeof(IntPtr))
+                    opCode = OpCodes.Conv_Ovf_I;
+                else if(type == typeof(UIntPtr))
+                    opCode = OpCodes.Conv_Ovf_U;
+                else
+                {
+                    switch(Type.GetTypeCode(type))
+                    {
+                    case TypeCode.SByte:
+                        opCode = OpCodes.Conv_Ovf_I1;
+                        break;
+                    case TypeCode.Byte:
+                        opCode = OpCodes.Conv_Ovf_U1;
+                        break;
+                    case TypeCode.Int16:
+                        opCode = OpCodes.Conv_Ovf_I2;
+                        break;
+                    case TypeCode.UInt16:
+                        opCode = OpCodes.Conv_Ovf_U2;
+                        break;
+                    case TypeCode.Int32:
+                        opCode = OpCodes.Conv_Ovf_I4;
+                        break;
+                    case TypeCode.UInt32:
+                        opCode = OpCodes.Conv_Ovf_U4;
+                        break;
+                    case TypeCode.Int64:
+                        opCode = OpCodes.Conv_Ovf_I8;
+                        break;
+                    case TypeCode.UInt64:
+                        opCode = OpCodes.Conv_Ovf_U8;
+                        break;
+                    default:
+                        throw new ArgumentException(string.Format("Expected integer type but was '{0}'", type), "T");
+                    }
+                }
+            }
+            else
+            {
+                if (type == typeof(IntPtr))
+                    opCode = OpCodes.Conv_Ovf_I_Un;
+                else if (type == typeof(UIntPtr))
+                    opCode = OpCodes.Conv_Ovf_U_Un;
+                else
+                {
+                    switch (Type.GetTypeCode(type))
+                    {
+                        case TypeCode.SByte:
+                            opCode = OpCodes.Conv_Ovf_I1_Un;
+                            break;
+                        case TypeCode.Byte:
+                            opCode = OpCodes.Conv_Ovf_U1_Un;
+                            break;
+                        case TypeCode.Int16:
+                            opCode = OpCodes.Conv_Ovf_I2_Un;
+                            break;
+                        case TypeCode.UInt16:
+                            opCode = OpCodes.Conv_Ovf_U2_Un;
+                            break;
+                        case TypeCode.Int32:
+                            opCode = OpCodes.Conv_Ovf_I4_Un;
+                            break;
+                        case TypeCode.UInt32:
+                            opCode = OpCodes.Conv_Ovf_U4_Un;
+                            break;
+                        case TypeCode.Int64:
+                            opCode = OpCodes.Conv_Ovf_I8_Un;
+                            break;
+                        case TypeCode.UInt64:
+                            opCode = OpCodes.Conv_Ovf_U8_Un;
+                            break;
+                        default:
+                            throw new ArgumentException(string.Format("Expected integer type but was '{0}'", type), "T");
+                    }
+                }
+            }
+            Emit(opCode);
         }
 
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to signed int16 and extending it to int32, throwing <see cref="OverflowException">OverflowException</see> on overflow.
+       /// <summary>
+        ///     Calls the method indicated by the passed method descriptor.
+        ///     <para></para>
+        ///     Emits a <see cref="OpCodes.Call">Call</see> or <see cref="OpCodes.Callvirt">Callvirt</see> instruction depending on whether the method is a virtual or not.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the value being converted.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Conv_Ovf_I2">Conv_Ovf_I2</see> or <see cref="OpCodes.Conv_Ovf_I2_Un">Conv_Ovf_I2_Un</see> instruction depending on whether the type is signed or not.
+        /// <param name="method">
+        ///     The <see cref="MethodInfo">Method</see> to be called.
         /// </param>
-        public void Conv_Ovf_I2(Type type)
-        {
-            if(type == null)
-                throw new ArgumentNullException("type");
-            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_I2_Un : OpCodes.Conv_Ovf_I2);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to signed int32, throwing <see cref="OverflowException">OverflowException</see> on overflow.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the value being converted.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Conv_Ovf_I4">Conv_Ovf_I4</see> or <see cref="OpCodes.Conv_Ovf_I4_Un">Conv_Ovf_I4_Un</see> instruction depending on whether the type is signed or not.
+        /// <param name="constrained">
+        ///     The <see cref="Type">Type</see> of an object to constrain the method call on. Emits the <see cref="OpCodes.Constrained">Constrained</see> prefix.
         /// </param>
-        public void Conv_Ovf_I4(Type type)
-        {
-            if(type == null)
-                throw new ArgumentNullException("type");
-            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_I4_Un : OpCodes.Conv_Ovf_I4);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to signed int64, throwing <see cref="OverflowException">OverflowException</see> on overflow.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the value being converted.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Conv_Ovf_I8">Conv_Ovf_I8</see> or <see cref="OpCodes.Conv_Ovf_I8_Un">Conv_Ovf_I8_Un</see> instruction depending on whether the type is signed or not.
+        /// <param name="tailcall">
+        ///     True if the method call is a tail call. Emits the <see cref="OpCodes.Tailcall">Tailcall</see> prefix.
         /// </param>
-        public void Conv_Ovf_I8(Type type)
-        {
-            if(type == null)
-                throw new ArgumentNullException("type");
-            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_I8_Un : OpCodes.Conv_Ovf_I8);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to unsigned int8 and extends it to int32, throwing <see cref="OverflowException">OverflowException</see> on overflow.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the value being converted.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Conv_Ovf_U1">Conv_Ovf_U1</see> or <see cref="OpCodes.Conv_Ovf_U1_Un">Conv_Ovf_U1_Un</see> instruction depending on whether the type is signed or not.
-        /// </param>
-        public void Conv_Ovf_U1(Type type)
-        {
-            if(type == null)
-                throw new ArgumentNullException("type");
-            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_U1_Un : OpCodes.Conv_Ovf_U1);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to unsigned int16 and extends it to int32, throwing <see cref="OverflowException">OverflowException</see> on overflow.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the value being converted.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Conv_Ovf_U2">Conv_Ovf_U2</see> or <see cref="OpCodes.Conv_Ovf_U2_Un">Conv_Ovf_U2_Un</see> instruction depending on whether the type is signed or not.
-        /// </param>
-        public void Conv_Ovf_U2(Type type)
-        {
-            if(type == null)
-                throw new ArgumentNullException("type");
-            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_U2_Un : OpCodes.Conv_Ovf_U2);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to unsigned int32, throwing <see cref="OverflowException">OverflowException</see> on overflow.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the value being converted.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Conv_Ovf_U4">Conv_Ovf_U4</see> or <see cref="OpCodes.Conv_Ovf_U4_Un">Conv_Ovf_U4_Un</see> instruction depending on whether the type is signed or not.
-        /// </param>
-        public void Conv_Ovf_U4(Type type)
-        {
-            if(type == null)
-                throw new ArgumentNullException("type");
-            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_U4_Un : OpCodes.Conv_Ovf_U4);
-        }
-
-        /// <summary>
-        /// Converts the value on top of the evaluation stack to unsigned int64, throwing <see cref="OverflowException">OverflowException</see> on overflow.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type">Type</see> of the value being converted.
-        /// <para></para>
-        /// Emits either <see cref="OpCodes.Conv_Ovf_U8">Conv_Ovf_U8</see> or <see cref="OpCodes.Conv_Ovf_U8_Un">Conv_Ovf_U8_Un</see> instruction depending on whether the type is signed or not.
-        /// </param>
-        public void Conv_Ovf_U8(Type type)
-        {
-            if(type == null)
-                throw new ArgumentNullException("type");
-            Emit(Unsigned(type) ? OpCodes.Conv_Ovf_U8_Un : OpCodes.Conv_Ovf_U8);
-        }
-
-        /// <summary>
-        /// Calls the method indicated by the passed method descriptor.
-        /// <para></para>
-        /// Emits a <see cref="OpCodes.Call">Call</see> or <see cref="OpCodes.Callvirt">Callvirt</see> instruction depending on whether the method is a virtual or not.
-        /// </summary>
-        /// <param name="method">The <see cref="MethodInfo">Method</see> to be called.</param>
-        /// <param name="constrained">The <see cref="Type">Type</see> of an object to constrain the method call on. Emits the <see cref="OpCodes.Constrained">Constrained</see> prefix.</param>
-        /// <param name="tailcall">True if the method call is a tail call. Emits the <see cref="OpCodes.Tailcall">Tailcall</see> prefix.</param>
         /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
         public void Call(MethodInfo method, Type constrained = null, bool tailcall = false, Type[] optionalParameterTypes = null)
         {
-            OpCode opCode = method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call;
+            var opCode = method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call;
             if(opCode == OpCodes.Callvirt)
             {
-                if (constrained != null && constrained.IsValueType)
+                if(constrained != null && constrained.IsValueType)
                 {
                     if(analyzeStack)
                         ilCode.AppendPrefix(OpCodes.Constrained);
@@ -1664,7 +1664,7 @@ namespace GrEmit
             }
             if(tailcall)
             {
-                if (analyzeStack)
+                if(analyzeStack)
                     ilCode.AppendPrefix(OpCodes.Tailcall);
                 il.Emit(OpCodes.Tailcall);
             }
@@ -1677,9 +1677,11 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Calls the constructor indicated by the passed constructor descriptor.
+        ///     Calls the constructor indicated by the passed constructor descriptor.
         /// </summary>
-        /// <param name="constructor">The <see cref="ConstructorInfo">Constructor</see> to be called.</param>
+        /// <param name="constructor">
+        ///     The <see cref="ConstructorInfo">Constructor</see> to be called.
+        /// </param>
         public void Call(ConstructorInfo constructor)
         {
             var parameter = new ConstructorILInstructionParameter(constructor);
@@ -1690,42 +1692,25 @@ namespace GrEmit
             il.Emit(OpCodes.Call, constructor);
         }
 
-//        /// <summary>
-//        /// Calls a late-bound method on an object, pushing the return value onto the evaluation stack.
-//        /// </summary>
-//        /// <param name="method">The <see cref="MethodInfo">Method</see> to be called.</param>
-//        /// <param name="type">The <see cref="Type">Type</see> of an object to call the method on</param>
-//        /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
-//        public void Callvirt(MethodInfo method, Type type, Type[] optionalParameterTypes = null)
-//        {
-//            OpCode opCode = OpCodes.Callvirt;
-//            if(type == null)
-//                throw new ArgumentNullException("type", "Type must be specified for a virtual method call");
-//            if(type.IsValueType)
-//                Emit(OpCodes.Constrained, type);
-//            var parameter = new MethodILInstructionParameter(method);
-//            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
-//            if(analyzeStack && stack != null)
-//                MutateStack(opCode, parameter);
-//            ilCode.SetComment(lineNumber, GetComment());
-//            il.EmitCall(opCode, method, optionalParameterTypes);
-//        }
-//
         /// <summary>
-        /// Statically calls the method indicated by the passed method descriptor.
+        ///     Statically calls the method indicated by the passed method descriptor.
         /// </summary>
-        /// <param name="method">The <see cref="MethodInfo">Method</see> to be called.</param>
-        /// <param name="tailcall">True if the method call is a tail call. Emits the <see cref="OpCodes.Tailcall">Tailcall</see> prefix.</param>
+        /// <param name="method">
+        ///     The <see cref="MethodInfo">Method</see> to be called.
+        /// </param>
+        /// <param name="tailcall">
+        ///     True if the method call is a tail call. Emits the <see cref="OpCodes.Tailcall">Tailcall</see> prefix.
+        /// </param>
         /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
         public void Callnonvirt(MethodInfo method, bool tailcall = false, Type[] optionalParameterTypes = null)
         {
-            if (tailcall)
+            if(tailcall)
             {
-                if (analyzeStack)
+                if(analyzeStack)
                     ilCode.AppendPrefix(OpCodes.Tailcall);
                 il.Emit(OpCodes.Tailcall);
             }
-            OpCode opCode = OpCodes.Call;
+            var opCode = OpCodes.Call;
             var parameter = new MethodILInstructionParameter(method);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
@@ -1735,18 +1720,22 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Calls the method indicated on the evaluation stack (as a pointer to an entry point) with arguments described by a calling convention.
+        ///     Calls the method indicated on the evaluation stack (as a pointer to an entry point) with arguments described by a calling convention.
         /// </summary>
         /// <param name="callingConvention">The managed calling convention to be used.</param>
-        /// <param name="returnType">The <see cref="Type">Type</see> of the result.</param>
+        /// <param name="returnType">
+        ///     The <see cref="Type">Type</see> of the result.
+        /// </param>
         /// <param name="parameterTypes">The types of the required arguments to the instruction.</param>
-        /// <param name="tailcall">True if the method call is a tail call. Emits the <see cref="OpCodes.Tailcall">Tailcall</see> prefix.</param>
+        /// <param name="tailcall">
+        ///     True if the method call is a tail call. Emits the <see cref="OpCodes.Tailcall">Tailcall</see> prefix.
+        /// </param>
         /// <param name="optionalParameterTypes">The types of the optional arguments for varargs calls.</param>
         public void Calli(CallingConventions callingConvention, Type returnType, Type[] parameterTypes, bool tailcall = false, Type[] optionalParameterTypes = null)
         {
-            if (tailcall)
+            if(tailcall)
             {
-                if (analyzeStack)
+                if(analyzeStack)
                     ilCode.AppendPrefix(OpCodes.Tailcall);
                 il.Emit(OpCodes.Tailcall);
             }
@@ -1802,6 +1791,24 @@ namespace GrEmit
         internal readonly Type methodReturnType;
         internal readonly Type[] methodParameterTypes;
 
+        private void InsertPrefixes(bool isVolatile, int? unaligned)
+        {
+            if(isVolatile)
+            {
+                if(analyzeStack)
+                    ilCode.AppendPrefix(OpCodes.Volatile);
+                il.Emit(OpCodes.Volatile);
+            }
+            if(unaligned != null)
+            {
+                if(unaligned != 1 && unaligned != 2 && unaligned != 4)
+                    throw new ArgumentException("Value of alignment must be 1, 2 or 4.", "unaligned");
+                if(analyzeStack)
+                    ilCode.AppendPrefix(OpCodes.Unaligned);
+                il.Emit(OpCodes.Unaligned, (long)unaligned.Value);
+            }
+        }
+
         private void MutateStack(OpCode opCode, ILInstructionParameter parameter)
         {
             StackMutatorCollection.Mutate(opCode, this, parameter, ref stack);
@@ -1810,33 +1817,6 @@ namespace GrEmit
         private static bool IsStruct(Type type)
         {
             return type.IsValueType && !type.IsPrimitive && !type.IsEnum && type != typeof(IntPtr) && type != typeof(UIntPtr);
-        }
-
-        private static bool Unsigned(Type type)
-        {
-            if(type == typeof(IntPtr))
-                return false;
-            if(type == typeof(UIntPtr))
-                return true;
-            switch(Type.GetTypeCode(type))
-            {
-            case TypeCode.Boolean:
-            case TypeCode.Byte:
-            case TypeCode.Char:
-            case TypeCode.UInt16:
-            case TypeCode.UInt32:
-            case TypeCode.UInt64:
-                return true;
-            case TypeCode.SByte:
-            case TypeCode.Int16:
-            case TypeCode.Int32:
-            case TypeCode.Int64:
-            case TypeCode.Single:
-            case TypeCode.Double:
-                return false;
-            default:
-                throw new NotSupportedException(string.Format("Type '{0}' is not supported", type.Name));
-            }
         }
 
         private ILInstructionComment GetComment()

@@ -13,6 +13,12 @@ namespace GrEmit
     {
         public static string Format(Type type)
         {
+            if(type == null)
+                return "null";
+            if(type.IsByRef)
+                return Format(type.GetElementType()) + "&";
+            if(type.IsPointer)
+                return Format(type.GetElementType()) + "*";
             if(!type.IsGenericType)
                 return type.Name;
             var index = type.Name.LastIndexOf('`');
@@ -110,17 +116,17 @@ namespace GrEmit
         private static Type[] Qzz(Type[] parameterTypes, Type declaringType, Type[] instantiation)
         {
             var dict = new Dictionary<Type, Type>();
-            int index = 0;
+            var index = 0;
             foreach(var type in declaringType.GetGenericArguments())
             {
                 if(type.IsGenericParameter)
                     dict.Add(type, instantiation[index++]);
             }
             var result = new Type[parameterTypes.Length];
-            for(int i = 0; i < parameterTypes.Length; ++i)
+            for(var i = 0; i < parameterTypes.Length; ++i)
             {
                 Type type;
-                if (dict.TryGetValue(parameterTypes[i], out type))
+                if(dict.TryGetValue(parameterTypes[i], out type))
                     result[i] = type;
                 else result[i] = parameterTypes[i];
             }
@@ -129,13 +135,13 @@ namespace GrEmit
 
         private static Func<MethodInfo, Type[]> BuildMethodOnTypeBuilderInstantiationParametersTypeExtractor()
         {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(Type[]), new[] { typeof(MethodInfo) }, typeof(Formatter), true);
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(Type[]), new[] {typeof(MethodInfo)}, typeof(Formatter), true);
             var assembly = typeof(MethodInfo).Assembly;
             var methodOnTypeBuilderInstantiationType = assembly.GetTypes().FirstOrDefault(type => type.Name == "MethodOnTypeBuilderInstantiation");
-            if (methodOnTypeBuilderInstantiationType == null)
+            if(methodOnTypeBuilderInstantiationType == null)
                 throw new InvalidOperationException("Type 'MethodOnTypeBuilderInstantiation' is not found");
             var typeBuilderInstantiationType = assembly.GetTypes().FirstOrDefault(type => type.Name == "TypeBuilderInstantiation");
-            if (typeBuilderInstantiationType == null)
+            if(typeBuilderInstantiationType == null)
                 throw new InvalidOperationException("Type 'TypeBuilderInstantiation' is not found");
             var methodField = methodOnTypeBuilderInstantiationType.GetField("m_method", BindingFlags.Instance | BindingFlags.NonPublic);
             if(methodField == null)
@@ -144,10 +150,10 @@ namespace GrEmit
             if(typeField == null)
                 throw new InvalidOperationException("Field 'MethodOnTypeBuilderInstantiation.m_type' is not found");
             var typeTypeField = typeBuilderInstantiationType.GetField("m_type", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (typeTypeField == null)
+            if(typeTypeField == null)
                 throw new InvalidOperationException("Field 'TypeBuilderInstantiation.m_type' is not found");
             var typeInstField = typeBuilderInstantiationType.GetField("m_inst", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (typeInstField == null)
+            if(typeInstField == null)
                 throw new InvalidOperationException("Field 'TypeBuilderInstantiation.m_inst' is not found");
             var il = method.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0); // stack: [method]
@@ -171,9 +177,9 @@ namespace GrEmit
 
         private static Type[] Zzz(Type[] parameterTypes, Type[] instantiation)
         {
-            int index = 0;
+            var index = 0;
             var result = new Type[parameterTypes.Length];
-            for(int i = 0; i < parameterTypes.Length; i++)
+            for(var i = 0; i < parameterTypes.Length; i++)
             {
                 var type = parameterTypes[i];
                 result[i] = type.IsGenericParameter ? instantiation[index++] : type;

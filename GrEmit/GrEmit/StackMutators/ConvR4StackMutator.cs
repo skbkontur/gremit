@@ -1,15 +1,13 @@
-using System;
-using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace GrEmit.StackMutators
 {
-    internal class ConvR4StackMutator : StackMutator
+    internal class ConvR4StackMutator : ConvertStackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public ConvR4StackMutator(OpCode opCode)
+            : base(opCode, typeof(float))
         {
-            CheckNotEmpty(il, stack);
-            CheckNotStruct(il, stack.Pop());
-            stack.Push(typeof(float));
+            Allow(CLIType.Int32, CLIType.Int64, CLIType.NativeInt, CLIType.Float, CLIType.Zero);
         }
     }
 }

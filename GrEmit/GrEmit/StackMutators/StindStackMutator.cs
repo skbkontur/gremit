@@ -13,7 +13,24 @@ namespace GrEmit.StackMutators
             CheckNotEmpty(il, stack);
             CheckCanBeAssigned(il, type, stack.Pop());
             CheckNotEmpty(il, stack);
-            CheckIsAddress(il, stack.Pop());
+            Type pointer = stack.Pop();
+            CheckIsAPointer(il, pointer);
+            if(pointer.IsByRef || pointer.IsPointer)
+            {
+                var elementType = pointer.GetElementType();
+                if(elementType.IsValueType)
+                    CheckCanBeAssigned(il, pointer, type.MakeByRefType());
+                else
+                    CheckCanBeAssigned(il, elementType, type);
+            }
+            else if(pointer.IsPointer)
+            {
+                var elementType = pointer.GetElementType();
+                if(elementType.IsValueType)
+                    CheckCanBeAssigned(il, pointer, type.MakePointerType());
+                else
+                    CheckCanBeAssigned(il, elementType, type);
+            }
         }
     }
 }

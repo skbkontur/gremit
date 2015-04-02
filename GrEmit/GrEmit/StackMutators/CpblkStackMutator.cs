@@ -10,9 +10,9 @@ namespace GrEmit.StackMutators
             CheckNotEmpty(il, stack);
             CheckCanBeAssigned(il, typeof(int), stack.Pop());
             CheckNotEmpty(il, stack);
-            CheckIsAddress(il, stack.Pop());
+            CheckIsAPointer(il, stack.Pop());
             CheckNotEmpty(il, stack);
-            CheckIsAddress(il, stack.Pop());
+            CheckIsAPointer(il, stack.Pop());
         }
     }
 }
