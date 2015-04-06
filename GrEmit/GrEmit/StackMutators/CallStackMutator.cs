@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 using GrEmit.InstructionParameters;
@@ -8,7 +7,7 @@ namespace GrEmit.StackMutators
 {
     internal class CallStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             Type[] parameterTypes;
             Type returnType;
@@ -19,7 +18,7 @@ namespace GrEmit.StackMutators
             {
                 var method = ((MethodILInstructionParameter)parameter).Method;
                 declaringType = method.DeclaringType;
-                parameterTypes = Formatter.GetParameterTypes(method);
+                parameterTypes = ReflectionExtensions.GetParameterTypes(method);
                 returnType = method.ReturnType;
                 isStatic = method.IsStatic;
                 formattedMethod = Formatter.Format(method);
@@ -28,7 +27,7 @@ namespace GrEmit.StackMutators
             {
                 var constructor = ((ConstructorILInstructionParameter)parameter).Constructor;
                 declaringType = constructor.DeclaringType;
-                parameterTypes = Formatter.GetParameterTypes(constructor);
+                parameterTypes = ReflectionExtensions.GetParameterTypes(constructor);
                 returnType = typeof(void);
                 isStatic = false;
                 formattedMethod = Formatter.Format(constructor);
@@ -42,11 +41,12 @@ namespace GrEmit.StackMutators
             {
                 CheckNotEmpty(il, stack);
                 var instance = stack.Pop();
-                if(instance.IsValueType)
-                    ThrowError(il, string.Format("In order to call method '{0}' on a value type '{1}' load instance by ref or box it", formattedMethod, Formatter.Format(instance)));
-                else if(instance.IsByRef)
+                var instanceBaseType = instance.ToType();
+                if(instanceBaseType.IsValueType)
+                    ThrowError(il, string.Format("In order to call method '{0}' on a value type '{1}' load instance by ref or box it", formattedMethod, instance));
+                else if(instanceBaseType.IsByRef)
                 {
-                    var elementType = instance.GetElementType();
+                    var elementType = instanceBaseType.GetElementType();
                     if(elementType.IsValueType)
                     {
                         if(declaringType.IsInterface)

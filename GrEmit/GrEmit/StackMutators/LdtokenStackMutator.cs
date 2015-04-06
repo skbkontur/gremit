@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 using GrEmit.InstructionParameters;
 
@@ -7,7 +6,7 @@ namespace GrEmit.StackMutators
 {
     internal class LdtokenStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             if(parameter is TypeILInstructionParameter)
                 stack.Push(typeof(RuntimeTypeHandle));

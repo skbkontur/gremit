@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-
-using GrEmit.InstructionParameters;
+﻿using GrEmit.InstructionParameters;
 
 namespace GrEmit.StackMutators
 {
     internal class BrfalseStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var label = ((LabelILInstructionParameter)parameter).Label;
             CheckNotEmpty(il, stack);

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace GrEmit.StackMutators
@@ -11,18 +10,14 @@ namespace GrEmit.StackMutators
             this.opCode = opCode;
         }
 
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             CheckNotEmpty(il, stack);
             var left = stack.Pop();
             CheckNotEmpty(il, stack);
             var right = stack.Pop();
             if(!IsAllowed(ToCLIType(left), ToCLIType(right)))
-            {
-                ThrowError(il,
-                           string.Format("Cannot perform instruction '{0}' on types '{1}' and '{2}'", opCode,
-                                         Formatter.Format(left), Formatter.Format(right)));
-            }
+                ThrowError(il, string.Format("Cannot perform instruction '{0}' on types '{1}' and '{2}'", opCode, left, right));
             var result = Canonize(GetResultType(Canonize(left), Canonize(right)));
             if(result != typeof(void))
                 stack.Push(result);
@@ -30,7 +25,7 @@ namespace GrEmit.StackMutators
         }
 
         protected abstract Type GetResultType(Type left, Type right);
-        protected abstract void PostAction(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack);
+        protected abstract void PostAction(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack);
 
         protected void Allow(CLIType left, params CLIType[] right)
         {

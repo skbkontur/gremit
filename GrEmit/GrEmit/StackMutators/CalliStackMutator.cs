@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-
 using GrEmit.InstructionParameters;
 
 namespace GrEmit.StackMutators
 {
     internal class CalliStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var calliParameter = (MethodByAddressILInstructionParameter)parameter;
             var returnType = calliParameter.ReturnType;

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace GrEmit.StackMutators
@@ -12,12 +11,12 @@ namespace GrEmit.StackMutators
             this.to = to;
         }
 
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             CheckNotEmpty(il, stack);
             var type = stack.Pop();
             if(!Allowed(type))
-                ThrowError(il, string.Format("Unable to perform instruction '{0}' on type '{1}'", opCode, Formatter.Format(type)));
+                ThrowError(il, string.Format("Unable to perform instruction '{0}' on type '{1}'", opCode, type));
             stack.Push(to);
         }
 
@@ -27,7 +26,7 @@ namespace GrEmit.StackMutators
                 allowed[(int)type] = true;
         }
 
-        private bool Allowed(Type type)
+        private bool Allowed(ESType type)
         {
             return allowed[(int)ToCLIType(type)];
         }

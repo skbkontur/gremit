@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace GrEmit.StackMutators
+﻿namespace GrEmit.StackMutators
 {
     internal class RetStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             if(il.methodReturnType == typeof(void))
             {

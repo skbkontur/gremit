@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Reflection.Emit;
 
 using GrEmit;
@@ -253,7 +254,7 @@ namespace Tests
         {
         }
 
-        public class C2 : I1, I2
+        public class C2 : I1
         {
         }
 
@@ -269,21 +270,82 @@ namespace Tests
         public void TestDifferentPaths()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(bool), typeof(C1), typeof(C2)}, typeof(string), true);
-            var il = new GroboIL(method);
-            il.Ldarg(0);
-            var label1 = il.DefineLabel("L1");
-            il.Brfalse(label1);
-            il.Ldarg(1);
-            var label2 = il.DefineLabel("L2");
-            il.Br(label2);
-            il.MarkLabel(label1);
-            il.Ldarg(2);
-            il.MarkLabel(label2);
-            il.Dup();
-            il.Call(HackHelpers.GetMethodDefinition<I1>(x => F1(x)));
-            il.Call(HackHelpers.GetMethodDefinition<I2>(x => F2(x)));
-            il.Ret();
+            using(var il = new GroboIL(method))
+            {
+                il.Ldarg(0);
+                var label1 = il.DefineLabel("L1");
+                il.Brfalse(label1);
+                il.Ldarg(1);
+                var label2 = il.DefineLabel("L2");
+                il.Br(label2);
+                il.MarkLabel(label1);
+                il.Ldarg(2);
+                il.MarkLabel(label2);
+                il.Dup();
+                il.Call(HackHelpers.GetMethodDefinition<I1>(x => F1(x)));
+                il.Call(HackHelpers.GetMethodDefinition<I2>(x => F2(x)));
+                il.Ret();
+                Console.Write(il.GetILCode());
+            }
             var action = method.CreateDelegate(typeof(Action<bool, C1, C2>));
+        }
+
+        public interface I1<T>
+        {
+        }
+
+        public interface I2<T>
+        {
+        }
+
+        public class Base<T>
+        {
+        }
+
+        public class C1<T> : Base<T>, I1<T>, I2<T>
+        {
+        }
+
+        public class C2<T> : Base<T>, I1<T>, I2<T>
+        {
+        }
+
+        public static void F1<T>(I1<T> i1)
+        {
+        }
+
+        public static void F2<T>(I2<T> i2)
+        {
+        }
+
+        [Test]
+        public void TestDifferentPathsGeneric()
+        {
+            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
+            var module = assembly.DefineDynamicModule(Guid.NewGuid().ToString());
+            var type = module.DefineType("Zzz", TypeAttributes.Class | TypeAttributes.Public);
+            var method = type.DefineMethod("Qzz", MethodAttributes.Public | MethodAttributes.Static);
+            var genericParameters = method.DefineGenericParameters("TZzz");
+            var parameter = genericParameters[0];
+            method.SetParameters(typeof(bool), typeof(C1<>).MakeGenericType(parameter), typeof(C2<>).MakeGenericType(parameter));
+            method.SetReturnType(typeof(void));
+            using(var il = new GroboIL(method))
+            {
+                il.Ldarg(0);
+                var label1 = il.DefineLabel("L1");
+                il.Brfalse(label1);
+                il.Ldarg(1);
+                var label2 = il.DefineLabel("L2");
+                il.Br(label2);
+                il.MarkLabel(label1);
+                il.Ldarg(2);
+                il.MarkLabel(label2);
+                il.Dup();
+                il.Call(HackHelpers.GetMethodDefinition<I1<int>>(x => F1(x)).GetGenericMethodDefinition().MakeGenericMethod(parameter));
+                il.Call(HackHelpers.GetMethodDefinition<I2<int>>(x => F2(x)).GetGenericMethodDefinition().MakeGenericMethod(parameter));
+                il.Ret();
+                Console.Write(il.GetILCode());
+            }
         }
 
     }

@@ -8,7 +8,7 @@ namespace GrEmit
 {
     internal static class StackMutatorCollection
     {
-        public static void Mutate(OpCode opCode, GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public static void Mutate(OpCode opCode, GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             StackMutator stackMutator;
             if(string.IsNullOrEmpty(opCode.Name))

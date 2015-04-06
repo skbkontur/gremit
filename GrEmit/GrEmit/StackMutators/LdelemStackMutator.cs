@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 using GrEmit.InstructionParameters;
 
@@ -7,16 +6,17 @@ namespace GrEmit.StackMutators
 {
     internal class LdelemStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var elementType = ((TypeILInstructionParameter)parameter).Type;
             CheckNotEmpty(il, stack);
             CheckCanBeAssigned(il, typeof(int), stack.Pop());
             CheckNotEmpty(il, stack);
-            var peek = stack.Pop();
-            if(!peek.IsArray && peek != typeof(Array))
-                throw new InvalidOperationException("An array expected but was '" + peek + "'");
-            CheckCanBeAssigned(il, elementType, peek.GetElementType());
+            var esType = stack.Pop();
+            var array = esType.ToType();
+            if(!array.IsArray && array != typeof(Array))
+                throw new InvalidOperationException(string.Format("An array expected but was '{0}'", esType));
+            CheckCanBeAssigned(il, elementType, array == typeof(Array) ? typeof(object) : array.GetElementType());
             stack.Push(elementType);
         }
     }

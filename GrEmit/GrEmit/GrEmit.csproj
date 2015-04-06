@@ -39,6 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FieldsExtractor.cs" />
+    <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="StackMutators\Add_UnStackMutator.cs" />
     <Compile Include="StackMutators\ArglistStackMutator.cs" />
     <Compile Include="StackMutators\ArithmeticBinOpStackMutator.cs" />

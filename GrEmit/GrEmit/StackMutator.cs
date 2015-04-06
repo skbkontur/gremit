@@ -19,79 +19,114 @@ namespace GrEmit
         Struct
     }
 
+    internal abstract class ESType
+    {
+        public abstract Type ToType();
+    }
+
+    internal class SimpleESType : ESType
+    {
+        public SimpleESType(Type type)
+        {
+            Type = type;
+        }
+
+        public override Type ToType()
+        {
+            return Type;
+        }
+
+        public Type Type { get; private set; }
+    }
+
+    internal class ComplexESType : ESType
+    {
+        public ComplexESType(Type baseType, Type[] interfaces)
+        {
+            BaseType = baseType;
+            Interfaces = interfaces;
+        }
+
+        public override Type ToType()
+        {
+            return BaseType;
+        }
+
+        public override string ToString()
+        {
+            return Formatter.Format(this);
+        }
+
+        public Type BaseType { get; private set; }
+        public Type[] Interfaces { get; private set; }
+    }
+
+    internal class EvaluationStack : Stack<ESType>
+    {
+        public EvaluationStack()
+        {
+        }
+
+        public EvaluationStack(IEnumerable<ESType> collection)
+            : base(collection)
+        {
+        }
+
+        public void Push(Type type)
+        {
+            if(type != null && type.IsInterface)
+                Push(new ComplexESType(typeof(object), new[] {type}));
+            else
+                Push(new SimpleESType(type));
+        }
+    }
+
     internal abstract class StackMutator
     {
-        public abstract void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack);
+        public abstract void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack);
 
         protected static void ThrowError(GroboIL il, string message)
         {
             throw new InvalidOperationException(message + Environment.NewLine + il.GetILCode());
         }
 
-        protected static void CheckNotStruct(GroboIL il, Type type)
+        protected static void CheckNotStruct(GroboIL il, ESType type)
         {
             if(ToCLIType(type) == CLIType.Struct)
                 ThrowError(il, string.Format("Struct of type '{0}' is not valid at this point", type));
         }
 
-        protected void CheckNotEmpty(GroboIL il, Stack<Type> stack)
+        protected static void CheckNotEmpty(GroboIL il, EvaluationStack stack)
         {
             if(stack.Count == 0)
                 throw new InvalidOperationException("Stack is empty\r\n" + il.GetILCode());
         }
 
-        protected static bool TypesConsistent(Type type1, Type type2)
-        {
-            var ilStackType1 = ToCLIType(type1);
-            var ilStackType2 = ToCLIType(type2);
-            if(ilStackType1 != ilStackType2)
-                return false;
-            if(ilStackType1 == CLIType.Struct && type1 != type2)
-                return false;
-            return true;
-        }
-
-        protected static bool StacksConsistent(Stack<Type> stack, Type[] otherStack)
-        {
-            if(otherStack.Length != stack.Count)
-                return false;
-            var currentStack = stack.Reverse().ToArray();
-            for(var i = 0; i < otherStack.Length; ++i)
-            {
-                var type1 = currentStack[i];
-                var type2 = otherStack[i];
-                if(!TypesConsistent(type1, type2))
-                    return false;
-/*                if(!type1.IsValueType && !type2.IsValueType)
-                    continue;
-                if(IsStruct(type1) || IsStruct(type2))
-                {
-                    if(type1 != type2)
-                        return false;
-                }
-                else if(GetSize(type1) != GetSize(type2))
-                    return false;*/
-            }
-            return true;
-        }
-
-        protected static void CheckIsAPointer(GroboIL il, Type type)
+        protected static void CheckIsAPointer(GroboIL il, ESType type)
         {
             var cliType = ToCLIType(type);
             if(cliType != CLIType.Pointer && cliType != CLIType.NativeInt)
                 ThrowError(il, string.Format("A pointer type expected but was '{0}'", type));
         }
 
+        protected static void CheckCanBeAssigned(GroboIL il, Type to, ESType from)
+        {
+            if(!CanBeAssigned(to, from))
+                ThrowError(il, string.Format("Unable to set value of type '{0}' to value of type '{1}'", from, Formatter.Format(to)));
+        }
+
         protected static void CheckCanBeAssigned(GroboIL il, Type to, Type from)
         {
             if(!CanBeAssigned(to, from))
-                ThrowError(il, string.Format("Unable to set value of type '{0}' to value of type '{1}'", from, to));
+                ThrowError(il, string.Format("Unable to set value of type '{0}' to value of type '{1}'", Formatter.Format(from), Formatter.Format(to)));
         }
 
-        protected static bool CanBeAssigned(Type to, Type from)
+        protected static bool CanBeAssigned(Type to, ESType esFrom)
         {
+            // todo: handle InvalidoperationException if type is a GenericParameter or a TypeBuilderInstantioation
             var cliTo = ToCLIType(to);
-            var cliFrom = ToCLIType(from);
+            var cliFrom = ToCLIType(esFrom);
+            var from = esFrom.ToType();
             switch(cliTo)
             {
             case CLIType.Int32:
@@ -113,28 +148,29 @@ namespace GrEmit
                 from = from.GetElementType();
                 return to.IsValueType && from.IsValueType;
             case CLIType.Object:
-                if(cliFrom == CLIType.Zero)
+                if(cliFrom == CLIType.Zero || ReflectionExtensions.Equal(to, from))
                     return true;
-                if(to.IsGenericParameter)
-                    return to == from;
-                return to.IsAssignableFrom(from);
+                var simpleESFrom = esFrom as SimpleESType;
+                if(simpleESFrom != null)
+                    return  ReflectionExtensions.IsAssignableFrom(to, from);
+                var complexESFrom = (ComplexESType)esFrom;
+                return ReflectionExtensions.IsAssignableFrom(to, complexESFrom.BaseType) || complexESFrom.Interfaces.Any(interfaCe => ReflectionExtensions.IsAssignableFrom(to, interfaCe));
             default:
                 throw new InvalidOperationException(string.Format("CLI type '{0}' is not valid at this point", cliTo));
             }
         }
 
-        protected void CheckStacksEqual(GroboIL il, GroboIL.Label label, Stack<Type> stack, Type[] otherStack)
+        protected static bool CanBeAssigned(Type to, Type from)
         {
-            if(!StacksConsistent(stack, otherStack))
-                throw new InvalidOperationException("Inconsistent stack for label '" + label.Name + "'\r\n" + il.GetILCode());
+            return CanBeAssigned(to, new SimpleESType(from));
         }
 
-        protected void SaveOrCheck(GroboIL il, Stack<Type> stack, GroboIL.Label label)
+        protected void SaveOrCheck(GroboIL il, EvaluationStack stack, GroboIL.Label label)
         {
-            Type[] labelStack;
+            ESType[] labelStack;
             if(il.labelStacks.TryGetValue(label, out labelStack))
             {
-                Type[] merged;
+                ESType[] merged;
                 var comparisonResult = CompareStacks(stack.Reverse().ToArray(), labelStack, out merged);
                 switch(comparisonResult)
                 {
@@ -145,7 +181,7 @@ namespace GrEmit
                     break;
                 case StacksComparisonResult.Equivalent:
                     il.labelStacks[label] = merged;
-                    Propogate(il, il.ilCode.GetLabelLineNumber(label), new Stack<Type>(merged));
+                    Propogate(il, il.ilCode.GetLabelLineNumber(label), new EvaluationStack(merged));
                     break;
                 }
             }
@@ -154,6 +190,11 @@ namespace GrEmit
                 il.labelStacks.Add(label, stack.Reverse().ToArray());
                 Propogate(il, il.ilCode.GetLabelLineNumber(label), stack);
             }
+        }
+
+        protected static Type Canonize(ESType esType)
+        {
+            return Canonize(esType.ToType());
         }
 
         protected static Type Canonize(Type type)
@@ -177,6 +218,14 @@ namespace GrEmit
                 break;
             }
             return type;
+        }
+
+        protected static CLIType ToCLIType(ESType esType)
+        {
+            if(esType == null)
+                return CLIType.Zero;
+            var simpleESType = esType as SimpleESType;
+            return simpleESType == null ? CLIType.Object : ToCLIType(simpleESType.Type); // ComplexESType is always an object
         }
 
         protected static CLIType ToCLIType(Type type)
@@ -218,7 +267,7 @@ namespace GrEmit
             return type.IsEnum ? ToCLIType(Enum.GetUnderlyingType(type)) : CLIType.Struct;
         }
 
-        private void Propogate(GroboIL il, int lineNumber, Stack<Type> stack)
+        private void Propogate(GroboIL il, int lineNumber, EvaluationStack stack)
         {
             if(lineNumber < 0)
                 return;
@@ -229,11 +278,10 @@ namespace GrEmit
                     break;
                 var instruction = (ILCode.ILInstruction)il.ilCode.GetInstruction(lineNumber);
                 StackMutatorCollection.Mutate(instruction.OpCode, il, instruction.Parameter, ref stack);
-                Type[] merged;
                 if(comment is StackILInstructionComment)
                 {
                     var instructionStack = ((StackILInstructionComment)comment).Stack;
-
+                    ESType[] merged;
                     var comparisonResult = CompareStacks(stack.Reverse().ToArray(), instructionStack, out merged);
                     switch(comparisonResult)
                     {
@@ -243,7 +291,7 @@ namespace GrEmit
                         ThrowError(il, string.Format("Inconsistent stacks for line {0}", (lineNumber + 1)));
                         break;
                     case StacksComparisonResult.Equivalent:
-                        stack = new Stack<Type>(merged);
+                        stack = new EvaluationStack(merged);
                         break;
                     }
                 }
@@ -252,26 +300,45 @@ namespace GrEmit
             }
         }
 
-        private StacksComparisonResult CompareStacks(Type[] first, Type[] second, out Type[] merged)
+        private static bool EqualESTypes(ESType first, ESType second)
+        {
+            if((first is SimpleESType) ^ (second is SimpleESType))
+                return false;
+            if(first.ToType() != second.ToType())
+                return false;
+            if(first is SimpleESType)
+                return true;
+            var firstInterfaces = new HashSet<Type>(((ComplexESType)first).Interfaces);
+            var secondInterfaces = ((ComplexESType)second).Interfaces;
+            foreach(var type in secondInterfaces)
+            {
+                if(!firstInterfaces.Contains(type))
+                    return false;
+                firstInterfaces.Remove(type);
+            }
+            return firstInterfaces.Count == 0;
+        }
+
+        private static StacksComparisonResult CompareStacks(ESType[] first, ESType[] second, out ESType[] merged)
         {
             merged = null;
             if(first.Length != second.Length)
                 return StacksComparisonResult.Inconsistent;
-            Type[] result = null;
+            ESType[] result = null;
             for(var i = 0; i < first.Length; ++i)
             {
                 var firstCLIType = ToCLIType(first[i]);
                 var secondCLIType = ToCLIType(second[i]);
                 if(firstCLIType != CLIType.Zero && secondCLIType != CLIType.Zero && firstCLIType != secondCLIType)
                     return StacksComparisonResult.Inconsistent;
-                if(first[i] != second[i])
+                if(!EqualESTypes(first[i], second[i]))
                 {
                     var common = FindCommonType(firstCLIType, first[i], second[i]);
                     if(common == null)
                         return StacksComparisonResult.Inconsistent;
                     if(result == null)
                     {
-                        result = new Type[first.Length];
+                        result = new ESType[first.Length];
                         for(var j = 0; j < i; ++j)
                             result[j] = first[j];
                     }
@@ -286,28 +353,28 @@ namespace GrEmit
             return StacksComparisonResult.Equivalent;
         }
 
-        private static Type FindCommonType(CLIType cliType, Type first, Type second)
+        private static ESType FindCommonType(CLIType cliType, ESType first, ESType second)
         {
-            if(first == null) return second;
-            if(second == null) return first;
+            if(first.ToType() == null) return second;
+            if(second.ToType() == null) return first;
             switch(cliType)
             {
             case CLIType.Int32:
-                return typeof(int);
+                return new SimpleESType(typeof(int));
             case CLIType.Int64:
-                return typeof(long);
+                return new SimpleESType(typeof(long));
             case CLIType.Float:
-                return typeof(double);
+                return new SimpleESType(typeof(double));
             case CLIType.NativeInt:
                 {
-                    if(first.IsPointer && second.IsPointer)
-                        return typeof(void).MakePointerType();
-                    return typeof(IntPtr);
+                    if(((SimpleESType)first).Type.IsPointer && ((SimpleESType)second).Type.IsPointer)
+                        return new SimpleESType(typeof(void).MakePointerType());
+                    return new SimpleESType(typeof(IntPtr));
                 }
             case CLIType.Pointer:
                 {
-                    var firstElementType = first.GetElementType();
-                    var secondElementType = second.GetElementType();
+                    var firstElementType = ((SimpleESType)first).Type.GetElementType();
+                    var secondElementType = ((SimpleESType)second).Type.GetElementType();
                     if(!firstElementType.IsValueType || !secondElementType.IsValueType)
                         return null;
                     return Marshal.SizeOf(firstElementType) <= Marshal.SizeOf(secondElementType) ? first : second;
@@ -315,7 +382,37 @@ namespace GrEmit
             case CLIType.Struct:
                 return null;
             case CLIType.Object:
-                return first.FindEqualTypeWith(second);
+                {
+                    var baseType = first.ToType().FindBaseClassWith(second.ToType());
+                    var firstInterfaces = ((first is SimpleESType)
+                                              ? ((SimpleESType)first).Type.GetTypesArray()
+                                              : ((ComplexESType)first).BaseType.GetTypesArray().Concat(((ComplexESType)first).Interfaces)).Where(t => t.IsInterface).ToArray();
+                    var secondInterfaces = ((second is SimpleESType)
+                                               ? ((SimpleESType)second).Type.GetTypesArray()
+                                               : ((ComplexESType)second).BaseType.GetTypesArray().Concat(((ComplexESType)second).Interfaces)).Where(t => t.IsInterface).ToArray();
+                    var hashSet = new HashSet<Type>(firstInterfaces.Intersect(secondInterfaces).Concat(new[] {baseType}), new ReflectionExtensions.TypesComparer());
+                    while(true)
+                    {
+                        var end = true;
+                        foreach(var type in hashSet.ToArray())
+                        {
+                            var children = ReflectionExtensions.GetInterfaces(type);
+                            foreach(var child in children)
+                            {
+                                if(hashSet.Contains(child))
+                                {
+                                    end = false;
+                                    hashSet.Remove(child);
+                                }
+                            }
+                        }
+                        if(end) break;
+                    }
+                    hashSet.Remove(baseType);
+                    if(hashSet.Count == 0)
+                        return new SimpleESType(baseType);
+                    return new ComplexESType(baseType, hashSet.ToArray());
+                }
             default:
                 throw new InvalidOperationException(string.Format("CLI type '{0}' is not valid at this point", cliType));
             }

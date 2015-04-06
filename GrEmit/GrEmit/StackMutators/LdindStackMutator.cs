@@ -1,18 +1,16 @@
-using System;
-using System.Collections.Generic;
-
 using GrEmit.InstructionParameters;
 
 namespace GrEmit.StackMutators
 {
     internal class LdindStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var type = ((TypeILInstructionParameter)parameter).Type;
             CheckNotEmpty(il, stack);
-            var pointer = stack.Pop();
-            CheckIsAPointer(il, pointer);
+            var esType = stack.Pop();
+            CheckIsAPointer(il, esType);
+            var pointer = esType.ToType();
             if(pointer.IsByRef)
             {
                 var elementType = pointer.GetElementType();

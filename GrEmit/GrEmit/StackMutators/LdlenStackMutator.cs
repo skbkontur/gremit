@@ -1,16 +1,16 @@
 using System;
-using System.Collections.Generic;
 
 namespace GrEmit.StackMutators
 {
     internal class LdlenStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             CheckNotEmpty(il, stack);
-            var peek = stack.Pop();
-            if(!peek.IsArray && peek != typeof(Array))
-                throw new InvalidOperationException("An array expected but was '" + peek + "'");
+            var esType = stack.Pop();
+            var array = esType.ToType();
+            if(!array.IsArray && array != typeof(Array))
+                ThrowError(il, string.Format("An array expected but was '{0}'", esType));
             stack.Push(typeof(int));
         }
     }

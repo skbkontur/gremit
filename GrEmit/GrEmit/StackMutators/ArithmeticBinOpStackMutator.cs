@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace GrEmit.StackMutators
@@ -11,7 +9,7 @@ namespace GrEmit.StackMutators
         {
         }
 
-        protected override void PostAction(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        protected override void PostAction(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
         }
     }

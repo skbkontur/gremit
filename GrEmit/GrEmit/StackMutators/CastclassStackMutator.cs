@@ -1,18 +1,18 @@
-using System;
-using System.Collections.Generic;
-
 using GrEmit.InstructionParameters;
 
 namespace GrEmit.StackMutators
 {
     internal class CastclassStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
-            var type = ((TypeILInstructionParameter)parameter).Type;
+            // todo проверить ВСЕ!
+            var to = ((TypeILInstructionParameter)parameter).Type;
             CheckNotEmpty(il, stack);
-            CheckCanBeAssigned(il, stack.Pop(), type);
-            stack.Push(type);
+            var from = stack.Pop().ToType();
+            if(!(ToCLIType(from) == CLIType.Object && CanBeAssigned(to, from)))
+                CheckCanBeAssigned(il, from, to);
+            stack.Push(to);
         }
     }
 }

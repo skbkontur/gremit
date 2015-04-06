@@ -1,16 +1,13 @@
-using System;
-using System.Collections.Generic;
-
 using GrEmit.InstructionParameters;
 
 namespace GrEmit.StackMutators
 {
     internal class NewobjStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var constructor = ((ConstructorILInstructionParameter)parameter).Constructor;
-            var parameterTypes = Formatter.GetParameterTypes(constructor);
+            var parameterTypes = ReflectionExtensions.GetParameterTypes(constructor);
             for(var i = parameterTypes.Length - 1; i >= 0; --i)
             {
                 CheckNotEmpty(il, stack);

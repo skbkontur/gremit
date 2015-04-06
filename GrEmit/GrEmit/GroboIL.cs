@@ -32,7 +32,7 @@ namespace GrEmit
         }
 
         public GroboIL(DynamicMethod method, bool analyzeStack = true)
-            : this(method.GetILGenerator(), method.ReturnType, Formatter.GetParameterTypes(method), analyzeStack)
+            : this(method.GetILGenerator(), method.ReturnType, ReflectionExtensions.GetParameterTypes(method), analyzeStack)
         {
         }
 
@@ -40,14 +40,14 @@ namespace GrEmit
             : this(method.GetILGenerator(),
                    method.ReturnType,
                    method.IsStatic
-                       ? Formatter.GetParameterTypes(method)
-                       : new[] {method.ReflectedType}.Concat(Formatter.GetParameterTypes(method)).ToArray(),
+                       ? ReflectionExtensions.GetParameterTypes(method)
+                       : new[] { method.ReflectedType }.Concat(ReflectionExtensions.GetParameterTypes(method)).ToArray(),
                    analyzeStack)
         {
         }
 
         public GroboIL(ConstructorBuilder constructor, bool analyzeStack = true)
-            : this(constructor.GetILGenerator(), typeof(void), new[] {constructor.ReflectedType}.Concat(Formatter.GetParameterTypes(constructor)).ToArray(), analyzeStack)
+            : this(constructor.GetILGenerator(), typeof(void), new[] { constructor.ReflectedType }.Concat(ReflectionExtensions.GetParameterTypes(constructor)).ToArray(), analyzeStack)
         {
         }
 
@@ -180,7 +180,7 @@ namespace GrEmit
             if(exceptionType != null)
             {
                 if(analyzeStack)
-                    stack = new Stack<Type>(new[] {exceptionType});
+                    stack = new EvaluationStack(new ESType[] { new SimpleESType(exceptionType) });
                 ilCode.BeginCatchBlock(new TypeILInstructionParameter(exceptionType), GetComment());
             }
             il.BeginCatchBlock(exceptionType);
@@ -192,7 +192,7 @@ namespace GrEmit
         public void BeginExceptFilterBlock()
         {
             if(analyzeStack)
-                stack = new Stack<Type>(new[] {typeof(Exception)});
+                stack = new EvaluationStack(new ESType[] { new SimpleESType(typeof(Exception)) });
             ilCode.BeginExceptFilterBlock(GetComment());
             il.BeginExceptFilterBlock();
         }
@@ -203,7 +203,7 @@ namespace GrEmit
         public void BeginFaultBlock()
         {
             if(analyzeStack)
-                stack = new Stack<Type>();
+                stack = new EvaluationStack();
             ilCode.BeginFaultBlock(GetComment());
             il.BeginFaultBlock();
         }
@@ -214,7 +214,7 @@ namespace GrEmit
         public void BeginFinallyBlock()
         {
             if(analyzeStack)
-                stack = new Stack<Type>();
+                stack = new EvaluationStack();
             ilCode.BeginFinallyBlock(GetComment());
             il.BeginFinallyBlock();
         }
@@ -1786,7 +1786,7 @@ namespace GrEmit
             private readonly string name;
         }
 
-        internal readonly Dictionary<Label, Type[]> labelStacks = new Dictionary<Label, Type[]>();
+        internal readonly Dictionary<Label, ESType[]> labelStacks = new Dictionary<Label, ESType[]>();
         internal readonly ILCode ilCode = new ILCode();
         internal readonly Type methodReturnType;
         internal readonly Type[] methodParameterTypes;
@@ -1985,7 +1985,7 @@ namespace GrEmit
         private int localId;
         private int labelId;
 
-        private Stack<Type> stack = new Stack<Type>();
+        private EvaluationStack stack = new EvaluationStack();
 
         private readonly ILGenerator il;
         private readonly bool analyzeStack = true;

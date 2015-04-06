@@ -1,11 +1,10 @@
-using System;
 using System.Linq;
 
 namespace GrEmit.InstructionComments
 {
     internal class StackILInstructionComment : ILInstructionComment
     {
-        public StackILInstructionComment(Type[] stack)
+        public StackILInstructionComment(ESType[] stack)
         {
             Stack = stack;
         }
@@ -15,6 +14,6 @@ namespace GrEmit.InstructionComments
             return Stack == null ? "" : '[' + string.Join(", ", Stack.Select(Formatter.Format).ToArray()) + ']';
         }
 
-        public Type[] Stack { get; private set; }
+        public ESType[] Stack { get; private set; }
     }
 }

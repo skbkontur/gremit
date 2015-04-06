@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-
 using GrEmit.InstructionParameters;
 
 namespace GrEmit.StackMutators
 {
     internal class LdfldStackMutator : StackMutator
     {
-        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var field = ((FieldILInstructionParameter)parameter).Field;
             if(!field.IsStatic)
@@ -15,7 +12,7 @@ namespace GrEmit.StackMutators
                 var declaringType = field.DeclaringType;
                 CheckNotEmpty(il, stack);
 
-                var instance = stack.Pop();
+                var instance = stack.Pop().ToType();
                 if(instance.IsValueType)
                     ThrowError(il, string.Format("In order to load field '{0}' of a value type '{1}' load instance by ref", field, Formatter.Format(instance)));
                 else if(instance.IsByRef)

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection.Emit;
 
 using GrEmit.InstructionParameters;
@@ -18,7 +17,7 @@ namespace GrEmit.StackMutators
             return typeof(void);
         }
 
-        protected override void PostAction(GroboIL il, ILInstructionParameter parameter, ref Stack<Type> stack)
+        protected override void PostAction(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             SaveOrCheck(il, stack, ((LabelILInstructionParameter)parameter).Label);
         }
