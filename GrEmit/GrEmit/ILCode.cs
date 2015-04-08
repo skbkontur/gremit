@@ -36,7 +36,7 @@ namespace GrEmit
                 instructions.Add(new ILInstruction(InstructionKind.Instruction, opCode, parameter, comment));
                 return lineNumber++;
             }
-            instructions[lineNumber - 1] = new ILInstruction(InstructionKind.Instruction, opCode, null, comment) {Prefixes = lastInstructionPrefix.Prefixes};
+            instructions[lineNumber - 1] = new ILInstruction(InstructionKind.Instruction, opCode, parameter, comment) {Prefixes = lastInstructionPrefix.Prefixes};
             return lineNumber - 1;
         }
 

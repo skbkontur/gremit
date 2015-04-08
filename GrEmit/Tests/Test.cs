@@ -396,5 +396,18 @@ namespace Tests
             }
         }
 
+        [Test]
+        public void TestConstrained()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(string), new[] {typeof(int)}, typeof(string), true);
+            using(var il = new GroboIL(method))
+            {
+                il.Ldarga(0);
+                il.Call(typeof(object).GetMethod("ToString"), typeof(int));
+                il.Ret();
+                Console.WriteLine(il.GetILCode());
+            }
+        }
+
     }
 }

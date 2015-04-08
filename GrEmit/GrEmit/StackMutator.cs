@@ -150,8 +150,6 @@ namespace GrEmit
                     return true;
                 if(cliFrom != CLIType.Pointer)
                     return false;
-                Array array = new object[1];
-                    Array.Resize<object>(ref array, 1);
                 to = to.GetElementType();
                 from = from.GetElementType();
                 return to.IsValueType && from.IsValueType;
