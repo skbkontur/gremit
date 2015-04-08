@@ -22,6 +22,13 @@ namespace GrEmit
     internal abstract class ESType
     {
         public abstract Type ToType();
+
+        public override string ToString()
+        {
+            return Formatter.Format(this);
+        }
+
+        public static ESType Zero = new SimpleESType(null);
     }
 
     internal class SimpleESType : ESType
@@ -52,11 +59,6 @@ namespace GrEmit
             return BaseType;
         }
 
-        public override string ToString()
-        {
-            return Formatter.Format(this);
-        }
-
         public Type BaseType { get; private set; }
         public Type[] Interfaces { get; private set; }
     }
@@ -78,6 +80,11 @@ namespace GrEmit
                 Push(new ComplexESType(typeof(object), new[] {type}));
             else
                 Push(new SimpleESType(type));
+        }
+
+        public override string ToString()
+        {
+            return new StackILInstructionComment(this.Reverse().ToArray()).Format();
         }
     }
 
@@ -123,7 +130,6 @@ namespace GrEmit
 
         protected static bool CanBeAssigned(Type to, ESType esFrom)
         {
-            // todo: handle InvalidoperationException if type is a GenericParameter or a TypeBuilderInstantioation
             var cliTo = ToCLIType(to);
             var cliFrom = ToCLIType(esFrom);
             var from = esFrom.ToType();
@@ -144,6 +150,8 @@ namespace GrEmit
                     return true;
                 if(cliFrom != CLIType.Pointer)
                     return false;
+                Array array = new object[1];
+                    Array.Resize<object>(ref array, 1);
                 to = to.GetElementType();
                 from = from.GetElementType();
                 return to.IsValueType && from.IsValueType;
@@ -155,6 +163,8 @@ namespace GrEmit
                     return  ReflectionExtensions.IsAssignableFrom(to, from);
                 var complexESFrom = (ComplexESType)esFrom;
                 return ReflectionExtensions.IsAssignableFrom(to, complexESFrom.BaseType) || complexESFrom.Interfaces.Any(interfaCe => ReflectionExtensions.IsAssignableFrom(to, interfaCe));
+            case CLIType.Zero:
+                return true;
             default:
                 throw new InvalidOperationException(string.Format("CLI type '{0}' is not valid at this point", cliTo));
             }
@@ -177,7 +187,7 @@ namespace GrEmit
                 case StacksComparisonResult.Equal:
                     return;
                 case StacksComparisonResult.Inconsistent:
-                    ThrowError(il, string.Format("Inconsistent stack for label '{0}'", label.Name));
+                    ThrowError(il, string.Format("Inconsistent stack for label '{0}'{1}Stack #1: {2}{1}Stack #2: {3}", label.Name, Environment.NewLine, stack, new EvaluationStack(labelStack)));
                     break;
                 case StacksComparisonResult.Equivalent:
                     il.labelStacks[label] = merged;

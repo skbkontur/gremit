@@ -33,8 +33,8 @@ namespace GrEmit
         public static string Format(MethodInfo method)
         {
             if(ReferenceEquals(method.ReflectedType, null))
-                return Format(method.ReturnType) + " " + FormatMethodWithoutParameters(method) + "(" + string.Join(", ", ReflectionExtensions.GetParameterTypes(method).Select(Format).ToArray()) + ")";
-            return Format(method.ReturnType) + " " + Format(method.ReflectedType) + "." + FormatMethodWithoutParameters(method) + "(" + string.Join(", ", ReflectionExtensions.GetParameterTypes(method).Select(Format).ToArray()) + ")";
+                return Format(ReflectionExtensions.GetReturnType(method)) + " " + FormatMethodWithoutParameters(method) + "(" + string.Join(", ", ReflectionExtensions.GetParameterTypes(method).Select(Format).ToArray()) + ")";
+            return Format(ReflectionExtensions.GetReturnType(method)) + " " + Format(method.ReflectedType) + "." + FormatMethodWithoutParameters(method) + "(" + string.Join(", ", ReflectionExtensions.GetParameterTypes(method).Select(Format).ToArray()) + ")";
         }
 
         internal static string Format(ESType esType)

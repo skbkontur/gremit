@@ -24,9 +24,15 @@ namespace GrEmit
             runtimeMethodInfoType = types.FirstOrDefault(type => type.Name == "RuntimeMethodInfo");
             if(runtimeMethodInfoType == null)
                 throw new InvalidOperationException("Type 'RuntimeMethodInfo' is not found");
+            runtimeConstructorInfoType = types.FirstOrDefault(type => type.Name == "RuntimeConstructorInfo");
+            if(runtimeConstructorInfoType == null)
+                throw new InvalidOperationException("Type 'RuntimeConstructorInfo' is not found");
             methodOnTypeBuilderInstantiationType = types.FirstOrDefault(type => type.Name == "MethodOnTypeBuilderInstantiation");
             if(methodOnTypeBuilderInstantiationType == null)
                 throw new InvalidOperationException("Type 'MethodOnTypeBuilderInstantiation' is not found");
+            constructorOnTypeBuilderInstantiationType = types.FirstOrDefault(type => type.Name == "ConstructorOnTypeBuilderInstantiation");
+            if(constructorOnTypeBuilderInstantiationType == null)
+                throw new InvalidOperationException("Type 'ConstructorOnTypeBuilderInstantiation' is not found");
             methodBuilderInstantiationType = types.FirstOrDefault(type => type.Name == "MethodBuilderInstantiation");
             if(methodBuilderInstantiationType == null)
                 throw new InvalidOperationException("Type 'MethodBuilderInstantiation' is not found");
@@ -38,23 +44,44 @@ namespace GrEmit
             typeComparers = new Hashtable();
             hashCodeCalculators = new Hashtable();
             assignabilityCheckers = new Hashtable();
-            parameterTypesExtractors[runtimeMethodInfoType] = parameterTypesExtractors[typeof(DynamicMethod)] = (Func<MethodInfo, Type[]>)(method => method.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
-            returnTypeExtractors[runtimeMethodInfoType] = returnTypeExtractors[typeof(DynamicMethod)] = returnTypeExtractors[typeof(MethodBuilder)] = (Func<MethodInfo, Type>)(method => method.ReturnType);
-            baseTypeOfTypeExtractors[runtimeTypeType] = baseTypeOfTypeExtractors[typeof(TypeBuilder)] = (Func<Type, Type>)(type => type.BaseType);
+            parameterTypesExtractors[runtimeMethodInfoType] = parameterTypesExtractors[typeof(DynamicMethod)] = parameterTypesExtractors[runtimeConstructorInfoType] =
+                                                                                                                (Func<MethodBase, Type[]>)(method => method.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
+            returnTypeExtractors[runtimeMethodInfoType] = returnTypeExtractors[typeof(DynamicMethod)] = returnTypeExtractors[typeof(MethodBuilder)] =
+                                                                                                        (Func<MethodInfo, Type>)(method => method.ReturnType);
+            baseTypeOfTypeExtractors[runtimeTypeType] = baseTypeOfTypeExtractors[typeof(TypeBuilder)] = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)] =
+                                                                                                        (Func<Type, Type>)(type => type == typeof(object) ? type.BaseType : (type.BaseType ?? typeof(object)));
             interfacesOfTypeExtractors[runtimeTypeType] = (Func<Type, Type[]>)(type => type.GetInterfaces());
             interfacesOfTypeExtractors[typeof(TypeBuilder)] = (Func<Type, Type[]>)(type => GetInterfaces(GetBaseType(type)).Concat(type.GetInterfaces()).Distinct().ToArray());
+            interfacesOfTypeExtractors[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type[]>)(type => type.GetGenericParameterConstraints());
             typeComparers[runtimeTypeType] = typeComparers[typeof(TypeBuilder)] = typeComparers[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type, bool>)((x, y) => x == y);
             hashCodeCalculators[runtimeTypeType] = hashCodeCalculators[typeof(TypeBuilder)] = hashCodeCalculators[typeof(GenericTypeParameterBuilder)] = (Func<Type, int>)(type => type.GetHashCode());
-            assignabilityCheckers[runtimeTypeType] = assignabilityCheckers[typeof(TypeBuilder)] = (Func<Type, Type, bool>)((to, from) => to.IsAssignableFrom(from));
+            assignabilityCheckers[runtimeTypeType] = (Func<Type, Type, bool>)((to, from) =>
+                {
+                    if(to.IsAssignableFrom(from)) return true;
+                    if(Equal(to, from)) return true;
+                    if(to.IsInterface)
+                    {
+                        var interfaces = GetInterfaces(from);
+                        return interfaces.Any(interfaCe => Equal(interfaCe, to));
+                    }
+                    while(from != null)
+                    {
+                        if(Equal(to, from))
+                            return true;
+                        from = GetBaseType(from);
+                    }
+                    return false;
+                });
+            assignabilityCheckers[typeof(TypeBuilder)] = (Func<Type, Type, bool>)((to, from) => to.IsAssignableFrom(from));
 
-            parameterTypesExtractors[typeof(MethodBuilder)] = (Func<MethodInfo, Type[]>)(method => new MethodBuilderWrapper(method).ParameterTypes);
-            parameterTypesExtractors[methodOnTypeBuilderInstantiationType] = (Func<MethodInfo, Type[]>)(method => new MethodOnTypeBuilderInstantiationWrapper(method).ParameterTypes);
-            parameterTypesExtractors[methodBuilderInstantiationType] = (Func<MethodInfo, Type[]>)(method => new MethodBuilderInstantiationWrapper(method).ParameterTypes);
+            parameterTypesExtractors[typeof(MethodBuilder)] = (Func<MethodBase, Type[]>)(method => new MethodBuilderWrapper(method).ParameterTypes);
+            parameterTypesExtractors[typeof(ConstructorBuilder)] = (Func<MethodBase, Type[]>)(method => new ConstructorBuilderWrapper(method).ParameterTypes);
+            parameterTypesExtractors[methodOnTypeBuilderInstantiationType] = (Func<MethodBase, Type[]>)(method => new MethodOnTypeBuilderInstantiationWrapper(method).ParameterTypes);
+            parameterTypesExtractors[methodBuilderInstantiationType] = (Func<MethodBase, Type[]>)(method => new MethodBuilderInstantiationWrapper(method).ParameterTypes);
+            parameterTypesExtractors[constructorOnTypeBuilderInstantiationType] = (Func<MethodBase, Type[]>)(method => new ConstructorOnTypeBuilderInstantiationWrapper(method).ParameterTypes);
 
             returnTypeExtractors[methodOnTypeBuilderInstantiationType] = (Func<MethodInfo, Type>)(method => new MethodOnTypeBuilderInstantiationWrapper(method).ReturnType);
             returnTypeExtractors[methodBuilderInstantiationType] = (Func<MethodInfo, Type>)(method => new MethodBuilderInstantiationWrapper(method).ReturnType);
-
-            constructorBuilderParameterTypesExtractor = BuildConstructorBuilderParameterTypesExtractor();
 
             baseTypeOfTypeExtractors[typeBuilderInstantiationType] = (Func<Type, Type>)(type => new TypeBuilderInstantiationWrapper(type).BaseType);
 
@@ -68,20 +95,13 @@ namespace GrEmit
             assignabilityCheckers[typeBuilderInstantiationType] = (Func<Type, Type, bool>)((to, from) => new TypeBuilderInstantiationWrapper(to).IsAssignableFrom(new TypeBuilderInstantiationWrapper(from)));
         }
 
-        public static Type[] GetParameterTypes(MethodInfo method)
+        public static Type[] GetParameterTypes(MethodBase method)
         {
             var type = method.GetType();
-            var extractor = (Func<MethodInfo, Type[]>)parameterTypesExtractors[type];
+            var extractor = (Func<MethodBase, Type[]>)parameterTypesExtractors[type];
             if(extractor == null)
                 throw new NotSupportedException("Unable to extract parameter types of '" + type + "'");
             return extractor(method);
-        }
-
-        public static Type[] GetParameterTypes(ConstructorInfo constructor)
-        {
-            if(constructor is ConstructorBuilder)
-                return constructorBuilderParameterTypesExtractor((ConstructorBuilder)constructor);
-            return constructor.GetParameters().Select(parameter => parameter.ParameterType).ToArray();
         }
 
         public static Type GetReturnType(MethodInfo method)
@@ -148,7 +168,7 @@ namespace GrEmit
         public static bool IsAssignableFrom(Type to, Type from)
         {
             var type = to.GetType();
-            if(from == null || from.GetType() != type)
+            if(from == null || (from.GetType() != type && type != runtimeTypeType))
                 return false;
             var checker = (Func<Type, Type, bool>)assignabilityCheckers[type];
             if(checker == null)
@@ -227,13 +247,14 @@ namespace GrEmit
         }
 
         private static readonly Type runtimeMethodInfoType;
+        private static readonly Type runtimeConstructorInfoType;
         private static readonly Type runtimeTypeType;
         private static readonly Type typeBuilderInstantiationType;
         private static readonly Type methodOnTypeBuilderInstantiationType;
+        private static readonly Type constructorOnTypeBuilderInstantiationType;
         private static readonly Type methodBuilderInstantiationType;
 
         private static readonly Hashtable parameterTypesExtractors;
-        private static readonly Func<ConstructorBuilder, Type[]> constructorBuilderParameterTypesExtractor;
         private static readonly Hashtable returnTypeExtractors;
 
         private static readonly Hashtable interfacesOfTypeExtractors;
@@ -250,18 +271,39 @@ namespace GrEmit
                 var methodBuilderParameterTypesField = typeof(MethodBuilder).GetField("m_parameterTypes", BindingFlags.Instance | BindingFlags.NonPublic);
                 if(methodBuilderParameterTypesField == null)
                     throw new InvalidOperationException("Field 'MethodBuilder.m_parameterTypes' is not found");
-                m_parameterTypesExtractor = FieldsExtractor.GetExtractor<MethodInfo, Type[]>(methodBuilderParameterTypesField);
+                m_parameterTypesExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(methodBuilderParameterTypesField);
             }
 
-            public MethodBuilderWrapper(MethodInfo inst)
+            public MethodBuilderWrapper(MethodBase inst)
             {
                 this.inst = inst;
             }
 
             public Type[] ParameterTypes { get { return m_parameterTypesExtractor(inst); } }
 
-            private readonly MethodInfo inst;
-            private static readonly Func<MethodInfo, Type[]> m_parameterTypesExtractor;
+            private readonly MethodBase inst;
+            private static readonly Func<MethodBase, Type[]> m_parameterTypesExtractor;
+        }
+
+        private class ConstructorBuilderWrapper
+        {
+            static ConstructorBuilderWrapper()
+            {
+                var constructorBuilderMethodBuilderField = typeof(ConstructorBuilder).GetField("m_methodBuilder", BindingFlags.Instance | BindingFlags.NonPublic);
+                if(constructorBuilderMethodBuilderField == null)
+                    throw new InvalidOperationException("Field 'ConstructorBuilder.m_methodBuilder' is not found");
+                m_methodBuilderExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(constructorBuilderMethodBuilderField);
+            }
+
+            public ConstructorBuilderWrapper(MethodBase inst)
+            {
+                this.inst = inst;
+            }
+
+            public Type[] ParameterTypes { get { return GetParameterTypes(m_methodBuilderExtractor(inst)); } }
+
+            private readonly MethodBase inst;
+            private static readonly Func<MethodBase, MethodInfo> m_methodBuilderExtractor;
         }
 
         private class TypeBuilderInstantiationWrapper
@@ -311,25 +353,47 @@ namespace GrEmit
 
             public bool IsAssignableFrom(TypeBuilderInstantiationWrapper from)
             {
-                if(!ReflectionExtensions.IsAssignableFrom(m_type, from.m_type))
-                    return false;
-                var ourInst = m_inst;
-                var otherInst = from.m_inst;
-                for(var i = 0; i < ourInst.Length; ++i)
+                if(Equals(from)) return true;
+                if(m_type.IsInterface)
                 {
-                    if(!ReflectionExtensions.IsAssignableFrom(ourInst[i], otherInst[i]))
-                        return false;
+                    var interfaces = from.GetInterfaces();
+                    return interfaces.Any(interfaCe => isATypeBuilderInstantiation(interfaCe) && Equals(new TypeBuilderInstantiationWrapper(interfaCe)));
                 }
-                return true;
+                while(from != null)
+                {
+                    if(Equals(from))
+                        return true;
+                    var baseType = from.BaseType;
+                    if(isATypeBuilderInstantiation(baseType))
+                        from = new TypeBuilderInstantiationWrapper(baseType);
+                    else break;
+                }
+                return false;
             }
 
             public Type BaseType { get { return SubstituteGenericParameters(GetBaseType(m_type), m_type.GetGenericArguments(), m_inst); } }
 
             public Type m_type { get { return m_typeExtractor(inst); } }
             public Type[] m_inst { get { return m_instExtractor(inst); } }
+
+            private static Func<Type, bool> BuildIsATypeBuilderInstantiationChecker()
+            {
+                var dynamicMethod = new DynamicMethod(Guid.NewGuid().ToString(), typeof(bool), new[] {typeof(Type)}, typeof(ReflectionExtensions), true);
+                using(var il = new GroboIL(dynamicMethod))
+                {
+                    il.Ldarg(0);
+                    il.Castclass(typeBuilderInstantiationType);
+                    il.Ldnull();
+                    il.Cgt(true);
+                    il.Ret();
+                }
+                return (Func<Type, bool>)dynamicMethod.CreateDelegate(typeof(Func<Type, bool>));
+            }
+
             private readonly Type inst;
             private static readonly Func<Type, Type> m_typeExtractor;
             private static readonly Func<Type, Type[]> m_instExtractor;
+            private static readonly Func<Type, bool> isATypeBuilderInstantiation = BuildIsATypeBuilderInstantiationChecker();
         }
 
         private class MethodOnTypeBuilderInstantiationWrapper
@@ -339,14 +403,14 @@ namespace GrEmit
                 var methodOnTypeBuilderInstantiationMethodField = methodOnTypeBuilderInstantiationType.GetField("m_method", BindingFlags.Instance | BindingFlags.NonPublic);
                 if(methodOnTypeBuilderInstantiationMethodField == null)
                     throw new InvalidOperationException("Field 'MethodOnTypeBuilderInstantiation.m_method' is not found");
-                m_methodExtractor = FieldsExtractor.GetExtractor<MethodInfo, MethodInfo>(methodOnTypeBuilderInstantiationMethodField);
+                m_methodExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodOnTypeBuilderInstantiationMethodField);
                 var methodOnTypeBuilderInstantiationTypeField = methodOnTypeBuilderInstantiationType.GetField("m_type", BindingFlags.Instance | BindingFlags.NonPublic);
                 if(methodOnTypeBuilderInstantiationTypeField == null)
                     throw new InvalidOperationException("Field 'MethodOnTypeBuilderInstantiation.m_type' is not found");
-                m_typeExtractor = FieldsExtractor.GetExtractor<MethodInfo, Type>(methodOnTypeBuilderInstantiationTypeField);
+                m_typeExtractor = FieldsExtractor.GetExtractor<MethodBase, Type>(methodOnTypeBuilderInstantiationTypeField);
             }
 
-            public MethodOnTypeBuilderInstantiationWrapper(MethodInfo inst)
+            public MethodOnTypeBuilderInstantiationWrapper(MethodBase inst)
             {
                 this.inst = inst;
             }
@@ -371,9 +435,44 @@ namespace GrEmit
 
             public MethodInfo m_method { get { return m_methodExtractor(inst); } }
             public Type m_type { get { return m_typeExtractor(inst); } }
-            private readonly MethodInfo inst;
-            private static readonly Func<MethodInfo, MethodInfo> m_methodExtractor;
-            private static readonly Func<MethodInfo, Type> m_typeExtractor;
+            private readonly MethodBase inst;
+            private static readonly Func<MethodBase, MethodInfo> m_methodExtractor;
+            private static readonly Func<MethodBase, Type> m_typeExtractor;
+        }
+
+        private class ConstructorOnTypeBuilderInstantiationWrapper
+        {
+            static ConstructorOnTypeBuilderInstantiationWrapper()
+            {
+                var constructorOnTypeBuilderInstantiationCtorField = constructorOnTypeBuilderInstantiationType.GetField("m_ctor", BindingFlags.Instance | BindingFlags.NonPublic);
+                if(constructorOnTypeBuilderInstantiationCtorField == null)
+                    throw new InvalidOperationException("Field 'ConstructorOnTypeBuilderInstantiation.m_ctor' is not found");
+                m_ctorExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodBase>(constructorOnTypeBuilderInstantiationCtorField);
+                var constructorOnTypeBuilderInstantiationTypeField = constructorOnTypeBuilderInstantiationType.GetField("m_type", BindingFlags.Instance | BindingFlags.NonPublic);
+                if(constructorOnTypeBuilderInstantiationTypeField == null)
+                    throw new InvalidOperationException("Field 'ConstructorOnTypeBuilderInstantiation.m_type' is not found");
+                m_typeExtractor = FieldsExtractor.GetExtractor<MethodBase, Type>(constructorOnTypeBuilderInstantiationTypeField);
+            }
+
+            public ConstructorOnTypeBuilderInstantiationWrapper(MethodBase inst)
+            {
+                this.inst = inst;
+            }
+
+            public Type[] ParameterTypes
+            {
+                get
+                {
+                    var typeInst = new TypeBuilderInstantiationWrapper(m_type);
+                    return SubstituteGenericParameters(GetParameterTypes(m_ctor), typeInst.m_type.GetGenericArguments(), typeInst.m_inst);
+                }
+            }
+
+            public MethodBase m_ctor { get { return m_ctorExtractor(inst); } }
+            public Type m_type { get { return m_typeExtractor(inst); } }
+            private readonly MethodBase inst;
+            private static readonly Func<MethodBase, MethodBase> m_ctorExtractor;
+            private static readonly Func<MethodBase, Type> m_typeExtractor;
         }
 
         private class MethodBuilderInstantiationWrapper
@@ -383,14 +482,14 @@ namespace GrEmit
                 var methodBuilderInstantiationMethodField = methodBuilderInstantiationType.GetField("m_method", BindingFlags.Instance | BindingFlags.NonPublic);
                 if(methodBuilderInstantiationMethodField == null)
                     throw new InvalidOperationException("Field 'MethodBuilderInstantiation.m_method' is not found");
-                m_methodExtractor = FieldsExtractor.GetExtractor<MethodInfo, MethodInfo>(methodBuilderInstantiationMethodField);
+                m_methodExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodBuilderInstantiationMethodField);
                 var methodBuilderInstantiationInstField = methodBuilderInstantiationType.GetField("m_inst", BindingFlags.Instance | BindingFlags.NonPublic);
                 if(methodBuilderInstantiationInstField == null)
                     throw new InvalidOperationException("Field 'MethodBuilderInstantiation.m_inst' is not found");
-                m_instExtractor = FieldsExtractor.GetExtractor<MethodInfo, Type[]>(methodBuilderInstantiationInstField);
+                m_instExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(methodBuilderInstantiationInstField);
             }
 
-            public MethodBuilderInstantiationWrapper(MethodInfo inst)
+            public MethodBuilderInstantiationWrapper(MethodBase inst)
             {
                 this.inst = inst;
             }
@@ -401,9 +500,9 @@ namespace GrEmit
 
             public MethodInfo m_method { get { return m_methodExtractor(inst); } }
             public Type[] m_inst { get { return m_instExtractor(inst); } }
-            private readonly MethodInfo inst;
-            private static readonly Func<MethodInfo, MethodInfo> m_methodExtractor;
-            private static readonly Func<MethodInfo, Type[]> m_instExtractor;
+            private readonly MethodBase inst;
+            private static readonly Func<MethodBase, MethodInfo> m_methodExtractor;
+            private static readonly Func<MethodBase, Type[]> m_instExtractor;
         }
     }
 }

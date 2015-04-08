@@ -244,6 +244,7 @@ namespace Tests
 
         public interface I1
         {
+            I2 GetI2();
         }
 
         public interface I2
@@ -252,10 +253,18 @@ namespace Tests
 
         public class C1 : I1, I2
         {
+            public I2 GetI2()
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public class C2 : I1
         {
+            public I2 GetI2()
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public static void F1(I1 i1)
@@ -345,6 +354,45 @@ namespace Tests
                 il.Call(HackHelpers.GetMethodDefinition<I2<int>>(x => F2(x)).GetGenericMethodDefinition().MakeGenericMethod(parameter));
                 il.Ret();
                 Console.Write(il.GetILCode());
+            }
+        }
+
+        [Test]
+        public void TestBrfalse()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(C2)}, typeof(string), true);
+            using(var il = new GroboIL(method))
+            {
+                il.Ldarg(0);
+                il.Dup();
+                var label = il.DefineLabel("L");
+                il.Brfalse(label);
+                il.Call(HackHelpers.GetMethodDefinition<I1>(x => x.GetI2()));
+                il.MarkLabel(label);
+                il.Call(HackHelpers.GetMethodDefinition<int>(x => F2(null)));
+                il.Ret();
+                Console.WriteLine(il.GetILCode());
+            }
+        }
+
+        [Test]
+        public void TestBrtrue()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(C2)}, typeof(string), true);
+            using(var il = new GroboIL(method))
+            {
+                il.Ldarg(0);
+                il.Dup();
+                var label = il.DefineLabel("L");
+                il.Brtrue(label);
+                var label2 = il.DefineLabel("L");
+                il.Br(label2);
+                il.MarkLabel(label);
+                il.Call(HackHelpers.GetMethodDefinition<I1>(x => x.GetI2()));
+                il.MarkLabel(label2);
+                il.Call(HackHelpers.GetMethodDefinition<int>(x => F2(null)));
+                il.Ret();
+                Console.WriteLine(il.GetILCode());
             }
         }
 

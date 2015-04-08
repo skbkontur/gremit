@@ -46,6 +46,7 @@
     <Compile Include="StackMutators\ArithmeticBinOpStackMutator.cs" />
     <Compile Include="StackMutators\BinOpStackMutator.cs" />
     <Compile Include="StackMutators\BranchStackMutator.cs" />
+    <Compile Include="StackMutators\BrtrueStackMutator.cs" />
     <Compile Include="StackMutators\CkfiniteStackMutator.cs" />
     <Compile Include="StackMutators\ConvertStackMutator.cs" />
     <Compile Include="StackMutators\ConvI1StackMutator.cs" />

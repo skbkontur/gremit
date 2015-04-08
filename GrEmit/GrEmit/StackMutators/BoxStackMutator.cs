@@ -1,3 +1,5 @@
+using System;
+
 using GrEmit.InstructionParameters;
 
 namespace GrEmit.StackMutators
@@ -9,7 +11,7 @@ namespace GrEmit.StackMutators
             var type = ((TypeILInstructionParameter)parameter).Type;
             CheckNotEmpty(il, stack);
             CheckCanBeAssigned(il, type, stack.Pop());
-            stack.Push(typeof(object));
+            stack.Push(type.IsEnum ? typeof(Enum) : typeof(object));
         }
     }
 }

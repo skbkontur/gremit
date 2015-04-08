@@ -19,7 +19,7 @@ namespace GrEmit.StackMutators
                 var method = ((MethodILInstructionParameter)parameter).Method;
                 declaringType = method.DeclaringType;
                 parameterTypes = ReflectionExtensions.GetParameterTypes(method);
-                returnType = method.ReturnType;
+                returnType = ReflectionExtensions.GetReturnType(method);
                 isStatic = method.IsStatic;
                 formattedMethod = Formatter.Format(method);
             }
@@ -42,25 +42,29 @@ namespace GrEmit.StackMutators
                 CheckNotEmpty(il, stack);
                 var instance = stack.Pop();
                 var instanceBaseType = instance.ToType();
-                if(instanceBaseType.IsValueType)
-                    ThrowError(il, string.Format("In order to call method '{0}' on a value type '{1}' load instance by ref or box it", formattedMethod, instance));
-                else if(instanceBaseType.IsByRef)
+                if(instanceBaseType != null)
                 {
-                    var elementType = instanceBaseType.GetElementType();
-                    if(elementType.IsValueType)
-                    {
-                        if(declaringType.IsInterface)
-                        {
-                            if(elementType.GetInterfaces().All(type => type != declaringType))
-                                ThrowError(il, string.Format("Type '{0}' does not implement interface '{1}'", Formatter.Format(elementType), Formatter.Format(declaringType)));
-                        }
-                        else if(declaringType != typeof(object) && declaringType != elementType)
-                            ThrowError(il, string.Format("Cannot call method '{0}' on type '{1}'", formattedMethod, elementType));
-                    }
+                    if(instanceBaseType.IsValueType)
+                        ThrowError(il, string.Format("In order to call method '{0}' on a value type '{1}' load instance by ref or box it", formattedMethod, instance));
+                    else if(!instanceBaseType.IsByRef)
+                        CheckCanBeAssigned(il, declaringType, instance);
                     else
-                        ThrowError(il, string.Format("Cannot call method '{0}' on type '{1}'", formattedMethod, instance));
+                    {
+                        var elementType = instanceBaseType.GetElementType();
+                        if(elementType.IsValueType)
+                        {
+                            if(declaringType.IsInterface)
+                            {
+                                if(ReflectionExtensions.GetInterfaces(elementType).All(type => type != declaringType))
+                                    ThrowError(il, string.Format("Type '{0}' does not implement interface '{1}'", Formatter.Format(elementType), Formatter.Format(declaringType)));
+                            }
+                            else if(declaringType != typeof(object) && declaringType != elementType)
+                                ThrowError(il, string.Format("Cannot call method '{0}' on type '{1}'", formattedMethod, elementType));
+                        }
+                        else
+                            ThrowError(il, string.Format("Cannot call method '{0}' on type '{1}'", formattedMethod, instance));
+                    }
                 }
-                else CheckCanBeAssigned(il, declaringType, instance);
             }
             if(returnType != typeof(void))
                 stack.Push(returnType);

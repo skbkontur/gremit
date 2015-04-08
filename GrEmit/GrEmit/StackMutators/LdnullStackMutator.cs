@@ -4,7 +4,7 @@ namespace GrEmit.StackMutators
     {
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
-            stack.Push(null);
+            stack.Push(ESType.Zero);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using GrEmit.InstructionParameters;
+﻿using System.Linq;
+
+using GrEmit.InstructionParameters;
 
 namespace GrEmit.StackMutators
 {
@@ -8,9 +10,17 @@ namespace GrEmit.StackMutators
         {
             var label = ((LabelILInstructionParameter)parameter).Label;
             CheckNotEmpty(il, stack);
-            CheckNotStruct(il, stack.Pop());
+            var value = stack.Pop();
+            CheckNotStruct(il, value);
 
-            SaveOrCheck(il, stack, label);
+            var newStack = stack.Reverse().ToArray();
+            for(var i = 0; i < newStack.Length; ++i)
+            {
+                if(ReferenceEquals(newStack[i], value))
+                    newStack[i] = ESType.Zero;
+            }
+
+            SaveOrCheck(il, new EvaluationStack(newStack), label);
         }
     }
 }
