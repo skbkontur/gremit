@@ -409,7 +409,7 @@ namespace Tests
             }
         }
 
-        public void F<T>(ref T x)
+        public static void F<T>(ref T x)
         {
         }
 

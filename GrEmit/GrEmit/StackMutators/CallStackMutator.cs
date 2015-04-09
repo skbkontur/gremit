@@ -34,12 +34,12 @@ namespace GrEmit.StackMutators
             }
             for(var i = parameterTypes.Length - 1; i >= 0; --i)
             {
-                CheckNotEmpty(il, stack);
+                CheckNotEmpty(il, stack, string.Format("Parameter #{0} for call to method '{1}' is not loaded on the evaluation stack", i + 1, formattedMethod));
                 CheckCanBeAssigned(il, parameterTypes[i], stack.Pop());
             }
             if(!isStatic)
             {
-                CheckNotEmpty(il, stack);
+                CheckNotEmpty(il, stack, string.Format("An intance to call method '{0}' is not loaded on the evaluation stack", formattedMethod));
                 var instance = stack.Pop();
                 var instanceBaseType = instance.ToType();
                 if(instanceBaseType != null)

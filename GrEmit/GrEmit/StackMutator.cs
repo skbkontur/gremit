@@ -103,10 +103,17 @@ namespace GrEmit
                 ThrowError(il, string.Format("Struct of type '{0}' is not valid at this point", type));
         }
 
+        protected static void CheckNotEmpty(GroboIL il, EvaluationStack stack, string message)
+        {
+            if(stack.Count == 0)
+                ThrowError(il, message);
+        }
+
+        // TODO kill and write readable messages everywhere
         protected static void CheckNotEmpty(GroboIL il, EvaluationStack stack)
         {
             if(stack.Count == 0)
-                throw new InvalidOperationException("Stack is empty\r\n" + il.GetILCode());
+                ThrowError(il, "Stack is empty");
         }
 
         protected static void CheckIsAPointer(GroboIL il, ESType type)

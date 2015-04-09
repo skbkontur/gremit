@@ -17,6 +17,9 @@ namespace GrEmit
             runtimeTypeType = types.FirstOrDefault(type => type.Name == "RuntimeType");
             if(runtimeTypeType == null)
                 throw new InvalidOperationException("Type 'RuntimeType' is not found");
+            symbolTypeType = types.FirstOrDefault(type => type.Name == "SymbolType");
+            if(symbolTypeType == null)
+                throw new InvalidOperationException("Type 'SymbolType' is not found");
             typeBuilderInstantiationType = assembly.GetTypes().FirstOrDefault(type => type.Name == "TypeBuilderInstantiation");
             if(typeBuilderInstantiationType == null)
                 throw new InvalidOperationException("Type 'TypeBuilderInstantiation' is not found");
@@ -54,6 +57,16 @@ namespace GrEmit
             interfacesOfTypeExtractors[typeof(TypeBuilder)] = (Func<Type, Type[]>)(type => GetInterfaces(GetBaseType(type)).Concat(type.GetInterfaces()).Distinct().ToArray());
             interfacesOfTypeExtractors[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type[]>)(type => type.GetGenericParameterConstraints());
             typeComparers[runtimeTypeType] = typeComparers[typeof(TypeBuilder)] = typeComparers[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type, bool>)((x, y) => x == y);
+            typeComparers[symbolTypeType] = (Func<Type, Type, bool>)((x, y) =>
+                {
+                    if(x.IsByRef && y.IsByRef)
+                        return Equal(x.GetElementType(), y.GetElementType());
+                    if(x.IsPointer && y.IsPointer)
+                        return Equal(x.GetElementType(), y.GetElementType());
+                    if(x.IsArray && y.IsArray)
+                        return x.GetArrayRank() == y.GetArrayRank() && Equal(x.GetElementType(), y.GetElementType());
+                    return x == y;
+                });
             hashCodeCalculators[runtimeTypeType] = hashCodeCalculators[typeof(TypeBuilder)] = hashCodeCalculators[typeof(GenericTypeParameterBuilder)] = (Func<Type, int>)(type => type.GetHashCode());
             assignabilityCheckers[runtimeTypeType] = (Func<Type, Type, bool>)((to, from) =>
                 {
@@ -257,6 +270,7 @@ namespace GrEmit
         private static readonly Type runtimeMethodInfoType;
         private static readonly Type runtimeConstructorInfoType;
         private static readonly Type runtimeTypeType;
+        private static readonly Type symbolTypeType;
         private static readonly Type typeBuilderInstantiationType;
         private static readonly Type methodOnTypeBuilderInstantiationType;
         private static readonly Type constructorOnTypeBuilderInstantiationType;
