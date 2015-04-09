@@ -409,5 +409,29 @@ namespace Tests
             }
         }
 
+        public void F<T>(ref T x)
+        {
+        }
+
+        [Test]
+        public void TestByRefGeneric()
+        {
+            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
+            var module = assembly.DefineDynamicModule(Guid.NewGuid().ToString());
+            var type = module.DefineType("Zzz", TypeAttributes.Class | TypeAttributes.Public);
+            var method = type.DefineMethod("Qzz", MethodAttributes.Public | MethodAttributes.Static);
+            var genericParameters = method.DefineGenericParameters("TZzz");
+            var parameter = genericParameters[0];
+            method.SetParameters(parameter);
+            method.SetReturnType(typeof(void));
+            using (var il = new GroboIL(method))
+            {
+                il.Ldarga(0);
+                il.Call(HackHelpers.GetMethodDefinition<int>(x => F(ref x)).GetGenericMethodDefinition().MakeGenericMethod(parameter));
+                il.Ret();
+                Console.Write(il.GetILCode());
+            }
+        }
+
     }
 }

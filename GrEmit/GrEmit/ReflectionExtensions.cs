@@ -176,6 +176,33 @@ namespace GrEmit
             return checker(to, from);
         }
 
+        public static Type SubstituteGenericParameters(Type type, Type[] genericArguments, Type[] instantiation)
+        {
+            return SubstituteGenericParameters(new[] {type}, genericArguments, instantiation)[0];
+        }
+
+        public static Type[] SubstituteGenericParameters(Type[] types, Type[] genericArguments, Type[] instantiation)
+        {
+            if(genericArguments == null) return types;
+            var dict = new Dictionary<Type, Type>();
+            for(var i = 0; i < genericArguments.Length; i++)
+            {
+                var type = genericArguments[i];
+                if(type.IsGenericParameter)
+                {
+                    Type current;
+                    if(!dict.TryGetValue(type, out current))
+                        dict.Add(type, instantiation[i]);
+                    else if(current != instantiation[i])
+                        throw new InvalidOperationException(string.Format("The same generic argument '{0}' is instantiated with two different types: '{1}' and '{2}'", type, current, instantiation[i]));
+                }
+            }
+            var result = new Type[types.Length];
+            for(var i = 0; i < types.Length; ++i)
+                result[i] = SubstituteGenericParameters(types[i], dict);
+            return result;
+        }
+
         public class TypesComparer : IEqualityComparer<Type>
         {
             public bool Equals(Type x, Type y)
@@ -206,6 +233,7 @@ namespace GrEmit
 
         private static Type SubstituteGenericParameters(Type type, Dictionary<Type, Type> instantiation)
         {
+            if(type == null) return null;
             if(type.IsGenericParameter)
             {
                 Type substitute;
@@ -224,26 +252,6 @@ namespace GrEmit
             if(type.IsPointer)
                 return SubstituteGenericParameters(type.GetElementType(), instantiation).MakePointerType();
             return type;
-        }
-
-        private static Type SubstituteGenericParameters(Type type, Type[] genericArguments, Type[] instantiation)
-        {
-            return SubstituteGenericParameters(new[] {type}, genericArguments, instantiation)[0];
-        }
-
-        private static Type[] SubstituteGenericParameters(Type[] types, Type[] genericArguments, Type[] instantiation)
-        {
-            var dict = new Dictionary<Type, Type>();
-            for(var i = 0; i < genericArguments.Length; i++)
-            {
-                var type = genericArguments[i];
-                if(type.IsGenericParameter)
-                    dict.Add(type, instantiation[i]);
-            }
-            var result = new Type[types.Length];
-            for(var i = 0; i < types.Length; ++i)
-                result[i] = SubstituteGenericParameters(types[i], dict);
-            return result;
         }
 
         private static readonly Type runtimeMethodInfoType;

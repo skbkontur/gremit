@@ -146,7 +146,7 @@ namespace GrEmit
             case CLIType.Struct:
                 return from == to;
             case CLIType.Pointer:
-                if(cliFrom == CLIType.Zero || from == to)
+                if(cliFrom == CLIType.Zero || ReflectionExtensions.Equal(to, from))
                     return true;
                 if(cliFrom != CLIType.Pointer)
                     return false;
@@ -158,7 +158,7 @@ namespace GrEmit
                     return true;
                 var simpleESFrom = esFrom as SimpleESType;
                 if(simpleESFrom != null)
-                    return  ReflectionExtensions.IsAssignableFrom(to, from);
+                    return ReflectionExtensions.IsAssignableFrom(to, from);
                 var complexESFrom = (ComplexESType)esFrom;
                 return ReflectionExtensions.IsAssignableFrom(to, complexESFrom.BaseType) || complexESFrom.Interfaces.Any(interfaCe => ReflectionExtensions.IsAssignableFrom(to, interfaCe));
             case CLIType.Zero:
@@ -393,11 +393,11 @@ namespace GrEmit
                 {
                     var baseType = first.ToType().FindBaseClassWith(second.ToType());
                     var firstInterfaces = ((first is SimpleESType)
-                                              ? ((SimpleESType)first).Type.GetTypesArray()
-                                              : ((ComplexESType)first).BaseType.GetTypesArray().Concat(((ComplexESType)first).Interfaces)).Where(t => t.IsInterface).ToArray();
+                                               ? ((SimpleESType)first).Type.GetTypesArray()
+                                               : ((ComplexESType)first).BaseType.GetTypesArray().Concat(((ComplexESType)first).Interfaces)).Where(t => t.IsInterface).ToArray();
                     var secondInterfaces = ((second is SimpleESType)
-                                               ? ((SimpleESType)second).Type.GetTypesArray()
-                                               : ((ComplexESType)second).BaseType.GetTypesArray().Concat(((ComplexESType)second).Interfaces)).Where(t => t.IsInterface).ToArray();
+                                                ? ((SimpleESType)second).Type.GetTypesArray()
+                                                : ((ComplexESType)second).BaseType.GetTypesArray().Concat(((ComplexESType)second).Interfaces)).Where(t => t.IsInterface).ToArray();
                     var hashSet = new HashSet<Type>(firstInterfaces.Intersect(secondInterfaces).Concat(new[] {baseType}), new ReflectionExtensions.TypesComparer());
                     while(true)
                     {
