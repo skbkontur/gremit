@@ -216,6 +216,9 @@ namespace GrEmit.Utils
             var binaryExpression = body as BinaryExpression;
             if(binaryExpression != null)
                 return (binaryExpression).Method;
+            var unaryExpression = body as UnaryExpression;
+            if(unaryExpression != null)
+                return (unaryExpression).Method;
             var methodCallExpression = body as MethodCallExpression;
             if(methodCallExpression != null)
                 return (methodCallExpression).Method;
