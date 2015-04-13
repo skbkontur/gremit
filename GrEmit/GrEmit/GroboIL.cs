@@ -1652,6 +1652,8 @@ namespace GrEmit
         /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
         public void Call(MethodInfo method, Type constrained = null, bool tailcall = false, Type[] optionalParameterTypes = null)
         {
+            if(method == null)
+                throw new ArgumentNullException("method");
             var opCode = method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call;
             if(opCode == OpCodes.Callvirt)
             {
@@ -1684,6 +1686,8 @@ namespace GrEmit
         /// </param>
         public void Call(ConstructorInfo constructor)
         {
+            if (constructor == null)
+                throw new ArgumentNullException("constructor");
             var parameter = new ConstructorILInstructionParameter(constructor);
             var lineNumber = ilCode.Append(OpCodes.Call, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
@@ -1704,7 +1708,9 @@ namespace GrEmit
         /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
         public void Callnonvirt(MethodInfo method, bool tailcall = false, Type[] optionalParameterTypes = null)
         {
-            if(tailcall)
+            if (method == null)
+                throw new ArgumentNullException("method");
+            if (tailcall)
             {
                 if(analyzeStack)
                     ilCode.AppendPrefix(OpCodes.Tailcall);
