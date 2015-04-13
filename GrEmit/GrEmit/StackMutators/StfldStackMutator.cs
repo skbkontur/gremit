@@ -11,8 +11,28 @@ namespace GrEmit.StackMutators
             CheckCanBeAssigned(il, field.FieldType, stack.Pop());
             if(!field.IsStatic)
             {
+                var declaringType = field.DeclaringType;
                 CheckNotEmpty(il, stack);
-                CheckCanBeAssigned(il, field.DeclaringType, stack.Pop());
+
+                var instance = stack.Pop().ToType();
+                if(instance != null)
+                {
+                    if(instance.IsValueType)
+                        ThrowError(il, string.Format("In order to load field '{0}' of a value type '{1}' load instance by ref", field, Formatter.Format(instance)));
+                    else if(!instance.IsByRef)
+                        CheckCanBeAssigned(il, declaringType, instance);
+                    else
+                    {
+                        var elementType = instance.GetElementType();
+                        if(elementType.IsValueType)
+                        {
+                            if(declaringType != elementType)
+                                ThrowError(il, string.Format("Cannot load field '{0}' of type '{1}'", field, elementType));
+                        }
+                        else
+                            ThrowError(il, string.Format("Cannot load field '{0}' of type '{1}'", field, instance));
+                    }
+                }
             }
         }
     }
