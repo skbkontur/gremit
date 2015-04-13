@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
 using GrEmit.InstructionComments;
@@ -28,7 +29,7 @@ namespace GrEmit
             return Formatter.Format(this);
         }
 
-        public static ESType Zero = new SimpleESType(null);
+        public static readonly ESType Zero = new SimpleESType(null);
     }
 
     internal class SimpleESType : ESType
@@ -151,7 +152,7 @@ namespace GrEmit
             case CLIType.Float:
                 return cliFrom == CLIType.Float || cliFrom == CLIType.Zero;
             case CLIType.Struct:
-                return from == to;
+                return ReflectionExtensions.Equal(to, from);
             case CLIType.Pointer:
                 if(cliFrom == CLIType.Zero || ReflectionExtensions.Equal(to, from))
                     return true;
@@ -279,6 +280,8 @@ namespace GrEmit
                     return CLIType.Struct;
                 }
             }
+            if(type.IsGenericType) return CLIType.Struct;
+            if(type is EnumBuilder) return ToCLIType(type.UnderlyingSystemType);
             return type.IsEnum ? ToCLIType(Enum.GetUnderlyingType(type)) : CLIType.Struct;
         }
 
