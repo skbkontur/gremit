@@ -5,6 +5,7 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
 using GrEmit.InstructionComments;
+using GrEmit.Utils;
 
 namespace GrEmit
 {
@@ -77,10 +78,12 @@ namespace GrEmit
 
         public void Push(Type type)
         {
-            if(type != null && type.IsInterface)
-                Push(new ComplexESType(typeof(object), new[] {type}));
-            else
+            if(type == null)
+                Push(ESType.Zero);
+            else if(!type.IsInterface)
                 Push(new SimpleESType(type));
+            else
+                Push(new ComplexESType(typeof(object), new[] { type }));
         }
 
         public override string ToString()
@@ -136,7 +139,7 @@ namespace GrEmit
                 ThrowError(il, string.Format("Unable to set value of type '{0}' to value of type '{1}'", Formatter.Format(from), Formatter.Format(to)));
         }
 
-        protected static bool CanBeAssigned(Type to, ESType esFrom)
+        private static bool CanBeAssigned(Type to, ESType esFrom)
         {
             var cliTo = ToCLIType(to);
             var cliFrom = ToCLIType(esFrom);
@@ -184,7 +187,12 @@ namespace GrEmit
         protected void SaveOrCheck(GroboIL il, EvaluationStack stack, GroboIL.Label label)
         {
             ESType[] labelStack;
-            if(il.labelStacks.TryGetValue(label, out labelStack))
+            if(!il.labelStacks.TryGetValue(label, out labelStack))
+            {
+                il.labelStacks.Add(label, stack.Reverse().ToArray());
+                Propogate(il, il.ilCode.GetLabelLineNumber(label), stack);
+            }
+            else
             {
                 ESType[] merged;
                 var comparisonResult = CompareStacks(stack.Reverse().ToArray(), labelStack, out merged);
@@ -200,11 +208,6 @@ namespace GrEmit
                     Propogate(il, il.ilCode.GetLabelLineNumber(label), new EvaluationStack(merged));
                     break;
                 }
-            }
-            else
-            {
-                il.labelStacks.Add(label, stack.Reverse().ToArray());
-                Propogate(il, il.ilCode.GetLabelLineNumber(label), stack);
             }
         }
 

@@ -1,5 +1,7 @@
 using System;
 
+using GrEmit.Utils;
+
 namespace GrEmit.InstructionParameters
 {
     public class TypeILInstructionParameter : ILInstructionParameter

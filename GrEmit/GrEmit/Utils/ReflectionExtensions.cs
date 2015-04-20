@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace GrEmit
+namespace GrEmit.Utils
 {
     public static class ReflectionExtensions
     {
@@ -51,8 +51,9 @@ namespace GrEmit
                                                                                                                 (Func<MethodBase, Type[]>)(method => method.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
             returnTypeExtractors[runtimeMethodInfoType] = returnTypeExtractors[typeof(DynamicMethod)] = returnTypeExtractors[typeof(MethodBuilder)] =
                                                                                                         (Func<MethodInfo, Type>)(method => method.ReturnType);
-            baseTypeOfTypeExtractors[runtimeTypeType] = baseTypeOfTypeExtractors[typeof(TypeBuilder)] = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)] =
-                                                                                                        (Func<Type, Type>)(type => type == typeof(object) ? type.BaseType : (type.BaseType ?? typeof(object)));
+            baseTypeOfTypeExtractors[runtimeTypeType] = baseTypeOfTypeExtractors[typeof(TypeBuilder)]
+                                                        = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)] = baseTypeOfTypeExtractors[symbolTypeType]
+                                                                                                                          = (Func<Type, Type>)(type => type == typeof(object) ? type.BaseType : (type.BaseType ?? typeof(object)));
             interfacesOfTypeExtractors[runtimeTypeType] = (Func<Type, Type[]>)(type => type.GetInterfaces());
             interfacesOfTypeExtractors[typeof(TypeBuilder)] = (Func<Type, Type[]>)(type => GetInterfaces(GetBaseType(type)).Concat(type.GetInterfaces()).Distinct().ToArray());
             interfacesOfTypeExtractors[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type[]>)(type => type.GetGenericParameterConstraints());
@@ -99,6 +100,15 @@ namespace GrEmit
             baseTypeOfTypeExtractors[typeBuilderInstantiationType] = (Func<Type, Type>)(type => new TypeBuilderInstantiationWrapper(type).BaseType);
 
             interfacesOfTypeExtractors[typeBuilderInstantiationType] = (Func<Type, Type[]>)(type => new TypeBuilderInstantiationWrapper(type).GetInterfaces());
+            interfacesOfTypeExtractors[symbolTypeType] = (Func<Type, Type[]>)(type =>
+                {
+                    if(!type.IsArray)
+                        return new Type[0];
+                    if(type.GetArrayRank() > 1)
+                        return typeof(int[,]).GetInterfaces();
+                    var elementType = type.GetElementType();
+                    return typeof(int[]).GetInterfaces().Select(interfaCe => interfaCe.IsGenericType ? interfaCe.GetGenericTypeDefinition().MakeGenericType(elementType) : interfaCe).ToArray();
+                });
 
             typeComparers[typeBuilderInstantiationType] = (Func<Type, Type, bool>)((x, y) => new TypeBuilderInstantiationWrapper(x).Equals(new TypeBuilderInstantiationWrapper(y)));
 

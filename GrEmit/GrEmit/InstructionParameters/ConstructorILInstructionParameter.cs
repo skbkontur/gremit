@@ -1,5 +1,7 @@
 using System.Reflection;
 
+using GrEmit.Utils;
+
 namespace GrEmit.InstructionParameters
 {
     internal class ConstructorILInstructionParameter : ILInstructionParameter

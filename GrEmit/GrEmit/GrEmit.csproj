@@ -40,7 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FieldsExtractor.cs" />
-    <Compile Include="ReflectionExtensions.cs" />
+    <Compile Include="Utils\ReflectionExtensions.cs" />
     <Compile Include="StackMutators\Add_UnStackMutator.cs" />
     <Compile Include="StackMutators\ArglistStackMutator.cs" />
     <Compile Include="StackMutators\ArithmeticBinOpStackMutator.cs" />
@@ -68,14 +68,14 @@
     <Compile Include="StackMutators\NumericOpStackMutator.cs" />
     <Compile Include="StackMutators\ShiftOpStackMutator.cs" />
     <Compile Include="StackMutators\Sub_UnStackMutator.cs" />
-    <Compile Include="TypeExtensions.cs" />
+    <Compile Include="Utils\TypeExtensions.cs" />
     <Compile Include="Utils\EmitHelpers.cs" />
     <Compile Include="Utils\HackHelpers.cs" />
     <Compile Include="InstructionComments\EmptyILInstructionComment.cs" />
     <Compile Include="InstructionComments\InaccessibleCodeILInstructionComment.cs" />
     <Compile Include="InstructionParameters\ConstructorILInstructionParameter.cs" />
     <Compile Include="InstructionParameters\FieldILInstructionParameter.cs" />
-    <Compile Include="Formatter.cs" />
+    <Compile Include="Utils\Formatter.cs" />
     <Compile Include="GroboIL.cs" />
     <Compile Include="ILCode.cs" />
     <Compile Include="ILInstructionComment.cs" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -6,6 +7,8 @@ using GrEmit;
 using GrEmit.Utils;
 
 using NUnit.Framework;
+
+using System.Linq;
 
 namespace Tests
 {
@@ -430,6 +433,34 @@ namespace Tests
                 il.Call(HackHelpers.GetMethodDefinition<int>(x => F(ref x)).GetGenericMethodDefinition().MakeGenericMethod(parameter));
                 il.Ret();
                 Console.Write(il.GetILCode());
+            }
+        }
+
+        [Test]
+        public void TestEnumerable()
+        {
+            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
+            var module = assembly.DefineDynamicModule(Guid.NewGuid().ToString());
+            var type = module.DefineType("Zzz", TypeAttributes.Class | TypeAttributes.Public);
+            var method = type.DefineMethod("Qzz", MethodAttributes.Public | MethodAttributes.Static);
+            var genericParameters = method.DefineGenericParameters("TZzz");
+            var parameter = genericParameters[0];
+            method.SetParameters(typeof(List<>).MakeGenericType(parameter), typeof(Func<,>).MakeGenericType(parameter, typeof(int)));
+            method.SetReturnType(typeof(int));
+            using(var il = new GroboIL(method))
+            {
+                il.Ldarg(0);
+                il.Dup();
+                var notNullLabel = il.DefineLabel("notNull");
+                il.Brtrue(notNullLabel);
+                il.Pop();
+                il.Ldc_I4(0);
+                il.Newarr(parameter);
+                il.MarkLabel(notNullLabel);
+                il.Ldarg(1);
+                il.Call(HackHelpers.GetMethodDefinition<int[]>(ints => ints.Sum(x => x)).GetGenericMethodDefinition().MakeGenericMethod(parameter));
+                il.Ret();
+                Console.WriteLine(il.GetILCode());
             }
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 
 using GrEmit.InstructionParameters;
+using GrEmit.Utils;
 
 namespace GrEmit.StackMutators
 {

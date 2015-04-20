@@ -1,5 +1,7 @@
 using System.Linq;
 
+using GrEmit.Utils;
+
 namespace GrEmit.InstructionComments
 {
     internal class StackILInstructionComment : ILInstructionComment

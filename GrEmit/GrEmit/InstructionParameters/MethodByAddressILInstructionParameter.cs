@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 
+using GrEmit.Utils;
+
 namespace GrEmit.InstructionParameters
 {
     internal class MethodByAddressILInstructionParameter : ILInstructionParameter
