@@ -12,7 +12,7 @@ namespace GrEmit.Utils
             var @delegate = dm.CreateDelegate(typeof(T), target);
             var result = (@delegate as T);
             if(result == null)
-                throw new ArgumentException(String.Format("Type {0} not a delegate", typeof(T)));
+                throw new ArgumentException(String.Format("Type {0} is not a delegate", typeof(T)));
             return result;
         }
 
@@ -21,7 +21,7 @@ namespace GrEmit.Utils
             var @delegate = dm.CreateDelegate(typeof(T));
             var result = (@delegate as T);
             if(result == null)
-                throw new ArgumentException(String.Format("Type {0} not a delegate", typeof(T)));
+                throw new ArgumentException(String.Format("Type {0} is not a delegate", typeof(T)));
             return result;
         }
 
@@ -31,10 +31,11 @@ namespace GrEmit.Utils
             //HACK
             var methodInfo = delegateType.GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
             if(methodInfo == null)
-                throw new ArgumentException(String.Format("Type {0} not a Delegate", delegateType));
+                throw new ArgumentException(String.Format("Type {0} is not a Delegate", delegateType));
 
-            var dynamicMethod = new DynamicMethod(name, methodInfo.ReturnType, GetParameterTypes(methodInfo.GetParameters()), m, true);
-            emitCode(new GroboIL(dynamicMethod));
+            var dynamicMethod = new DynamicMethod(name, methodInfo.ReturnType, ReflectionExtensions.GetParameterTypes(methodInfo), m, true);
+            using(var il = new GroboIL(dynamicMethod))
+                emitCode(il);
             return CreateDelegate<T>(dynamicMethod);
         }
 
@@ -44,25 +45,15 @@ namespace GrEmit.Utils
             //HACK
             var methodInfo = delegateType.GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
             if(methodInfo == null)
-                throw new ArgumentException(String.Format("Type {0} not a Delegate", delegateType));
+                throw new ArgumentException(String.Format("Type {0} is not a Delegate", delegateType));
 
-            var dynamicMethod = new DynamicMethod(name, methodInfo.ReturnType, Concat(typeof(TTarget), GetParameterTypes(methodInfo.GetParameters())), m, true);
-            emitCode(new GroboIL(dynamicMethod));
+            var dynamicMethod = new DynamicMethod(name, methodInfo.ReturnType, Concat(typeof(TTarget), ReflectionExtensions.GetParameterTypes(methodInfo)), m, true);
+            using(var il = new GroboIL(dynamicMethod))
+                emitCode(il);
             return CreateDelegate<T>(dynamicMethod, target);
         }
 
-        public static Type[] GetParameterTypes(ParameterInfo[] parameters)
-        {
-            var result = new Type[parameters.Length];
-            for(var i = 0; i < parameters.Length; i++)
-            {
-                var parameterInfo = parameters[i];
-                result[i] = parameterInfo.ParameterType;
-            }
-            return result;
-        }
-
-        public static Type[] Concat(Type a, Type[] b)
+        private static Type[] Concat(Type a, Type[] b)
         {
             var result = new Type[b.Length + 1];
             result[0] = a;

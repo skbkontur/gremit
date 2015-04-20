@@ -45,6 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OpCodesTests\Test_Add_Ovf.cs" />
+    <Compile Include="OpCodesTests\Test_Add_Ovf_Un.cs" />
+    <Compile Include="OpCodesTests\Test_Add.cs" />
     <Compile Include="ReflectionExtensionsTest.cs" />
     <Compile Include="HackHelpersTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -58,6 +61,7 @@
       <Name>GrEmit</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
