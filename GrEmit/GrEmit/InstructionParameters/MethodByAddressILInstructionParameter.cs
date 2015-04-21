@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 
 using GrEmit.Utils;
 
@@ -7,8 +8,9 @@ namespace GrEmit.InstructionParameters
 {
     internal class MethodByAddressILInstructionParameter : ILInstructionParameter
     {
-        public MethodByAddressILInstructionParameter(Type returnType, Type[] parameterTypes)
+        public MethodByAddressILInstructionParameter(CallingConventions callingConvention, Type returnType, Type[] parameterTypes)
         {
+            CallingConvention = callingConvention;
             ReturnType = returnType;
             ParameterTypes = parameterTypes;
         }
@@ -18,6 +20,7 @@ namespace GrEmit.InstructionParameters
             return Formatter.Format(ReturnType) + " *i" + IntPtr.Size + "(" + string.Join(", ", ParameterTypes.Select(Formatter.Format).ToArray()) + ")";
         }
 
+        public CallingConventions CallingConvention { get; set; }
         public Type ReturnType { get; set; }
         public Type[] ParameterTypes { get; set; }
     }

@@ -16,6 +16,6 @@ namespace GrEmit.InstructionParameters
             return Formatter.Format(Constructor);
         }
 
-        public ConstructorInfo Constructor { get; set; }
+        public ConstructorInfo Constructor { get; private set; }
     }
 }

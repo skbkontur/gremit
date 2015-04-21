@@ -436,20 +436,23 @@ namespace Tests
             }
         }
 
-        [Test]
+        [Test, Ignore]
         public void TestEnumerable()
         {
-            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
-            var module = assembly.DefineDynamicModule(Guid.NewGuid().ToString());
-            var type = module.DefineType("Zzz", TypeAttributes.Class | TypeAttributes.Public);
-            var method = type.DefineMethod("Qzz", MethodAttributes.Public | MethodAttributes.Static);
+            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);
+            var module = assembly.DefineDynamicModule(Guid.NewGuid().ToString(), "test.cil", true);
+            var symWriter = module.GetSymWriter();
+            var symbolDocumentWriter = symWriter.DefineDocument("test.cil", Guid.Empty, Guid.Empty, Guid.Empty);
+            var typeBuilder = module.DefineType("Zzz", TypeAttributes.Class | TypeAttributes.Public);
+            var method = typeBuilder.DefineMethod("Qzz", MethodAttributes.Public);
             var genericParameters = method.DefineGenericParameters("TZzz");
             var parameter = genericParameters[0];
             method.SetParameters(typeof(List<>).MakeGenericType(parameter), typeof(Func<,>).MakeGenericType(parameter, typeof(int)));
+            method.DefineParameter(2, ParameterAttributes.In, "list");
             method.SetReturnType(typeof(int));
-            using(var il = new GroboIL(method))
+            using(var il = new GroboIL(method, symbolDocumentWriter))
             {
-                il.Ldarg(0);
+                il.Ldarg(1);
                 il.Dup();
                 var notNullLabel = il.DefineLabel("notNull");
                 il.Brtrue(notNullLabel);
@@ -457,11 +460,17 @@ namespace Tests
                 il.Ldc_I4(0);
                 il.Newarr(parameter);
                 il.MarkLabel(notNullLabel);
-                il.Ldarg(1);
+                var temp = il.DeclareLocal(typeof(IEnumerable<>).MakeGenericType(parameter), "arr");
+                il.Stloc(temp);
+                il.Ldloc(temp);
+                il.Ldarg(2);
                 il.Call(HackHelpers.GetMethodDefinition<int[]>(ints => ints.Sum(x => x)).GetGenericMethodDefinition().MakeGenericMethod(parameter));
                 il.Ret();
                 Console.WriteLine(il.GetILCode());
             }
+            var type = typeBuilder.CreateType();
+            var instance = Activator.CreateInstance(type);
+            type.GetMethod("Qzz", BindingFlags.Instance | BindingFlags.Public).MakeGenericMethod(typeof(int)).Invoke(instance, new object[] {null, null});
         }
 
     }

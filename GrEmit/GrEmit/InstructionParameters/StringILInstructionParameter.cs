@@ -2,16 +2,16 @@ namespace GrEmit.InstructionParameters
 {
     internal class StringILInstructionParameter : ILInstructionParameter
     {
+        public string Value { get; private set; }
+
         public StringILInstructionParameter(string value)
         {
-            this.value = value;
+            Value = value;
         }
 
         public override string Format()
         {
-            return '\'' + value + '\'';
+            return '\'' + Value + '\'';
         }
-
-        private readonly string value;
     }
 }

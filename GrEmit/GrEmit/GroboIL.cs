@@ -15,10 +15,11 @@ namespace GrEmit
     // ReSharper disable InconsistentNaming
     public class GroboIL : IDisposable
     {
-        private GroboIL(ILGenerator il, Type returnType, Type[] parameterTypes, bool analyzeStack)
+        private GroboIL(ILGenerator il, Type returnType, Type[] parameterTypes, bool analyzeStack, ISymbolDocumentWriter symbolDocumentWriter)
         {
             this.il = il;
             this.analyzeStack = analyzeStack;
+            this.symbolDocumentWriter = symbolDocumentWriter;
             methodReturnType = returnType;
             methodParameterTypes = parameterTypes;
 /*
@@ -33,7 +34,7 @@ namespace GrEmit
         }
 
         public GroboIL(DynamicMethod method, bool analyzeStack = true)
-            : this(method.GetILGenerator(), method.ReturnType, ReflectionExtensions.GetParameterTypes(method), analyzeStack)
+            : this(method.GetILGenerator(), method.ReturnType, ReflectionExtensions.GetParameterTypes(method), analyzeStack, null)
         {
         }
 
@@ -42,14 +43,35 @@ namespace GrEmit
                    method.ReturnType,
                    method.IsStatic
                        ? ReflectionExtensions.GetParameterTypes(method)
-                       : new[] { method.ReflectedType }.Concat(ReflectionExtensions.GetParameterTypes(method)).ToArray(),
-                   analyzeStack)
+                       : new[] {method.ReflectedType}.Concat(ReflectionExtensions.GetParameterTypes(method)).ToArray(),
+                   analyzeStack,
+                   null)
         {
         }
 
-        public GroboIL(ConstructorBuilder constructor, bool analyzeStack = true)
-            : this(constructor.GetILGenerator(), typeof(void), new[] { constructor.ReflectedType }.Concat(ReflectionExtensions.GetParameterTypes(constructor)).ToArray(), analyzeStack)
+        public GroboIL(MethodBuilder method, ISymbolDocumentWriter symbolDocumentWriter)
+            : this(method.GetILGenerator(),
+                   method.ReturnType,
+                   method.IsStatic
+                       ? ReflectionExtensions.GetParameterTypes(method)
+                       : new[] {method.ReflectedType}.Concat(ReflectionExtensions.GetParameterTypes(method)).ToArray(),
+                   true,
+                   symbolDocumentWriter)
         {
+            if(symbolDocumentWriter == null)
+                throw new ArgumentNullException("symbolDocumentWriter");
+        }
+
+        public GroboIL(ConstructorBuilder constructor, bool analyzeStack = true)
+            : this(constructor.GetILGenerator(), typeof(void), new[] {constructor.ReflectedType}.Concat(ReflectionExtensions.GetParameterTypes(constructor)).ToArray(), analyzeStack, null)
+        {
+        }
+
+        public GroboIL(ConstructorBuilder constructor, ISymbolDocumentWriter symbolDocumentWriter)
+            : this(constructor.GetILGenerator(), typeof(void), new[] {constructor.ReflectedType}.Concat(ReflectionExtensions.GetParameterTypes(constructor)).ToArray(), true, symbolDocumentWriter)
+        {
+            if(symbolDocumentWriter == null)
+                throw new ArgumentNullException("symbolDocumentWriter");
         }
 
         public void Dispose()
@@ -59,11 +81,57 @@ namespace GrEmit
             var lastInstruction = ilCode.GetInstruction(ilCode.Count - 1) as ILCode.ILInstruction;
             if(lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw))
                 throw new InvalidOperationException("An IL program must end with one of the following instructions: 'ret', 'br', 'br.s', 'throw'");
+            if(symbolDocumentWriter != null)
+            {
+                var linesInfo = ilCode.GetLinesInfo();
+                for(var i = 0; i < linesInfo.Value.Count; ++i)
+                {
+                    var instruction = (ILCode.ILInstruction)ilCode.GetInstruction(i);
+                    var parameter = instruction.Parameter;
+                    if (instruction.Kind == ILCode.InstructionKind.Instruction || instruction.Kind == ILCode.InstructionKind.DebugWriteLine)
+                        il.MarkSequencePoint(symbolDocumentWriter, linesInfo.Value[i].Key, 0, linesInfo.Value[i].Value, 1000);
+                    foreach(var prefix in instruction.Prefixes ?? new List<KeyValuePair<OpCode, ILInstructionParameter>>())
+                        Emit(prefix.Key, prefix.Value);
+                    switch(instruction.Kind)
+                    {
+                    case ILCode.InstructionKind.Instruction:
+                        Emit(instruction.OpCode, parameter);
+                        break;
+                    case ILCode.InstructionKind.Label:
+                        il.MarkLabel(((LabelILInstructionParameter)parameter).Label);
+                        break;
+                    case ILCode.InstructionKind.DebugWriteLine:
+                        if(parameter is StringILInstructionParameter)
+                            il.EmitWriteLine(((StringILInstructionParameter)parameter).Value);
+                        else
+                            il.EmitWriteLine(((LocalILInstructionParameter)parameter).Local);
+                        break;
+                    case ILCode.InstructionKind.TryStart:
+                        il.BeginExceptionBlock();
+                        break;
+                    case ILCode.InstructionKind.Catch:
+                        il.BeginCatchBlock(parameter == null ? null : ((TypeILInstructionParameter)parameter).Type);
+                        break;
+                    case ILCode.InstructionKind.Fault:
+                        il.BeginFaultBlock();
+                        break;
+                    case ILCode.InstructionKind.FilteredException:
+                        il.BeginExceptFilterBlock();
+                        break;
+                    case ILCode.InstructionKind.Finally:
+                        il.BeginFinallyBlock();
+                        break;
+                    case ILCode.InstructionKind.TryEnd:
+                        il.EndExceptionBlock();
+                        break;
+                    }
+                }
+            }
         }
 
-        public ILCode GetILCode()
+        public string GetILCode()
         {
-            return ilCode;
+            return ilCode.ToString();
         }
 
         /// <summary>
@@ -79,7 +147,11 @@ namespace GrEmit
         /// </returns>
         public Local DeclareLocal(Type localType, string name, bool pinned = false)
         {
-            return new Local(il.DeclareLocal(localType, pinned), (string.IsNullOrEmpty(name) ? "local" : name) + "_" + localId++);
+            var local = il.DeclareLocal(localType, pinned);
+            var uniqueName = (string.IsNullOrEmpty(name) ? "local" : name) + "_" + localId++;
+            if(symbolDocumentWriter != null)
+                local.SetLocalSymInfo(uniqueName);
+            return new Local(local, uniqueName);
         }
 
         /// <summary>
@@ -94,7 +166,11 @@ namespace GrEmit
         /// </returns>
         public Local DeclareLocal(Type localType, bool pinned = false)
         {
-            return new Local(il.DeclareLocal(localType, pinned), "local_" + localId++);
+            var local = il.DeclareLocal(localType, pinned);
+            var name = "local_" + localId++;
+            if(symbolDocumentWriter != null)
+                local.SetLocalSymInfo(name);
+            return new Local(local, name);
         }
 
         /// <summary>
@@ -124,7 +200,8 @@ namespace GrEmit
                 MutateStack(default(OpCode), new LabelILInstructionParameter(label));
             if(stackIsNull)
                 ilCode.MarkLabel(label, GetComment());
-            il.MarkLabel(label);
+            if(symbolDocumentWriter == null)
+                il.MarkLabel(label);
         }
 
         /// <summary>
@@ -133,7 +210,9 @@ namespace GrEmit
         /// <param name="str">The string to be printed.</param>
         public void WriteLine(string str)
         {
-            il.EmitWriteLine(str);
+            ilCode.WriteLine(new StringILInstructionParameter(str), GetComment());
+            if(symbolDocumentWriter == null)
+                il.EmitWriteLine(str);
         }
 
         /// <summary>
@@ -142,7 +221,9 @@ namespace GrEmit
         /// <param name="local">The local variable whose value is to be written to the console.</param>
         public void WriteLine(Local local)
         {
-            il.EmitWriteLine(local);
+            ilCode.WriteLine(new LocalILInstructionParameter(local), GetComment());
+            if(symbolDocumentWriter == null)
+                il.EmitWriteLine(local);
         }
 
         /// <summary>
@@ -161,13 +242,11 @@ namespace GrEmit
         /// <summary>
         ///     Begins an exception block for a non-filtered exception.
         /// </summary>
-        /// <returns>
-        ///     The <see cref="Label">Label</see> object for the end of the block. This will leave you in the correct place to execute finally blocks or to finish the try.
-        /// </returns>
-        public Label BeginExceptionBlock()
+        public void BeginExceptionBlock()
         {
             ilCode.BeginExceptionBlock(GetComment());
-            return new Label(il.BeginExceptionBlock(), "TRY");
+            if(symbolDocumentWriter == null)
+                il.BeginExceptionBlock();
         }
 
         /// <summary>
@@ -178,13 +257,11 @@ namespace GrEmit
         /// </param>
         public void BeginCatchBlock(Type exceptionType)
         {
-            if(exceptionType != null)
-            {
-                if(analyzeStack)
-                    stack = new EvaluationStack(new ESType[] { new SimpleESType(exceptionType) });
-                ilCode.BeginCatchBlock(new TypeILInstructionParameter(exceptionType), GetComment());
-            }
-            il.BeginCatchBlock(exceptionType);
+            if(analyzeStack)
+                stack = new EvaluationStack(new ESType[] {new SimpleESType(exceptionType ?? typeof(Exception))});
+            ilCode.BeginCatchBlock(exceptionType == null ? null : new TypeILInstructionParameter(exceptionType), GetComment());
+            if(symbolDocumentWriter == null)
+                il.BeginCatchBlock(exceptionType);
         }
 
         /// <summary>
@@ -193,9 +270,10 @@ namespace GrEmit
         public void BeginExceptFilterBlock()
         {
             if(analyzeStack)
-                stack = new EvaluationStack(new ESType[] { new SimpleESType(typeof(Exception)) });
+                stack = new EvaluationStack(new ESType[] {new SimpleESType(typeof(Exception))});
             ilCode.BeginExceptFilterBlock(GetComment());
-            il.BeginExceptFilterBlock();
+            if(symbolDocumentWriter == null)
+                il.BeginExceptFilterBlock();
         }
 
         /// <summary>
@@ -206,7 +284,8 @@ namespace GrEmit
             if(analyzeStack)
                 stack = new EvaluationStack();
             ilCode.BeginFaultBlock(GetComment());
-            il.BeginFaultBlock();
+            if(symbolDocumentWriter == null)
+                il.BeginFaultBlock();
         }
 
         /// <summary>
@@ -217,7 +296,8 @@ namespace GrEmit
             if(analyzeStack)
                 stack = new EvaluationStack();
             ilCode.BeginFinallyBlock(GetComment());
-            il.BeginFinallyBlock();
+            if(symbolDocumentWriter == null)
+                il.BeginFinallyBlock();
         }
 
         /// <summary>
@@ -226,7 +306,8 @@ namespace GrEmit
         public void EndExceptionBlock()
         {
             ilCode.EndExceptionBlock(GetComment());
-            il.EndExceptionBlock();
+            if(symbolDocumentWriter == null)
+                il.EndExceptionBlock();
         }
 
         /// <summary>
@@ -840,8 +921,9 @@ namespace GrEmit
             if(asReadonly)
             {
                 if(analyzeStack)
-                    ilCode.AppendPrefix(OpCodes.Readonly);
-                il.Emit(OpCodes.Readonly);
+                    ilCode.AppendPrefix(OpCodes.Readonly, null);
+                if(symbolDocumentWriter == null)
+                    il.Emit(OpCodes.Readonly);
             }
             Emit(OpCodes.Ldelema, elementType);
         }
@@ -1555,7 +1637,7 @@ namespace GrEmit
         {
             var type = typeof(T);
             OpCode opCode;
-            if (!unsigned)
+            if(!unsigned)
             {
                 if(type == typeof(IntPtr))
                     opCode = OpCodes.Conv_Ovf_I;
@@ -1596,47 +1678,47 @@ namespace GrEmit
             }
             else
             {
-                if (type == typeof(IntPtr))
+                if(type == typeof(IntPtr))
                     opCode = OpCodes.Conv_Ovf_I_Un;
-                else if (type == typeof(UIntPtr))
+                else if(type == typeof(UIntPtr))
                     opCode = OpCodes.Conv_Ovf_U_Un;
                 else
                 {
-                    switch (Type.GetTypeCode(type))
+                    switch(Type.GetTypeCode(type))
                     {
-                        case TypeCode.SByte:
-                            opCode = OpCodes.Conv_Ovf_I1_Un;
-                            break;
-                        case TypeCode.Byte:
-                            opCode = OpCodes.Conv_Ovf_U1_Un;
-                            break;
-                        case TypeCode.Int16:
-                            opCode = OpCodes.Conv_Ovf_I2_Un;
-                            break;
-                        case TypeCode.UInt16:
-                            opCode = OpCodes.Conv_Ovf_U2_Un;
-                            break;
-                        case TypeCode.Int32:
-                            opCode = OpCodes.Conv_Ovf_I4_Un;
-                            break;
-                        case TypeCode.UInt32:
-                            opCode = OpCodes.Conv_Ovf_U4_Un;
-                            break;
-                        case TypeCode.Int64:
-                            opCode = OpCodes.Conv_Ovf_I8_Un;
-                            break;
-                        case TypeCode.UInt64:
-                            opCode = OpCodes.Conv_Ovf_U8_Un;
-                            break;
-                        default:
-                            throw new ArgumentException(string.Format("Expected integer type but was '{0}'", type), "T");
+                    case TypeCode.SByte:
+                        opCode = OpCodes.Conv_Ovf_I1_Un;
+                        break;
+                    case TypeCode.Byte:
+                        opCode = OpCodes.Conv_Ovf_U1_Un;
+                        break;
+                    case TypeCode.Int16:
+                        opCode = OpCodes.Conv_Ovf_I2_Un;
+                        break;
+                    case TypeCode.UInt16:
+                        opCode = OpCodes.Conv_Ovf_U2_Un;
+                        break;
+                    case TypeCode.Int32:
+                        opCode = OpCodes.Conv_Ovf_I4_Un;
+                        break;
+                    case TypeCode.UInt32:
+                        opCode = OpCodes.Conv_Ovf_U4_Un;
+                        break;
+                    case TypeCode.Int64:
+                        opCode = OpCodes.Conv_Ovf_I8_Un;
+                        break;
+                    case TypeCode.UInt64:
+                        opCode = OpCodes.Conv_Ovf_U8_Un;
+                        break;
+                    default:
+                        throw new ArgumentException(string.Format("Expected integer type but was '{0}'", type), "T");
                     }
                 }
             }
             Emit(opCode);
         }
 
-       /// <summary>
+        /// <summary>
         ///     Calls the method indicated by the passed method descriptor.
         ///     <para></para>
         ///     Emits a <see cref="OpCodes.Call">Call</see> or <see cref="OpCodes.Callvirt">Callvirt</see> instruction depending on whether the method is a virtual or not.
@@ -1661,22 +1743,25 @@ namespace GrEmit
                 if(constrained != null && constrained.IsValueType)
                 {
                     if(analyzeStack)
-                        ilCode.AppendPrefix(OpCodes.Constrained);
-                    il.Emit(OpCodes.Constrained, constrained);
+                        ilCode.AppendPrefix(OpCodes.Constrained, new TypeILInstructionParameter(constrained));
+                    if(symbolDocumentWriter == null)
+                        il.Emit(OpCodes.Constrained, constrained);
                 }
             }
             if(tailcall)
             {
                 if(analyzeStack)
-                    ilCode.AppendPrefix(OpCodes.Tailcall);
-                il.Emit(OpCodes.Tailcall);
+                    ilCode.AppendPrefix(OpCodes.Tailcall, null);
+                if(symbolDocumentWriter == null)
+                    il.Emit(OpCodes.Tailcall);
             }
             var parameter = new MethodILInstructionParameter(method);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.EmitCall(opCode, method, optionalParameterTypes);
+            if(symbolDocumentWriter == null)
+                il.EmitCall(opCode, method, optionalParameterTypes);
         }
 
         /// <summary>
@@ -1687,14 +1772,15 @@ namespace GrEmit
         /// </param>
         public void Call(ConstructorInfo constructor)
         {
-            if (constructor == null)
+            if(constructor == null)
                 throw new ArgumentNullException("constructor");
             var parameter = new ConstructorILInstructionParameter(constructor);
             var lineNumber = ilCode.Append(OpCodes.Call, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
                 MutateStack(OpCodes.Call, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(OpCodes.Call, constructor);
+            if(symbolDocumentWriter == null)
+                il.Emit(OpCodes.Call, constructor);
         }
 
         /// <summary>
@@ -1709,13 +1795,14 @@ namespace GrEmit
         /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
         public void Callnonvirt(MethodInfo method, bool tailcall = false, Type[] optionalParameterTypes = null)
         {
-            if (method == null)
+            if(method == null)
                 throw new ArgumentNullException("method");
-            if (tailcall)
+            if(tailcall)
             {
                 if(analyzeStack)
-                    ilCode.AppendPrefix(OpCodes.Tailcall);
-                il.Emit(OpCodes.Tailcall);
+                    ilCode.AppendPrefix(OpCodes.Tailcall, null);
+                if(symbolDocumentWriter == null)
+                    il.Emit(OpCodes.Tailcall);
             }
             var opCode = OpCodes.Call;
             var parameter = new MethodILInstructionParameter(method);
@@ -1723,7 +1810,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.EmitCall(opCode, method, optionalParameterTypes);
+            if(symbolDocumentWriter == null)
+                il.EmitCall(opCode, method, optionalParameterTypes);
         }
 
         /// <summary>
@@ -1743,15 +1831,17 @@ namespace GrEmit
             if(tailcall)
             {
                 if(analyzeStack)
-                    ilCode.AppendPrefix(OpCodes.Tailcall);
-                il.Emit(OpCodes.Tailcall);
+                    ilCode.AppendPrefix(OpCodes.Tailcall, null);
+                if(symbolDocumentWriter == null)
+                    il.Emit(OpCodes.Tailcall);
             }
-            var parameter = new MethodByAddressILInstructionParameter(returnType, parameterTypes);
+            var parameter = new MethodByAddressILInstructionParameter(callingConvention, returnType, parameterTypes);
             var lineNumber = ilCode.Append(OpCodes.Calli, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
                 MutateStack(OpCodes.Calli, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes, optionalParameterTypes);
+            if(symbolDocumentWriter == null)
+                il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes, optionalParameterTypes);
         }
 
         public class Label
@@ -1798,12 +1888,70 @@ namespace GrEmit
         internal readonly Type methodReturnType;
         internal readonly Type[] methodParameterTypes;
 
+        private void Emit(OpCode opCode, ILInstructionParameter parameter)
+        {
+            if(parameter == null)
+                il.Emit(opCode);
+            else if(parameter is TypeILInstructionParameter)
+                il.Emit(opCode, ((TypeILInstructionParameter)parameter).Type);
+            else if(parameter is ConstructorILInstructionParameter)
+                il.Emit(opCode, ((ConstructorILInstructionParameter)parameter).Constructor);
+            else if(parameter is FieldILInstructionParameter)
+                il.Emit(opCode, ((FieldILInstructionParameter)parameter).Field);
+            else if(parameter is LabelILInstructionParameter)
+                il.Emit(opCode, ((LabelILInstructionParameter)parameter).Label);
+            else if(parameter is LocalILInstructionParameter)
+                il.Emit(opCode, ((LocalILInstructionParameter)parameter).Local);
+            else if(parameter is LabelsILInstructionParameter)
+                il.Emit(opCode, ((LabelsILInstructionParameter)parameter).Labels.Select(label => (System.Reflection.Emit.Label)label).ToArray());
+            else if(parameter is MethodILInstructionParameter)
+                il.EmitCall(opCode, ((MethodILInstructionParameter)parameter).Method, null);
+            else if(parameter is StringILInstructionParameter)
+                il.Emit(opCode, ((StringILInstructionParameter)parameter).Value);
+            else if(parameter is MethodByAddressILInstructionParameter)
+            {
+                var calliParameter = (MethodByAddressILInstructionParameter)parameter;
+                il.EmitCalli(opCode, calliParameter.CallingConvention, calliParameter.ReturnType, calliParameter.ParameterTypes, null);
+            }
+            else
+            {
+                var primitiveParameter = (PrimitiveILInstructionParameter)parameter;
+                var typeCode = Type.GetTypeCode(primitiveParameter.Value.GetType());
+                switch(typeCode)
+                {
+                case TypeCode.SByte:
+                    il.Emit(opCode, (sbyte)primitiveParameter.Value);
+                    break;
+                case TypeCode.Byte:
+                    il.Emit(opCode, (byte)primitiveParameter.Value);
+                    break;
+                case TypeCode.Int16:
+                    il.Emit(opCode, (short)primitiveParameter.Value);
+                    break;
+                case TypeCode.Int32:
+                    il.Emit(opCode, (int)primitiveParameter.Value);
+                    break;
+                case TypeCode.Int64:
+                    il.Emit(opCode, (long)primitiveParameter.Value);
+                    break;
+                case TypeCode.Double:
+                    il.Emit(opCode, (double)primitiveParameter.Value);
+                    break;
+                case TypeCode.Single:
+                    il.Emit(opCode, (float)primitiveParameter.Value);
+                    break;
+                default:
+                    throw new InvalidOperationException(string.Format("Type code '{0}' is not valid at this point", typeCode));
+                }
+            }
+        }
+
         private void InsertPrefixes(bool isVolatile, int? unaligned)
         {
             if(isVolatile)
             {
                 if(analyzeStack)
-                    ilCode.AppendPrefix(OpCodes.Volatile);
+                    ilCode.AppendPrefix(OpCodes.Volatile, null);
                 il.Emit(OpCodes.Volatile);
             }
             if(unaligned != null)
@@ -1811,8 +1959,9 @@ namespace GrEmit
                 if(unaligned != 1 && unaligned != 2 && unaligned != 4)
                     throw new ArgumentException("Value of alignment must be 1, 2 or 4.", "unaligned");
                 if(analyzeStack)
-                    ilCode.AppendPrefix(OpCodes.Unaligned);
-                il.Emit(OpCodes.Unaligned, (long)unaligned.Value);
+                    ilCode.AppendPrefix(OpCodes.Unaligned, new PrimitiveILInstructionParameter(unaligned));
+                if(symbolDocumentWriter == null)
+                    il.Emit(OpCodes.Unaligned, (long)unaligned.Value);
             }
         }
 
@@ -1831,13 +1980,14 @@ namespace GrEmit
             return stack == null ? (ILInstructionComment)new InaccessibleCodeILInstructionComment() : new StackILInstructionComment(stack.Reverse().ToArray());
         }
 
-        private void Emit(OpCode opCode, ILInstructionParameter parameter)
+        private void Emit(OpCode opCode, TypeILInstructionParameter parameter)
         {
             var lineNumber = ilCode.Append(opCode, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode);
         }
 
         private void Emit(OpCode opCode)
@@ -1846,7 +1996,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, null);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode);
         }
 
         private void Emit(OpCode opCode, Local local)
@@ -1856,7 +2007,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, local);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, local);
         }
 
         private void Emit(OpCode opCode, Type type)
@@ -1866,7 +2018,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, type);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, type);
         }
 
         private void Emit(OpCode opCode, byte value)
@@ -1876,7 +2029,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, value);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, int value)
@@ -1886,7 +2040,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, value);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, sbyte value)
@@ -1896,7 +2051,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, value);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, long value)
@@ -1906,7 +2062,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, value);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, double value)
@@ -1916,7 +2073,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, value);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, float value)
@@ -1926,7 +2084,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, value);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, string value)
@@ -1936,7 +2095,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, value);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, value);
         }
 
         private void Emit(OpCode opCode, Label label)
@@ -1946,7 +2106,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, label);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, label);
         }
 
         private void Emit(OpCode opCode, Label[] labels)
@@ -1956,7 +2117,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, labels.Select(label => (System.Reflection.Emit.Label)label).ToArray());
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, labels.Select(label => (System.Reflection.Emit.Label)label).ToArray());
         }
 
         private void Emit(OpCode opCode, FieldInfo field)
@@ -1966,7 +2128,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, field);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, field);
         }
 
         private void Emit(OpCode opCode, MethodInfo method)
@@ -1976,7 +2139,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, method);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, method);
         }
 
         private void Emit(OpCode opCode, ConstructorInfo constructor)
@@ -1986,7 +2150,8 @@ namespace GrEmit
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            il.Emit(opCode, constructor);
+            if(symbolDocumentWriter == null)
+                il.Emit(opCode, constructor);
         }
 
         private int localId;
@@ -1996,6 +2161,7 @@ namespace GrEmit
 
         private readonly ILGenerator il;
         private readonly bool analyzeStack = true;
+        private readonly ISymbolDocumentWriter symbolDocumentWriter;
     }
 
     // ReSharper restore InconsistentNaming

@@ -7,7 +7,7 @@ using GrEmit.InstructionParameters;
 
 namespace GrEmit
 {
-    public class ILCode
+    internal class ILCode
     {
         public int MarkLabel(GroboIL.Label label, ILInstructionComment comment)
         {
@@ -40,15 +40,15 @@ namespace GrEmit
             return lineNumber - 1;
         }
 
-        public int AppendPrefix(OpCode prefix)
+        public int AppendPrefix(OpCode prefix, ILInstructionParameter parameter)
         {
             var lastInstructionPrefix = instructions[lineNumber - 1] as ILInstructionPrefix;
             if(lastInstructionPrefix != null)
             {
-                lastInstructionPrefix.Prefixes.Add(prefix);
+                lastInstructionPrefix.Prefixes.Add(new KeyValuePair<OpCode, ILInstructionParameter>(prefix, parameter));
                 return lineNumber - 1;
             }
-            instructions.Add(new ILInstructionPrefix {Prefixes = new List<OpCode> {prefix}});
+            instructions.Add(new ILInstructionPrefix {Prefixes = new List<KeyValuePair<OpCode, ILInstructionParameter>> {new KeyValuePair<OpCode, ILInstructionParameter>(prefix, parameter)}});
             return lineNumber++;
         }
 
@@ -88,6 +88,18 @@ namespace GrEmit
             return lineNumber++;
         }
 
+        public int WriteLine(StringILInstructionParameter parameter, ILInstructionComment comment)
+        {
+            instructions.Add(new ILInstruction(InstructionKind.DebugWriteLine, default(OpCode), parameter, comment));
+            return lineNumber++;
+        }
+
+        public int WriteLine(LocalILInstructionParameter parameter, ILInstructionComment comment)
+        {
+            instructions.Add(new ILInstruction(InstructionKind.DebugWriteLine, default(OpCode), parameter, comment));
+            return lineNumber++;
+        }
+
         public int GetLabelLineNumber(GroboIL.Label label)
         {
             int result;
@@ -110,7 +122,7 @@ namespace GrEmit
             return lineNumber < instructions.Count ? instructions[lineNumber] : null;
         }
 
-        public override string ToString()
+        public KeyValuePair<string, List<KeyValuePair<int, int>>> GetLinesInfo()
         {
             var lines = new List<string>();
             var maxLen = 0;
@@ -122,7 +134,8 @@ namespace GrEmit
                     switch(ilInstruction.Kind)
                     {
                     case InstructionKind.Instruction:
-                        lines.Add(margin + string.Join("", (ilInstruction.Prefixes ?? new List<OpCode>()).Concat(new[] {ilInstruction.OpCode}).Select(opcode => opcode.ToString()).ToArray()) + (ilInstruction.Parameter == null ? "" : " " + ilInstruction.Parameter.Format()));
+                        var prefixes = (ilInstruction.Prefixes ?? new List<KeyValuePair<OpCode, ILInstructionParameter>>()).Select(pair => pair.Key);
+                        lines.Add(margin + string.Join("", prefixes.Concat(new[] {ilInstruction.OpCode}).Select(opcode => opcode.ToString()).ToArray()) + (ilInstruction.Parameter == null ? "" : " " + ilInstruction.Parameter.Format()));
                         break;
                     case InstructionKind.Label:
                         lines.Add((ilInstruction.Parameter == null ? "" : ilInstruction.Parameter.Format()) + ':');
@@ -131,7 +144,7 @@ namespace GrEmit
                         lines.Add("TRY");
                         break;
                     case InstructionKind.Catch:
-                        lines.Add("CATCH <" + (ilInstruction.Parameter == null ? "" : ilInstruction.Parameter.Format()) + '>');
+                        lines.Add("CATCH <" + (ilInstruction.Parameter == null ? "Exception" : ilInstruction.Parameter.Format()) + '>');
                         break;
                     case InstructionKind.FilteredException:
                         lines.Add("CATCH");
@@ -144,6 +157,9 @@ namespace GrEmit
                         break;
                     case InstructionKind.TryEnd:
                         lines.Add("END TRY");
+                        break;
+                    case InstructionKind.DebugWriteLine:
+                        lines.Add("WriteLine <" + ilInstruction.Parameter.Format() + ">");
                         break;
                     }
                 }
@@ -160,6 +176,8 @@ namespace GrEmit
             InitMargins(maxCommentStart + margin.Length);
             maxLen += margin.Length;
             var result = new StringBuilder();
+            var linesInfo = new List<KeyValuePair<int, int>>();
+            var currentLine = 1;
             for(var i = 0; i < instructions.Count; ++i)
             {
                 var line = lines[i];
@@ -172,6 +190,7 @@ namespace GrEmit
                         result.Append(WhiteSpace(maxLen - line.Length));
                         result.Append("// ");
                         result.Append(comment.Format());
+                        linesInfo.Add(new KeyValuePair<int, int>(currentLine, currentLine));
                     }
                     else
                     {
@@ -179,11 +198,20 @@ namespace GrEmit
                         result.Append(WhiteSpace(maxLen));
                         result.Append("// ");
                         result.Append(comment.Format());
+                        linesInfo.Add(new KeyValuePair<int, int>(currentLine, currentLine + 1));
+                        currentLine++;
                     }
                 }
+                else linesInfo.Add(new KeyValuePair<int, int>(currentLine, currentLine));
                 result.AppendLine();
+                currentLine++;
             }
-            return result.ToString();
+            return new KeyValuePair<string, List<KeyValuePair<int, int>>>(result.ToString(), linesInfo);
+        }
+
+        public override string ToString()
+        {
+            return GetLinesInfo().Key;
         }
 
         public int Count { get { return lineNumber; } }
@@ -206,12 +234,12 @@ namespace GrEmit
             public InstructionKind Kind { get; set; }
             public OpCode OpCode { get; set; }
             public ILInstructionParameter Parameter { get; private set; }
-            public List<OpCode> Prefixes { get; set; }
+            public List<KeyValuePair<OpCode, ILInstructionParameter>> Prefixes { get; set; }
         }
 
         public class ILInstructionPrefix : ILInstructionBase
         {
-            public List<OpCode> Prefixes { get; set; }
+            public List<KeyValuePair<OpCode, ILInstructionParameter>> Prefixes { get; set; }
         }
 
         public enum InstructionKind
@@ -223,7 +251,8 @@ namespace GrEmit
             Catch,
             FilteredException,
             Finally,
-            Fault
+            Fault,
+            DebugWriteLine
         }
 
         private static void InitMargins(int length)

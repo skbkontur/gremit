@@ -42,7 +42,7 @@ namespace Tests
                 GroboIL.Label endOfMthd = il.DefineLabel("end");
 
                 // Begin the try block.
-                GroboIL.Label exBlock = il.BeginExceptionBlock();
+                il.BeginExceptionBlock();
 
                 // First, load argument 0 and the integer value of "100" onto the
                 // stack. If arg0 > 100, branch to the label "failed", which is marked
@@ -144,10 +144,12 @@ namespace Tests
             // Create dynamic assembly.
             AppDomain myAppDomain = Thread.GetDomain();
             AssemblyBuilder myAssemblyBuilder = myAppDomain.DefineDynamicAssembly(myAssemblyName,
-               AssemblyBuilderAccess.Run);
+               AssemblyBuilderAccess.RunAndSave);
 
             // Create a dynamic module.
-            ModuleBuilder myModuleBuilder = myAssemblyBuilder.DefineDynamicModule("AdderExceptionMod");
+            ModuleBuilder myModuleBuilder = myAssemblyBuilder.DefineDynamicModule("AdderExceptionMod", true);
+            var symbolDocumentWriter = myModuleBuilder.GetSymWriter().DefineDocument("AdderException.cil", Guid.Empty, Guid.Empty, Guid.Empty);
+
             TypeBuilder myTypeBuilder = myModuleBuilder.DefineType("Adder");
             Type[] adderParams = new Type[] { typeof(int), typeof(int) };
 
@@ -159,7 +161,7 @@ namespace Tests
             // Define method to add two numbers.
             MethodBuilder myMethodBuilder = myTypeBuilder.DefineMethod("DoAdd", MethodAttributes.Public |
                MethodAttributes.Static, typeof(int), adderParams);
-            using (var il = new GroboIL(myMethodBuilder))
+            using (var il = new GroboIL(myMethodBuilder, symbolDocumentWriter))
             {
 
                 // Declare local variable.
@@ -171,7 +173,7 @@ namespace Tests
                 GroboIL.Label myEndOfMethodLabel = il.DefineLabel("end");
 
                 // Begin exception block.
-                GroboIL.Label myLabel = il.BeginExceptionBlock();
+                il.BeginExceptionBlock();
 
                 il.Ldarg(0);
                 il.Ldc_I4(10);
@@ -242,7 +244,8 @@ namespace Tests
                AssemblyBuilderAccess.Run);
 
             // Create a dynamic module.
-            ModuleBuilder myModuleBuilder = myAssemblyBuilder.DefineDynamicModule("AdderExceptionMod");
+            ModuleBuilder myModuleBuilder = myAssemblyBuilder.DefineDynamicModule("AdderExceptionMod", true);
+            var symbolDocumentWriter = myModuleBuilder.GetSymWriter().DefineDocument("AdderException.cil", Guid.Empty, Guid.Empty, Guid.Empty);
             TypeBuilder myTypeBuilder = myModuleBuilder.DefineType("Adder");
             Type[] myAdderParams = new Type[] { typeof(int), typeof(int) };
 
@@ -256,7 +259,7 @@ namespace Tests
             MethodBuilder myMethodBuilder = myTypeBuilder.DefineMethod("DoAdd", MethodAttributes.Public |
                MethodAttributes.Static, typeof(int), myAdderParams);
 
-            using (var il = new GroboIL(myMethodBuilder))
+            using (var il = new GroboIL(myMethodBuilder, symbolDocumentWriter))
             {
 
                 // Declare local variable.
@@ -268,7 +271,7 @@ namespace Tests
                 GroboIL.Label myEndOfMethodLabel = il.DefineLabel("end");
 
                 // Begin exception block.
-                Label myLabel = il.BeginExceptionBlock();
+                il.BeginExceptionBlock();
 
                 il.Ldarg(0);
                 il.Ldc_I4(10);
@@ -316,6 +319,24 @@ namespace Tests
 
                 Console.WriteLine(il.GetILCode());
             }
+
+            Type adderType = myTypeBuilder.CreateType();
+
+            object addIns = Activator.CreateInstance(adderType);
+
+            object[] addParams = new object[2];
+
+            addParams[0] = 20;
+
+            addParams[1] = 10;
+
+            Console.WriteLine("{0} + {1} = {2}",
+                  addParams[0], addParams[1],
+                  adderType.InvokeMember("DoAdd",
+                     BindingFlags.InvokeMethod,
+                     null,
+                     addIns,
+                     addParams)); 
         }
     }
 }
