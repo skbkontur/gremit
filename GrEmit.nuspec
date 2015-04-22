@@ -13,5 +13,6 @@
 <files>
   <file src="Assemblies\GrEmit.pdb" target="lib\net40\" />
   <file src="Assemblies\GrEmit.dll" target="lib\net40\" />  
+  <file src="Assemblies\GrEmit.xml" target="lib\net40\" />  
 </files>
 </package>
