@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>GrEmit</id>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <title>GrEmit</title>
     <projectUrl>https://git.skbkontur.ru/codebases/gremit</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
