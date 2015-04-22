@@ -153,6 +153,7 @@
   <PropertyGroup>
     <PostBuildEvent>copy $(TargetDir)$(TargetName).dll $(SolutionDir)..\Assemblies\
 copy $(TargetDir)$(TargetName).pdb $(SolutionDir)..\Assemblies\
+copy $(TargetDir)$(TargetName).xml $(SolutionDir)..\Assemblies\
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
