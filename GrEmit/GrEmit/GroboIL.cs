@@ -1844,6 +1844,25 @@ namespace GrEmit
                 il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes, optionalParameterTypes);
         }
 
+        /// <summary>
+        ///     Calls the method indicated on the evaluation stack (as a pointer to an entry point) with arguments described by a calling convention.
+        /// </summary>
+        /// <param name="callingConvention">The unmanaged calling convention to be used.</param>
+        /// <param name="returnType">
+        ///     The <see cref="Type">Type</see> of the result.
+        /// </param>
+        /// <param name="parameterTypes">The types of the required arguments to the instruction.</param>
+        public void Calli(CallingConvention callingConvention, Type returnType, Type[] parameterTypes)
+        {
+            var parameter = new MethodByAddressILInstructionParameter(callingConvention, returnType, parameterTypes);
+            var lineNumber = ilCode.Append(OpCodes.Calli, parameter, new EmptyILInstructionComment());
+            if(analyzeStack && stack != null)
+                MutateStack(OpCodes.Calli, parameter);
+            ilCode.SetComment(lineNumber, GetComment());
+            if(symbolDocumentWriter == null)
+                il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes);
+        }
+
         public class Label
         {
             public Label(System.Reflection.Emit.Label label, string name)
@@ -1911,7 +1930,10 @@ namespace GrEmit
             else if(parameter is MethodByAddressILInstructionParameter)
             {
                 var calliParameter = (MethodByAddressILInstructionParameter)parameter;
-                il.EmitCalli(opCode, calliParameter.CallingConvention, calliParameter.ReturnType, calliParameter.ParameterTypes, null);
+                if (calliParameter.ManagedCallingConvention != null)
+                    il.EmitCalli(opCode, calliParameter.ManagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes, null);
+                else
+                    il.EmitCalli(opCode, calliParameter.UnmanagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes);
             }
             else
             {
