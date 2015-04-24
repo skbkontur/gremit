@@ -5,6 +5,8 @@ using GrEmit;
 
 using NUnit.Framework;
 
+using System.Linq;
+
 namespace Tests.OpCodesTests
 {
     [TestFixture]
@@ -12,11 +14,18 @@ namespace Tests.OpCodesTests
     {
         private void TestSuccess(Type type1, Type type2)
         {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] { type1, type2, }, typeof(string), true);
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] { type1, type2, }.Where(type => type != null).ToArray(), typeof(string), true);
             using (var il = new GroboIL(method))
             {
-                il.Ldarg(0);
-                il.Ldarg(1);
+                int index = 0;
+                if (type1 != null)
+                    il.Ldarg(index++);
+                else
+                    il.Ldnull();
+                if (type2 != null)
+                    il.Ldarg(index++);
+                else
+                    il.Ldnull();
                 il.Add_Ovf(false);
                 il.Pop();
                 il.Ret();
@@ -31,10 +40,17 @@ namespace Tests.OpCodesTests
 
         private void TestFailure(Type type1, Type type2)
         {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {type1, type2, }, typeof(string), true);
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] { type1, type2, }.Where(type => type != null).ToArray(), typeof(string), true);
             var il = new GroboIL(method);
-            il.Ldarg(0);
-            il.Ldarg(1);
+            int index = 0;
+            if (type1 != null)
+                il.Ldarg(index++);
+            else
+                il.Ldnull();
+            if (type2 != null)
+                il.Ldarg(index++);
+            else
+                il.Ldnull();
             Assert.Throws<InvalidOperationException>(() => il.Add_Ovf(false));
         }
 
@@ -86,6 +102,12 @@ namespace Tests.OpCodesTests
         }
 
         [Test]
+        public void Test_int32_null()
+        {
+            TestSuccess(typeof(int), null);
+        }
+
+        [Test]
         public void Test_int64_int32()
         {
             TestFailure<long, int>();
@@ -125,6 +147,12 @@ namespace Tests.OpCodesTests
         public void Test_int64_managed_pointer()
         {
             TestFailure(typeof(long), typeof(byte).MakeByRefType());
+        }
+
+        [Test]
+        public void Test_int64_null()
+        {
+            TestSuccess(typeof(long), null);
         }
 
         [Test]
@@ -170,6 +198,12 @@ namespace Tests.OpCodesTests
         }
 
         [Test]
+        public void Test_native_int_null()
+        {
+            TestSuccess(typeof(IntPtr), null);
+        }
+
+        [Test]
         public void Test_float_int32()
         {
             TestFailure<float, int>();
@@ -209,6 +243,12 @@ namespace Tests.OpCodesTests
         public void Test_float_managed_pointer()
         {
             TestFailure(typeof(float), typeof(byte).MakeByRefType());
+        }
+
+        [Test]
+        public void Test_float_null()
+        {
+            TestSuccess(typeof(float), null);
         }
 
         [Test]
@@ -254,6 +294,12 @@ namespace Tests.OpCodesTests
         }
 
         [Test]
+        public void Test_double_null()
+        {
+            TestSuccess(typeof(double), null);
+        }
+
+        [Test]
         public void Test_managed_pointer_int32()
         {
             TestFailure(typeof(byte).MakeByRefType(), typeof(int));
@@ -296,6 +342,12 @@ namespace Tests.OpCodesTests
         }
 
         [Test]
+        public void Test_managed_pointer_null()
+        {
+            TestFailure(typeof(byte).MakeByRefType(), null);
+        }
+
+        [Test]
         public void Test_O_int32()
         {
             TestFailure<string, int>();
@@ -335,6 +387,60 @@ namespace Tests.OpCodesTests
         public void Test_O_managed_pointer()
         {
             TestFailure(typeof(string), typeof(byte).MakeByRefType());
+        }
+
+        [Test]
+        public void Test_O_null()
+        {
+            TestFailure(typeof(string), null);
+        }
+
+        [Test]
+        public void Test_null_int32()
+        {
+            TestSuccess(null, typeof(int));
+        }
+
+        [Test]
+        public void Test_null_int64()
+        {
+            TestSuccess(null, typeof(long));
+        }
+
+        [Test]
+        public void Test_null_native_int()
+        {
+            TestSuccess(null, typeof(IntPtr));
+        }
+
+        [Test]
+        public void Test_null_float()
+        {
+            TestSuccess(null, typeof(float));
+        }
+
+        [Test]
+        public void Test_null_double()
+        {
+            TestSuccess(null, typeof(double));
+        }
+
+        [Test]
+        public void Test_null_O()
+        {
+            TestFailure(null, typeof(string));
+        }
+
+        [Test]
+        public void Test_null_managed_pointer()
+        {
+            TestFailure(null, typeof(byte).MakeByRefType());
+        }
+
+        [Test]
+        public void Test_null_null()
+        {
+            TestSuccess(null, null);
         }
     }
 }

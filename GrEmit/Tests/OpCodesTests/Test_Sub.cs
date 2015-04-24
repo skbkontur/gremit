@@ -10,7 +10,7 @@ using System.Linq;
 namespace Tests.OpCodesTests
 {
     [TestFixture]
-    public class Test_Add_Ovf_Un
+    public class Test_Sub
     {
         private void TestSuccess(Type type1, Type type2)
         {
@@ -26,7 +26,7 @@ namespace Tests.OpCodesTests
                     il.Ldarg(index++);
                 else
                     il.Ldnull();
-                il.Add_Ovf(true);
+                il.Sub();
                 il.Pop();
                 il.Ret();
                 Console.WriteLine(il.GetILCode());
@@ -51,7 +51,7 @@ namespace Tests.OpCodesTests
                 il.Ldarg(index++);
             else
                 il.Ldnull();
-            Assert.Throws<InvalidOperationException>(() => il.Add_Ovf(true));
+            Assert.Throws<InvalidOperationException>(il.Sub);
         }
 
         private void TestFailure<T1, T2>()
@@ -98,7 +98,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_int32_managed_pointer()
         {
-            TestSuccess(typeof(int), typeof(byte).MakeByRefType());
+            TestFailure(typeof(int), typeof(byte).MakeByRefType());
         }
 
         [Test]
@@ -194,7 +194,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_native_int_managed_pointer()
         {
-            TestSuccess(typeof(IntPtr), typeof(byte).MakeByRefType());
+            TestFailure(typeof(IntPtr), typeof(byte).MakeByRefType());
         }
 
         [Test]
@@ -338,7 +338,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_managed_pointer_managed_pointer()
         {
-            TestFailure(typeof(byte).MakeByRefType(), typeof(byte).MakeByRefType());
+            TestSuccess(typeof(byte).MakeByRefType(), typeof(byte).MakeByRefType());
         }
 
         [Test]
@@ -434,7 +434,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_null_managed_pointer()
         {
-            TestSuccess(null, typeof(byte).MakeByRefType());
+            TestFailure(null, typeof(byte).MakeByRefType());
         }
 
         [Test]

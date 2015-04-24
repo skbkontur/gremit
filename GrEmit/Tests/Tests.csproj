@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OpCodesTests\Test_Sub.cs" />
     <Compile Include="OpCodesTests\Test_Add_Ovf.cs" />
     <Compile Include="OpCodesTests\Test_Add_Ovf_Un.cs" />
     <Compile Include="OpCodesTests\Test_Add.cs" />
