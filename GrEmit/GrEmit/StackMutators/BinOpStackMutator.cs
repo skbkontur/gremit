@@ -13,9 +13,9 @@ namespace GrEmit.StackMutators
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             CheckNotEmpty(il, stack);
-            var left = stack.Pop();
-            CheckNotEmpty(il, stack);
             var right = stack.Pop();
+            CheckNotEmpty(il, stack);
+            var left = stack.Pop();
             if(!IsAllowed(ToCLIType(left), ToCLIType(right)))
                 ThrowError(il, string.Format("Cannot perform instruction '{0}' on types '{1}' and '{2}'", opCode, left, right));
             var result = Canonize(GetResultType(Canonize(left), Canonize(right)));
