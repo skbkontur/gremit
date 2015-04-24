@@ -14,6 +14,11 @@ namespace GrEmit.Utils
                 return Format(type.GetElementType()) + "&";
             if(type.IsPointer)
                 return Format(type.GetElementType()) + "*";
+            if(type.IsArray)
+            {
+                var rank = type.GetArrayRank();
+                return Format(type.GetElementType()) + string.Format("[{0}]", rank == 1 ? "" : new string(',', rank - 1));
+            }
             if(!type.IsGenericType)
                 return type.Name;
             var index = type.Name.LastIndexOf('`');
