@@ -346,6 +346,8 @@ namespace GrEmit
                 throw new ArgumentNullException("labels");
             if(labels.Length == 0)
                 throw new ArgumentException("At least one label must be specified", "labels");
+            if(labels.Any(label => label == null))
+                throw new ArgumentException("All labels must be specified", "labels");
             Emit(OpCodes.Switch, labels);
         }
 
