@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace Tests.OpCodesTests
 {
     [TestFixture]
-    public class Test_Sub
+    public class Test_Sub_Ovf_Un
     {
         [Test]
         public void Test_int32_int32()
@@ -409,7 +409,7 @@ namespace Tests.OpCodesTests
                     il.Ldarg(index++);
                 else
                     il.Ldnull();
-                il.Sub();
+                il.Sub_Ovf(true);
                 il.Pop();
                 il.Ret();
                 Console.WriteLine(il.GetILCode());
@@ -434,7 +434,7 @@ namespace Tests.OpCodesTests
                 il.Ldarg(index++);
             else
                 il.Ldnull();
-            Assert.Throws<InvalidOperationException>(il.Sub);
+            Assert.Throws<InvalidOperationException>(() => il.Sub_Ovf(true));
         }
 
         private void TestFailure<T1, T2>()

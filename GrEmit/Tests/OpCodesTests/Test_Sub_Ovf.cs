@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace Tests.OpCodesTests
 {
     [TestFixture]
-    public class Test_Sub
+    public class Test_Sub_Ovf
     {
         [Test]
         public void Test_int32_int32()
@@ -254,7 +254,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_managed_pointer_int32()
         {
-            TestSuccess(typeof(byte).MakeByRefType(), typeof(int));
+            TestFailure(typeof(byte).MakeByRefType(), typeof(int));
         }
 
         [Test]
@@ -266,7 +266,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_managed_pointer_native_int()
         {
-            TestSuccess(typeof(byte).MakeByRefType(), typeof(IntPtr));
+            TestFailure(typeof(byte).MakeByRefType(), typeof(IntPtr));
         }
 
         [Test]
@@ -290,13 +290,13 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_managed_pointer_managed_pointer()
         {
-            TestSuccess(typeof(byte).MakeByRefType(), typeof(byte).MakeByRefType());
+            TestFailure(typeof(byte).MakeByRefType(), typeof(byte).MakeByRefType());
         }
 
         [Test]
         public void Test_managed_pointer_null()
         {
-            TestSuccess(typeof(byte).MakeByRefType(), null);
+            TestFailure(typeof(byte).MakeByRefType(), null);
         }
 
         [Test]
@@ -409,7 +409,7 @@ namespace Tests.OpCodesTests
                     il.Ldarg(index++);
                 else
                     il.Ldnull();
-                il.Sub();
+                il.Sub_Ovf(false);
                 il.Pop();
                 il.Ret();
                 Console.WriteLine(il.GetILCode());
@@ -434,7 +434,7 @@ namespace Tests.OpCodesTests
                 il.Ldarg(index++);
             else
                 il.Ldnull();
-            Assert.Throws<InvalidOperationException>(il.Sub);
+            Assert.Throws<InvalidOperationException>(() => il.Sub_Ovf(false));
         }
 
         private void TestFailure<T1, T2>()

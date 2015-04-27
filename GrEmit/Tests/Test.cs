@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -472,6 +473,251 @@ namespace Tests
             var instance = Activator.CreateInstance(type);
             type.GetMethod("Qzz", BindingFlags.Instance | BindingFlags.Public).MakeGenericMethod(typeof(int)).Invoke(instance, new object[] {null, null});
         }
+
+
+        public static string[] Create(string[] values)
+        {
+            CheckDifferent(values);
+            var hashSet = new HashSet<int>();
+            for (var n = Math.Max(values.Length, 1); ; ++n)
+            {
+                hashSet.Clear();
+                var ok = true;
+                foreach (var str in values)
+                {
+                    var idx = str.GetHashCode() % n;
+                    if (idx < 0) idx += n;
+                    if (hashSet.Contains(idx))
+                    {
+                        ok = false;
+                        break;
+                    }
+                    hashSet.Add(idx);
+                }
+                if (ok)
+                {
+                    var result = new string[n];
+                    foreach (var str in values)
+                    {
+                        var idx = str.GetHashCode() % n;
+                        if (idx < 0) idx += n;
+                        result[idx] = str;
+                    }
+                    return result;
+                }
+            }
+        }
+
+        private static void CheckDifferent(string[] values)
+        {
+            var hashSet = new HashSet<string>();
+            foreach (var str in values)
+            {
+                if (hashSet.Contains(str))
+                    throw new InvalidOperationException(string.Format("Duplicate value '{0}'", str));
+                hashSet.Add(str);
+            }
+        }
+
+        public interface IQxx
+        {
+            void Set(string key, int value);
+        }
+
+        private IQxx BuildIfs(ModuleBuilder module, string[] keys)
+        {
+            var numberOfCases = keys.Length;
+            var typeBuilder = module.DefineType("Ifs" + Guid.NewGuid(), TypeAttributes.Class | TypeAttributes.Public);
+            typeBuilder.AddInterfaceImplementation(typeof(IQxx));
+            var fields = new FieldInfo[numberOfCases];
+            for (int i = 0; i < numberOfCases; ++i)
+                fields[i] = typeBuilder.DefineField(keys[i], typeof(int), FieldAttributes.Public);
+            var method = typeBuilder.DefineMethod("Set", MethodAttributes.Public | MethodAttributes.Virtual, typeof(void), new[] { typeof(string), typeof(int) });
+            method.DefineParameter(1, ParameterAttributes.In, "key");
+            method.DefineParameter(2, ParameterAttributes.In, "value");
+            using (var il = new GroboIL(method))
+            {
+                var doneLabel = il.DefineLabel("done");
+                for (int i = 0; i < numberOfCases; ++i)
+                {
+                    il.Ldarg(1); // stack: [key]
+                    il.Ldstr(keys[i]); // stack: [key, keys[i]]
+                    il.Call(stringEqualityOperator); // stack: [key == keys[i]]
+                    var nextKeyLabel = il.DefineLabel("nextKey");
+                    il.Brfalse(nextKeyLabel); // if(key != keys[i]) goto nextKey; stack: []
+                    il.Ldarg(0);
+                    il.Ldarg(2);
+                    il.Stfld(fields[i]);
+                    il.Br(doneLabel);
+                    il.MarkLabel(nextKeyLabel);
+                }
+                il.MarkLabel(doneLabel);
+                il.Ret();
+            }
+            typeBuilder.DefineMethodOverride(method, typeof(IQxx).GetMethod("Set"));
+            var type = typeBuilder.CreateType();
+            return (IQxx)Activator.CreateInstance(type);
+        }
+
+        private IQxx BuildSwitch(ModuleBuilder module, string[] keys)
+        {
+            var numberOfCases = keys.Length;
+            var typeBuilder = module.DefineType("Switch" + Guid.NewGuid(), TypeAttributes.Class | TypeAttributes.Public);
+            typeBuilder.AddInterfaceImplementation(typeof(IQxx));
+            var fields = new FieldInfo[numberOfCases];
+            for (int i = 0; i < numberOfCases; ++i)
+                fields[i] = typeBuilder.DefineField(keys[i], typeof(int), FieldAttributes.Public);
+            var tinyHashtable = Create(keys);
+            int n = tinyHashtable.Length;
+            var keysField = typeBuilder.DefineField("keys", typeof(string[]), FieldAttributes.Public);
+            var constructor = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] { typeof(string[]) });
+            using (var il = new GroboIL(constructor))
+            {
+                il.Ldarg(0);
+                il.Ldarg(1);
+                il.Stfld(keysField);
+                il.Ret();
+            }
+
+            var method = typeBuilder.DefineMethod("Set", MethodAttributes.Public | MethodAttributes.Virtual, typeof(void), new[] { typeof(string), typeof(int) });
+            method.DefineParameter(1, ParameterAttributes.In, "key");
+            method.DefineParameter(2, ParameterAttributes.In, "value");
+            using (var il = new GroboIL(method))
+            {
+                il.Ldarg(0);
+                il.Ldfld(keysField);
+                il.Ldarg(1);
+                il.Call(HackHelpers.GetMethodDefinition<object>(o => o.GetHashCode()));
+                il.Ldc_I4(n);
+                il.Rem(true);
+                var idx = il.DeclareLocal(typeof(int));
+                il.Dup();
+                il.Stloc(idx);
+                il.Ldelem(typeof(string));
+                il.Ldarg(1);
+                il.Call(stringEqualityOperator);
+                var doneLabel = il.DefineLabel("done");
+                il.Brfalse(doneLabel);
+
+                var labels = new GroboIL.Label[n];
+                for (int i = 0; i < n; ++i)
+                    labels[i] = doneLabel;
+                foreach (string key in keys)
+                {
+                    var index = key.GetHashCode() % n;
+                    if (index < 0) index += n;
+                    var label = il.DefineLabel("set_" + key);
+                    labels[index] = label;
+                }
+                il.Ldloc(idx);
+                il.Switch(labels);
+                for (int i = 0; i < keys.Length; ++i)
+                {
+                    var index = keys[i].GetHashCode() % n;
+                    if (index < 0) index += n;
+                    il.MarkLabel(labels[index]);
+                    il.Ldarg(0);
+                    il.Ldarg(2);
+                    il.Stfld(fields[i]);
+                    il.Br(doneLabel);
+                }
+                il.MarkLabel(doneLabel);
+                il.Ret();
+            }
+            typeBuilder.DefineMethodOverride(method, typeof(IQxx).GetMethod("Set"));
+            var type = typeBuilder.CreateType();
+            return (IQxx)Activator.CreateInstance(type, new object[] { tinyHashtable });
+        }
+
+        [Test, Ignore]
+        public void TestPerformance_Ifs_vs_Switch()
+        {
+            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);
+            var module = assembly.DefineDynamicModule("Zzz", true);
+
+            for(var numberOfCases = 1; numberOfCases <= 20; ++numberOfCases)
+            {
+                Console.WriteLine("#" + numberOfCases);
+                var keys = new string[numberOfCases];
+                for(int i = 0; i < numberOfCases; ++i)
+                    keys[i] = Guid.NewGuid().ToString();
+
+                var ifs = BuildIfs(module, keys);
+                var switCh = BuildSwitch(module, keys);
+                const int iterations = 1000000000;
+
+                Console.WriteLine("Worst case:");
+
+                var stopwatch = Stopwatch.StartNew();
+                for(int iter = 0; iter < iterations / numberOfCases; ++iter)
+                {
+                    for(int i = 0; i < numberOfCases; ++i)
+                        ifs.Set("zzz", iter);
+                    ifs.Set("zzz", iter);
+                }
+                var elapsedIfs = stopwatch.Elapsed;
+                Console.WriteLine("Ifs: " + elapsedIfs.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedIfs.TotalMilliseconds) + " runs per second)");
+
+
+                stopwatch = Stopwatch.StartNew();
+                for(int iter = 0; iter < iterations / numberOfCases; ++iter)
+                {
+                    for(int i = 0; i < numberOfCases; ++i)
+                        switCh.Set("zzz", iter);
+                    switCh.Set("zzz", iter);
+                }
+                var elapsedSwitch = stopwatch.Elapsed;
+                Console.WriteLine("Switch: " + elapsedSwitch.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedSwitch.TotalMilliseconds) + " runs per second)");
+                Console.WriteLine(elapsedSwitch.TotalMilliseconds / elapsedIfs.TotalMilliseconds);
+
+                Console.WriteLine("Average:");
+
+                stopwatch = Stopwatch.StartNew();
+                for(int iter = 0; iter < iterations / numberOfCases; ++iter)
+                {
+                    for(int i = 0; i < numberOfCases; ++i)
+                        ifs.Set(keys[i], iter);
+                    ifs.Set("zzz", iter);
+                }
+                elapsedIfs = stopwatch.Elapsed;
+                Console.WriteLine("Ifs: " + elapsedIfs.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedIfs.TotalMilliseconds) + " runs per second)");
+
+
+                stopwatch = Stopwatch.StartNew();
+                for(int iter = 0; iter < iterations / numberOfCases; ++iter)
+                {
+                    for(int i = 0; i < numberOfCases; ++i)
+                        switCh.Set(keys[i], iter);
+                    switCh.Set("zzz", iter);
+                }
+                elapsedSwitch = stopwatch.Elapsed;
+                Console.WriteLine("Switch: " + elapsedSwitch.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedSwitch.TotalMilliseconds) + " runs per second)");
+                Console.WriteLine(elapsedSwitch.TotalMilliseconds / elapsedIfs.TotalMilliseconds);
+
+                Console.WriteLine();
+            }
+        }
+
+        [Test]
+        public void TestZzz()
+        {
+            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);
+            var module1 = assembly.DefineDynamicModule("zzz");
+            var typeBuilder = module1.DefineType("Qzz", TypeAttributes.Class | TypeAttributes.Public);
+            var typeBuilder2 = typeBuilder.DefineNestedType("zzz", TypeAttributes.Class | TypeAttributes.NestedPublic);
+            var field = typeBuilder2.DefineField("str", typeof(string), FieldAttributes.Public);
+            var constructor = typeBuilder2.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] { typeof(string) });
+            using (var il = new GroboIL(constructor))
+            {
+                il.Ldarg(0);
+                il.Ldarg(1);
+                il.Stfld(field);
+                il.Ret();
+                Console.WriteLine(il.GetILCode());
+            }
+        }
+
+        private static readonly MethodInfo stringEqualityOperator = HackHelpers.GetMethodDefinition<string>(s => s == "");
 
     }
 }
