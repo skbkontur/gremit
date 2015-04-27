@@ -19,10 +19,11 @@ namespace GrEmit.Utils
                 var rank = type.GetArrayRank();
                 return Format(type.GetElementType()) + string.Format("[{0}]", rank == 1 ? "" : new string(',', rank - 1));
             }
+            var prefix = type.IsNested ? Format(type.DeclaringType) + "." : "";
             if(!type.IsGenericType)
-                return type.Name;
+                return prefix + type.Name;
             var index = type.Name.LastIndexOf('`');
-            return (index < 0 ? type.Name : type.Name.Substring(0, index)) + "<" + string.Join(", ", type.GetGenericArguments().Select(Format).ToArray()) + ">";
+            return prefix + (index < 0 ? type.Name : type.Name.Substring(0, index)) + "<" + string.Join(", ", type.GetGenericArguments().Select(Format).ToArray()) + ">";
         }
 
         public static string Format(FieldInfo field)
