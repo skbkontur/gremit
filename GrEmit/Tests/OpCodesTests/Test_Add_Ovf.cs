@@ -224,13 +224,13 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_float_float()
         {
-            TestSuccess<float, float>();
+            TestFailure<float, float>();
         }
 
         [Test]
         public void Test_float_double()
         {
-            TestSuccess<float, double>();
+            TestFailure<float, double>();
         }
 
         [Test]
@@ -248,7 +248,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_float_null()
         {
-            TestSuccess(typeof(float), null);
+            TestFailure(typeof(float), null);
         }
 
         [Test]
@@ -272,13 +272,13 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_double_float()
         {
-            TestSuccess<double, float>();
+            TestFailure<double, float>();
         }
 
         [Test]
         public void Test_double_double()
         {
-            TestSuccess<double, double>();
+            TestFailure<double, double>();
         }
 
         [Test]
@@ -296,7 +296,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_double_null()
         {
-            TestSuccess(typeof(double), null);
+            TestFailure(typeof(double), null);
         }
 
         [Test]
@@ -416,13 +416,13 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_null_float()
         {
-            TestSuccess(null, typeof(float));
+            TestFailure(null, typeof(float));
         }
 
         [Test]
         public void Test_null_double()
         {
-            TestSuccess(null, typeof(double));
+            TestFailure(null, typeof(double));
         }
 
         [Test]

@@ -263,7 +263,7 @@ namespace Tests
             }
         }
 
-        public class C2 : I1
+        public class C2 : I1, I2
         {
             public I2 GetI2()
             {

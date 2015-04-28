@@ -45,6 +45,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OpCodesTests\Test_Xor.cs" />
+    <Compile Include="OpCodesTests\Test_Or.cs" />
+    <Compile Include="OpCodesTests\Test_And.cs" />
+    <Compile Include="OpCodesTests\Test_Rem_Un.cs" />
+    <Compile Include="OpCodesTests\Test_Rem.cs" />
+    <Compile Include="OpCodesTests\Test_Div_Un.cs" />
+    <Compile Include="OpCodesTests\Test_Div.cs" />
+    <Compile Include="OpCodesTests\Test_Mul_Ovf_Un.cs" />
+    <Compile Include="OpCodesTests\Test_Mul_Ovf.cs" />
+    <Compile Include="OpCodesTests\Test_Mul.cs" />
     <Compile Include="OpCodesTests\Test_Sub_Ovf.cs" />
     <Compile Include="OpCodesTests\Test_Sub_Ovf_Un.cs" />
     <Compile Include="OpCodesTests\Test_Sub.cs" />

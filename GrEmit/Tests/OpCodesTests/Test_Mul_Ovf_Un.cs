@@ -1,64 +1,16 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection.Emit;
 
 using GrEmit;
 
 using NUnit.Framework;
 
-using System.Linq;
-
 namespace Tests.OpCodesTests
 {
     [TestFixture]
-    public class Test_Add_Ovf_Un
+    public class Test_Mul_Ovf_Un
     {
-        private void TestSuccess(Type type1, Type type2)
-        {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] { type1, type2, }.Where(type => type != null).ToArray(), typeof(string), true);
-            using (var il = new GroboIL(method))
-            {
-                int index = 0;
-                if (type1 != null)
-                    il.Ldarg(index++);
-                else
-                    il.Ldnull();
-                if (type2 != null)
-                    il.Ldarg(index++);
-                else
-                    il.Ldnull();
-                il.Add_Ovf(true);
-                il.Pop();
-                il.Ret();
-                Console.WriteLine(il.GetILCode());
-            }
-        }
-
-        private void TestSuccess<T1, T2>()
-        {
-            TestSuccess(typeof(T1), typeof(T2));
-        }
-
-        private void TestFailure(Type type1, Type type2)
-        {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] { type1, type2, }.Where(type => type != null).ToArray(), typeof(string), true);
-            var il = new GroboIL(method);
-            int index = 0;
-            if (type1 != null)
-                il.Ldarg(index++);
-            else
-                il.Ldnull();
-            if (type2 != null)
-                il.Ldarg(index++);
-            else
-                il.Ldnull();
-            Assert.Throws<InvalidOperationException>(() => il.Add_Ovf(true));
-        }
-
-        private void TestFailure<T1, T2>()
-        {
-            TestFailure(typeof(T1), typeof(T2));
-        }
-
         [Test]
         public void Test_int32_int32()
         {
@@ -98,7 +50,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_int32_managed_pointer()
         {
-            TestSuccess(typeof(int), typeof(byte).MakeByRefType());
+            TestFailure(typeof(int), typeof(byte).MakeByRefType());
         }
 
         [Test]
@@ -194,7 +146,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_native_int_managed_pointer()
         {
-            TestSuccess(typeof(IntPtr), typeof(byte).MakeByRefType());
+            TestFailure(typeof(IntPtr), typeof(byte).MakeByRefType());
         }
 
         [Test]
@@ -302,7 +254,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_managed_pointer_int32()
         {
-            TestSuccess(typeof(byte).MakeByRefType(), typeof(int));
+            TestFailure(typeof(byte).MakeByRefType(), typeof(int));
         }
 
         [Test]
@@ -314,7 +266,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_managed_pointer_native_int()
         {
-            TestSuccess(typeof(byte).MakeByRefType(), typeof(IntPtr));
+            TestFailure(typeof(byte).MakeByRefType(), typeof(IntPtr));
         }
 
         [Test]
@@ -344,7 +296,7 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_managed_pointer_null()
         {
-            TestSuccess(typeof(byte).MakeByRefType(), null);
+            TestFailure(typeof(byte).MakeByRefType(), null);
         }
 
         [Test]
@@ -434,13 +386,60 @@ namespace Tests.OpCodesTests
         [Test]
         public void Test_null_managed_pointer()
         {
-            TestSuccess(null, typeof(byte).MakeByRefType());
+            TestFailure(null, typeof(byte).MakeByRefType());
         }
 
         [Test]
         public void Test_null_null()
         {
             TestSuccess(null, null);
+        }
+
+        private void TestSuccess(Type type1, Type type2)
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {type1, type2,}.Where(type => type != null).ToArray(), typeof(string), true);
+            using(var il = new GroboIL(method))
+            {
+                var index = 0;
+                if(type1 != null)
+                    il.Ldarg(index++);
+                else
+                    il.Ldnull();
+                if(type2 != null)
+                    il.Ldarg(index++);
+                else
+                    il.Ldnull();
+                il.Mul_Ovf(true);
+                il.Pop();
+                il.Ret();
+                Console.WriteLine(il.GetILCode());
+            }
+        }
+
+        private void TestSuccess<T1, T2>()
+        {
+            TestSuccess(typeof(T1), typeof(T2));
+        }
+
+        private void TestFailure(Type type1, Type type2)
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {type1, type2,}.Where(type => type != null).ToArray(), typeof(string), true);
+            var il = new GroboIL(method);
+            var index = 0;
+            if(type1 != null)
+                il.Ldarg(index++);
+            else
+                il.Ldnull();
+            if(type2 != null)
+                il.Ldarg(index++);
+            else
+                il.Ldnull();
+            Assert.Throws<InvalidOperationException>(() => il.Mul_Ovf(true));
+        }
+
+        private void TestFailure<T1, T2>()
+        {
+            TestFailure(typeof(T1), typeof(T2));
         }
     }
 }
