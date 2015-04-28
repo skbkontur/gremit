@@ -1542,6 +1542,8 @@ namespace GrEmit
         /// <param name="value">The value to push.</param>
         public void Ldstr(string value)
         {
+            if(value == null)
+                throw new ArgumentNullException("value");
             Emit(OpCodes.Ldstr, value);
         }
 
