@@ -34,7 +34,7 @@ namespace GrEmit.Utils
             if(typeof(T).IsValueType && sourceCi == null)
                 throw new NotSupportedException("Struct creation without arguments");
             var type = sourceCi.ReflectedType;
-            var resultReflectedType = type.IsGenericType
+            var resultReflectedType = type.IsGenericType && classGenericArgs != null && classGenericArgs.Length > 0
                                           ? type.GetGenericTypeDefinition().MakeGenericType(classGenericArgs)
                                           : type;
             var methodBase = MethodBase.GetMethodFromHandle(
