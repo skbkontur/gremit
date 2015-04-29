@@ -282,6 +282,7 @@ namespace Tests
         [Test]
         public void TestDifferentPaths()
         {
+            Console.WriteLine(Formatter.Format(typeof(Dictionary<string, int>).GetProperty("Values", BindingFlags.Public | BindingFlags.Instance).GetGetMethod()));
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(bool), typeof(C1), typeof(C2)}, typeof(string), true);
             using(var il = new GroboIL(method))
             {
