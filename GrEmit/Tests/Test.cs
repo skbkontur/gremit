@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -9,26 +10,11 @@ using GrEmit.Utils;
 
 using NUnit.Framework;
 
-using System.Linq;
-
 namespace Tests
 {
     [TestFixture]
     public class Test
     {
-        struct Qxx
-        {
-            private Guid X1;
-            private Guid X2;
-            private Guid X3;
-            private Guid X4;
-            private Guid X5;
-            private Guid X6;
-            private Guid X7;
-            private Guid X8;
-            private Guid X9;
-        }
-
         [Test]
         public void TestDifferentStructs()
         {
@@ -51,7 +37,7 @@ namespace Tests
         public void TestRet()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), Type.EmptyTypes, typeof(Test));
-            using (var il = new GroboIL(method))
+            using(var il = new GroboIL(method))
             {
                 il.Ret();
                 Console.Write(il.GetILCode());
@@ -62,7 +48,7 @@ namespace Tests
         public void TestAPlusB()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] {typeof(int), typeof(int)}, typeof(Test));
-            using (var il = new GroboIL(method))
+            using(var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Ldarg(1);
@@ -76,7 +62,7 @@ namespace Tests
         public void TestZ()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] {typeof(bool), typeof(float), typeof(double)}, typeof(Test));
-            using (var il = new GroboIL(method))
+            using(var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 var label1 = il.DefineLabel("label");
@@ -96,25 +82,11 @@ namespace Tests
             }
         }
 
-
-        private class A
-        {
-            
-        }
-
-        private class B : A
-        {
-        }
-
-        private class C : A
-        {
-        }
-
         [Test]
         public void TestZ2()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(A), new[] {typeof(bool), typeof(B), typeof(C)}, typeof(Test));
-            using (var il = new GroboIL(method))
+            using(var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 var label1 = il.DefineLabel("label");
@@ -134,7 +106,7 @@ namespace Tests
         public void TestHelloWorld()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(string), Type.EmptyTypes, typeof(Test));
-            using (var il = new GroboIL(method))
+            using(var il = new GroboIL(method))
             {
                 il.Ldstr("Hello World");
                 il.Ret();
@@ -145,8 +117,8 @@ namespace Tests
         [Test]
         public void TestMax()
         {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] { typeof(int), typeof(int) }, typeof(Test));
-            using (var il = new GroboIL(method))
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] {typeof(int), typeof(int)}, typeof(Test));
+            using(var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Ldarg(1);
@@ -164,8 +136,8 @@ namespace Tests
         [Test]
         public void TestPrefixes()
         {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] { typeof(IntPtr), typeof(int) }, typeof(Test));
-            using (var il = new GroboIL(method))
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] {typeof(IntPtr), typeof(int)}, typeof(Test));
+            using(var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Ldarg(1);
@@ -179,8 +151,8 @@ namespace Tests
         [Test]
         public void TestFarsh()
         {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] { typeof(int) }, typeof(Test));
-            using (var il = new GroboIL(method))
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] {typeof(int)}, typeof(Test));
+            using(var il = new GroboIL(method))
             {
                 var temp = il.DeclareLocal(typeof(int));
                 il.Ldarg(0); // stack: [x]
@@ -217,22 +189,11 @@ namespace Tests
             }
         }
 
-
-        private class Zzz
-        {
-            public Zzz(int x)
-            {
-                X = x;
-            }
-
-            public int X { get; private set; }
-        }
-
         [Test]
         public void TestConstructorCall()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(Zzz)}, typeof(Test));
-            using (var il = new GroboIL(method))
+            using(var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Ldc_I4(8);
@@ -244,31 +205,6 @@ namespace Tests
             var zzz = new Zzz(3);
             action(zzz);
             Assert.AreEqual(8, zzz.X);
-        }
-
-        public interface I1
-        {
-            I2 GetI2();
-        }
-
-        public interface I2
-        {
-        }
-
-        public class C1 : I1, I2
-        {
-            public I2 GetI2()
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public class C2 : I1, I2
-        {
-            public I2 GetI2()
-            {
-                throw new NotImplementedException();
-            }
         }
 
         public static void F1(I1 i1)
@@ -302,26 +238,6 @@ namespace Tests
                 Console.Write(il.GetILCode());
             }
             var action = method.CreateDelegate(typeof(Action<bool, C1, C2>));
-        }
-
-        public interface I1<T>
-        {
-        }
-
-        public interface I2<T>
-        {
-        }
-
-        public class Base<T>
-        {
-        }
-
-        public class C1<T> : Base<T>, I1<T>, I2<T>
-        {
-        }
-
-        public class C2<T> : Base<T>, I1<T>, I2<T>
-        {
         }
 
         public static void F1<T>(I1<T> i1)
@@ -429,7 +345,7 @@ namespace Tests
             var parameter = genericParameters[0];
             method.SetParameters(parameter);
             method.SetReturnType(typeof(void));
-            using (var il = new GroboIL(method))
+            using(var il = new GroboIL(method))
             {
                 il.Ldarga(0);
                 il.Call(HackHelpers.GetMethodDefinition<int>(x => F(ref x)).GetGenericMethodDefinition().MakeGenericMethod(parameter));
@@ -475,33 +391,32 @@ namespace Tests
             type.GetMethod("Qzz", BindingFlags.Instance | BindingFlags.Public).MakeGenericMethod(typeof(int)).Invoke(instance, new object[] {null, null});
         }
 
-
         public static string[] Create(string[] values)
         {
             CheckDifferent(values);
             var hashSet = new HashSet<int>();
-            for (var n = Math.Max(values.Length, 1); ; ++n)
+            for(var n = Math.Max(values.Length, 1);; ++n)
             {
                 hashSet.Clear();
                 var ok = true;
-                foreach (var str in values)
+                foreach(var str in values)
                 {
                     var idx = str.GetHashCode() % n;
-                    if (idx < 0) idx += n;
-                    if (hashSet.Contains(idx))
+                    if(idx < 0) idx += n;
+                    if(hashSet.Contains(idx))
                     {
                         ok = false;
                         break;
                     }
                     hashSet.Add(idx);
                 }
-                if (ok)
+                if(ok)
                 {
                     var result = new string[n];
-                    foreach (var str in values)
+                    foreach(var str in values)
                     {
                         var idx = str.GetHashCode() % n;
-                        if (idx < 0) idx += n;
+                        if(idx < 0) idx += n;
                         result[idx] = str;
                     }
                     return result;
@@ -509,20 +424,143 @@ namespace Tests
             }
         }
 
-        private static void CheckDifferent(string[] values)
+        [Test, Ignore]
+        public void TestPerformance_Ifs_vs_Switch()
         {
-            var hashSet = new HashSet<string>();
-            foreach (var str in values)
+            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);
+            var module = assembly.DefineDynamicModule("Zzz", true);
+
+            for(var numberOfCases = 1; numberOfCases <= 20; ++numberOfCases)
             {
-                if (hashSet.Contains(str))
-                    throw new InvalidOperationException(string.Format("Duplicate value '{0}'", str));
-                hashSet.Add(str);
+                Console.WriteLine("#" + numberOfCases);
+                var keys = new string[numberOfCases];
+                for(var i = 0; i < numberOfCases; ++i)
+                    keys[i] = Guid.NewGuid().ToString();
+
+                var ifs = BuildIfs(module, keys);
+                var switCh = BuildSwitch(module, keys);
+                const int iterations = 1000000000;
+
+                Console.WriteLine("Worst case:");
+
+                var stopwatch = Stopwatch.StartNew();
+                for(var iter = 0; iter < iterations / numberOfCases; ++iter)
+                {
+                    for(var i = 0; i < numberOfCases; ++i)
+                        ifs.Set("zzz", iter);
+                    ifs.Set("zzz", iter);
+                }
+                var elapsedIfs = stopwatch.Elapsed;
+                Console.WriteLine("Ifs: " + elapsedIfs.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedIfs.TotalMilliseconds) + " runs per second)");
+
+                stopwatch = Stopwatch.StartNew();
+                for(var iter = 0; iter < iterations / numberOfCases; ++iter)
+                {
+                    for(var i = 0; i < numberOfCases; ++i)
+                        switCh.Set("zzz", iter);
+                    switCh.Set("zzz", iter);
+                }
+                var elapsedSwitch = stopwatch.Elapsed;
+                Console.WriteLine("Switch: " + elapsedSwitch.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedSwitch.TotalMilliseconds) + " runs per second)");
+                Console.WriteLine(elapsedSwitch.TotalMilliseconds / elapsedIfs.TotalMilliseconds);
+
+                Console.WriteLine("Average:");
+
+                stopwatch = Stopwatch.StartNew();
+                for(var iter = 0; iter < iterations / numberOfCases; ++iter)
+                {
+                    for(var i = 0; i < numberOfCases; ++i)
+                        ifs.Set(keys[i], iter);
+                    ifs.Set("zzz", iter);
+                }
+                elapsedIfs = stopwatch.Elapsed;
+                Console.WriteLine("Ifs: " + elapsedIfs.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedIfs.TotalMilliseconds) + " runs per second)");
+
+                stopwatch = Stopwatch.StartNew();
+                for(var iter = 0; iter < iterations / numberOfCases; ++iter)
+                {
+                    for(var i = 0; i < numberOfCases; ++i)
+                        switCh.Set(keys[i], iter);
+                    switCh.Set("zzz", iter);
+                }
+                elapsedSwitch = stopwatch.Elapsed;
+                Console.WriteLine("Switch: " + elapsedSwitch.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedSwitch.TotalMilliseconds) + " runs per second)");
+                Console.WriteLine(elapsedSwitch.TotalMilliseconds / elapsedIfs.TotalMilliseconds);
+
+                Console.WriteLine();
             }
+        }
+
+        [Test]
+        public void TestCallFormat()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(string), new[] {typeof(string), typeof(decimal), typeof(decimal)}, typeof(string), true);
+            var il = new GroboIL(method);
+            il.Ldarg(0);
+            il.Ldarg(1);
+            il.Ldarg(2);
+            Assert.Throws<InvalidOperationException>(() => il.Call(HackHelpers.GetMethodDefinition<string>(s => string.Format(s, "", ""))));
+        }
+
+        public class C1 : I1, I2
+        {
+            public I2 GetI2()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class C2 : I1, I2
+        {
+            public I2 GetI2()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class Base<T>
+        {
+        }
+
+        public class C1<T> : Base<T>, I1<T>, I2<T>
+        {
+        }
+
+        public class C2<T> : Base<T>, I1<T>, I2<T>
+        {
+        }
+
+        public interface I1
+        {
+            I2 GetI2();
+        }
+
+        public interface I2
+        {
+        }
+
+        public interface I1<T>
+        {
+        }
+
+        public interface I2<T>
+        {
         }
 
         public interface IQxx
         {
             void Set(string key, int value);
+        }
+
+        private static void CheckDifferent(string[] values)
+        {
+            var hashSet = new HashSet<string>();
+            foreach(var str in values)
+            {
+                if(hashSet.Contains(str))
+                    throw new InvalidOperationException(string.Format("Duplicate value '{0}'", str));
+                hashSet.Add(str);
+            }
         }
 
         private IQxx BuildIfs(ModuleBuilder module, string[] keys)
@@ -531,15 +569,15 @@ namespace Tests
             var typeBuilder = module.DefineType("Ifs" + Guid.NewGuid(), TypeAttributes.Class | TypeAttributes.Public);
             typeBuilder.AddInterfaceImplementation(typeof(IQxx));
             var fields = new FieldInfo[numberOfCases];
-            for (int i = 0; i < numberOfCases; ++i)
+            for(var i = 0; i < numberOfCases; ++i)
                 fields[i] = typeBuilder.DefineField(keys[i], typeof(int), FieldAttributes.Public);
-            var method = typeBuilder.DefineMethod("Set", MethodAttributes.Public | MethodAttributes.Virtual, typeof(void), new[] { typeof(string), typeof(int) });
+            var method = typeBuilder.DefineMethod("Set", MethodAttributes.Public | MethodAttributes.Virtual, typeof(void), new[] {typeof(string), typeof(int)});
             method.DefineParameter(1, ParameterAttributes.In, "key");
             method.DefineParameter(2, ParameterAttributes.In, "value");
-            using (var il = new GroboIL(method))
+            using(var il = new GroboIL(method))
             {
                 var doneLabel = il.DefineLabel("done");
-                for (int i = 0; i < numberOfCases; ++i)
+                for(var i = 0; i < numberOfCases; ++i)
                 {
                     il.Ldarg(1); // stack: [key]
                     il.Ldstr(keys[i]); // stack: [key, keys[i]]
@@ -566,13 +604,13 @@ namespace Tests
             var typeBuilder = module.DefineType("Switch" + Guid.NewGuid(), TypeAttributes.Class | TypeAttributes.Public);
             typeBuilder.AddInterfaceImplementation(typeof(IQxx));
             var fields = new FieldInfo[numberOfCases];
-            for (int i = 0; i < numberOfCases; ++i)
+            for(var i = 0; i < numberOfCases; ++i)
                 fields[i] = typeBuilder.DefineField(keys[i], typeof(int), FieldAttributes.Public);
             var tinyHashtable = Create(keys);
-            int n = tinyHashtable.Length;
+            var n = tinyHashtable.Length;
             var keysField = typeBuilder.DefineField("keys", typeof(string[]), FieldAttributes.Public);
-            var constructor = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] { typeof(string[]) });
-            using (var il = new GroboIL(constructor))
+            var constructor = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] {typeof(string[])});
+            using(var il = new GroboIL(constructor))
             {
                 il.Ldarg(0);
                 il.Ldarg(1);
@@ -580,10 +618,10 @@ namespace Tests
                 il.Ret();
             }
 
-            var method = typeBuilder.DefineMethod("Set", MethodAttributes.Public | MethodAttributes.Virtual, typeof(void), new[] { typeof(string), typeof(int) });
+            var method = typeBuilder.DefineMethod("Set", MethodAttributes.Public | MethodAttributes.Virtual, typeof(void), new[] {typeof(string), typeof(int)});
             method.DefineParameter(1, ParameterAttributes.In, "key");
             method.DefineParameter(2, ParameterAttributes.In, "value");
-            using (var il = new GroboIL(method))
+            using(var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Ldfld(keysField);
@@ -601,21 +639,21 @@ namespace Tests
                 il.Brfalse(doneLabel);
 
                 var labels = new GroboIL.Label[n];
-                for (int i = 0; i < n; ++i)
+                for(var i = 0; i < n; ++i)
                     labels[i] = doneLabel;
-                foreach (string key in keys)
+                foreach(var key in keys)
                 {
                     var index = key.GetHashCode() % n;
-                    if (index < 0) index += n;
+                    if(index < 0) index += n;
                     var label = il.DefineLabel("set_" + key);
                     labels[index] = label;
                 }
                 il.Ldloc(idx);
                 il.Switch(labels);
-                for (int i = 0; i < keys.Length; ++i)
+                for(var i = 0; i < keys.Length; ++i)
                 {
                     var index = keys[i].GetHashCode() % n;
-                    if (index < 0) index += n;
+                    if(index < 0) index += n;
                     il.MarkLabel(labels[index]);
                     il.Ldarg(0);
                     il.Ldarg(2);
@@ -627,98 +665,44 @@ namespace Tests
             }
             typeBuilder.DefineMethodOverride(method, typeof(IQxx).GetMethod("Set"));
             var type = typeBuilder.CreateType();
-            return (IQxx)Activator.CreateInstance(type, new object[] { tinyHashtable });
-        }
-
-        [Test, Ignore]
-        public void TestPerformance_Ifs_vs_Switch()
-        {
-            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);
-            var module = assembly.DefineDynamicModule("Zzz", true);
-
-            for(var numberOfCases = 1; numberOfCases <= 20; ++numberOfCases)
-            {
-                Console.WriteLine("#" + numberOfCases);
-                var keys = new string[numberOfCases];
-                for(int i = 0; i < numberOfCases; ++i)
-                    keys[i] = Guid.NewGuid().ToString();
-
-                var ifs = BuildIfs(module, keys);
-                var switCh = BuildSwitch(module, keys);
-                const int iterations = 1000000000;
-
-                Console.WriteLine("Worst case:");
-
-                var stopwatch = Stopwatch.StartNew();
-                for(int iter = 0; iter < iterations / numberOfCases; ++iter)
-                {
-                    for(int i = 0; i < numberOfCases; ++i)
-                        ifs.Set("zzz", iter);
-                    ifs.Set("zzz", iter);
-                }
-                var elapsedIfs = stopwatch.Elapsed;
-                Console.WriteLine("Ifs: " + elapsedIfs.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedIfs.TotalMilliseconds) + " runs per second)");
-
-
-                stopwatch = Stopwatch.StartNew();
-                for(int iter = 0; iter < iterations / numberOfCases; ++iter)
-                {
-                    for(int i = 0; i < numberOfCases; ++i)
-                        switCh.Set("zzz", iter);
-                    switCh.Set("zzz", iter);
-                }
-                var elapsedSwitch = stopwatch.Elapsed;
-                Console.WriteLine("Switch: " + elapsedSwitch.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedSwitch.TotalMilliseconds) + " runs per second)");
-                Console.WriteLine(elapsedSwitch.TotalMilliseconds / elapsedIfs.TotalMilliseconds);
-
-                Console.WriteLine("Average:");
-
-                stopwatch = Stopwatch.StartNew();
-                for(int iter = 0; iter < iterations / numberOfCases; ++iter)
-                {
-                    for(int i = 0; i < numberOfCases; ++i)
-                        ifs.Set(keys[i], iter);
-                    ifs.Set("zzz", iter);
-                }
-                elapsedIfs = stopwatch.Elapsed;
-                Console.WriteLine("Ifs: " + elapsedIfs.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedIfs.TotalMilliseconds) + " runs per second)");
-
-
-                stopwatch = Stopwatch.StartNew();
-                for(int iter = 0; iter < iterations / numberOfCases; ++iter)
-                {
-                    for(int i = 0; i < numberOfCases; ++i)
-                        switCh.Set(keys[i], iter);
-                    switCh.Set("zzz", iter);
-                }
-                elapsedSwitch = stopwatch.Elapsed;
-                Console.WriteLine("Switch: " + elapsedSwitch.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedSwitch.TotalMilliseconds) + " runs per second)");
-                Console.WriteLine(elapsedSwitch.TotalMilliseconds / elapsedIfs.TotalMilliseconds);
-
-                Console.WriteLine();
-            }
-        }
-
-        [Test]
-        public void TestZzz()
-        {
-            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);
-            var module1 = assembly.DefineDynamicModule("zzz");
-            var typeBuilder = module1.DefineType("Qzz", TypeAttributes.Class | TypeAttributes.Public);
-            var typeBuilder2 = typeBuilder.DefineNestedType("zzz", TypeAttributes.Class | TypeAttributes.NestedPublic);
-            var field = typeBuilder2.DefineField("str", typeof(string), FieldAttributes.Public);
-            var constructor = typeBuilder2.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] { typeof(string) });
-            using (var il = new GroboIL(constructor))
-            {
-                il.Ldarg(0);
-                il.Ldarg(1);
-                il.Stfld(field);
-                il.Ret();
-                Console.WriteLine(il.GetILCode());
-            }
+            return (IQxx)Activator.CreateInstance(type, new object[] {tinyHashtable});
         }
 
         private static readonly MethodInfo stringEqualityOperator = HackHelpers.GetMethodDefinition<string>(s => s == "");
 
+        private class A
+        {
+        }
+
+        private class B : A
+        {
+        }
+
+        private class C : A
+        {
+        }
+
+        private class Zzz
+        {
+            public Zzz(int x)
+            {
+                X = x;
+            }
+
+            public int X { get; private set; }
+        }
+
+        private struct Qxx
+        {
+            private Guid X1;
+            private Guid X2;
+            private Guid X3;
+            private Guid X4;
+            private Guid X5;
+            private Guid X6;
+            private Guid X7;
+            private Guid X8;
+            private Guid X9;
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
@@ -11,9 +12,32 @@ namespace GrEmit
     {
         public int MarkLabel(GroboIL.Label label, ILInstructionComment comment)
         {
+            if(labelLineNumbers.ContainsKey(label))
+                throw new InvalidOperationException(string.Format("The label '{0}' has already been marked", label.Name));
             labelLineNumbers.Add(label, lineNumber);
             instructions.Add(new ILInstruction(InstructionKind.Label, default(OpCode), new LabelILInstructionParameter(label), comment));
             return lineNumber++;
+        }
+
+        public void CheckLabels()
+        {
+            foreach(var instruction in instructions.Cast<ILInstruction>())
+            {
+                if(instruction.Parameter is LabelILInstructionParameter)
+                {
+                    var label = (LabelILInstructionParameter)instruction.Parameter;
+                    if(!labelLineNumbers.ContainsKey(label.Label))
+                        throw new InvalidOperationException(string.Format("Label '{0}' has not been marked", label.Label.Name));
+                }
+                if(instruction.Parameter is LabelsILInstructionParameter)
+                {
+                    foreach(var label in ((LabelsILInstructionParameter)instruction.Parameter).Labels)
+                    {
+                        if(!labelLineNumbers.ContainsKey(label))
+                            throw new InvalidOperationException(string.Format("Label '{0}' has not been marked", label.Name));
+                    }
+                }
+            }
         }
 
         public int Append(OpCode opCode, ILInstructionComment comment)

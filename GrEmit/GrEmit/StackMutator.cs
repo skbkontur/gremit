@@ -167,6 +167,8 @@ namespace GrEmit
             case CLIType.Object:
                 if(cliFrom == CLIType.Zero || ReflectionExtensions.Equal(to, from))
                     return true;
+                if(cliFrom != CLIType.Object)
+                    return false;
                 var simpleESFrom = esFrom as SimpleESType;
                 if(simpleESFrom != null)
                     return ReflectionExtensions.IsAssignableFrom(to, from);

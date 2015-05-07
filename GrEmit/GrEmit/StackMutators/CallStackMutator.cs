@@ -40,7 +40,7 @@ namespace GrEmit.StackMutators
             }
             if(!isStatic)
             {
-                CheckNotEmpty(il, stack, string.Format("An intance to call method '{0}' is not loaded on the evaluation stack", formattedMethod));
+                CheckNotEmpty(il, stack, string.Format("An instance to call method '{0}' is not loaded on the evaluation stack", formattedMethod));
                 var instance = stack.Pop();
                 var instanceBaseType = instance.ToType();
                 if(instanceBaseType != null)
