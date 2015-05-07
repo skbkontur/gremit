@@ -81,6 +81,7 @@ namespace GrEmit
             var lastInstruction = ilCode.Count == 0 ? null : ilCode.GetInstruction(ilCode.Count - 1) as ILCode.ILInstruction;
             if(lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw && lastInstruction.OpCode != OpCodes.Jmp))
                 throw new InvalidOperationException("An IL program must end with one of the following instructions: 'ret', 'br', 'br.s', 'throw', 'jmp'");
+            ilCode.CheckLabels();
             if(symbolDocumentWriter != null)
             {
                 var linesInfo = ilCode.GetLinesInfo();
