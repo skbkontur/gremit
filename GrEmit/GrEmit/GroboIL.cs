@@ -79,8 +79,8 @@ namespace GrEmit
             if(!analyzeStack || Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
                 return;
             var lastInstruction = ilCode.Count == 0 ? null : ilCode.GetInstruction(ilCode.Count - 1) as ILCode.ILInstruction;
-            if(lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw))
-                throw new InvalidOperationException("An IL program must end with one of the following instructions: 'ret', 'br', 'br.s', 'throw'");
+            if(lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw && lastInstruction.OpCode != OpCodes.Jmp))
+                throw new InvalidOperationException("An IL program must end with one of the following instructions: 'ret', 'br', 'br.s', 'throw', 'jmp'");
             if(symbolDocumentWriter != null)
             {
                 var linesInfo = ilCode.GetLinesInfo();
