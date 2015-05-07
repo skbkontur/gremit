@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
@@ -11,6 +12,8 @@ namespace GrEmit
     {
         public int MarkLabel(GroboIL.Label label, ILInstructionComment comment)
         {
+            if(labelLineNumbers.ContainsKey(label))
+                throw new InvalidOperationException(string.Format("The label with name '{0}' has already been marked", label.Name));
             labelLineNumbers.Add(label, lineNumber);
             instructions.Add(new ILInstruction(InstructionKind.Label, default(OpCode), new LabelILInstructionParameter(label), comment));
             return lineNumber++;
