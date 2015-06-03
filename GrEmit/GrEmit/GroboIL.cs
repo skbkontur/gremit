@@ -1761,7 +1761,7 @@ namespace GrEmit
                 if(symbolDocumentWriter == null)
                     il.Emit(OpCodes.Tailcall);
             }
-            var parameter = new MethodILInstructionParameter(method);
+            var parameter = new CallILInstructionParameter(method, constrained);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);

@@ -16,6 +16,6 @@ namespace GrEmit.InstructionParameters
             return Formatter.Format(Method);
         }
 
-        public MethodInfo Method { get; set; }
+        public MethodInfo Method { get; private set; }
     }
 }
