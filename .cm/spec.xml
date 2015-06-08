@@ -1,0 +1,5 @@
+<module>
+	<install>
+		<add-ref src="GrEmit\GrEmit\bin\Release\GrEmit.dll" />
+	</install>
+</module>
