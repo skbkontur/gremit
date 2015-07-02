@@ -73,9 +73,9 @@ namespace GrEmit.StackMutators
                             if(isVirtual)
                             {
                                 if(constrained == null)
-                                    ThrowError(il, string.Format("In order to call a virtual method '{0}' on a value type '{1}' use 'constrained' prefix", formattedMethod, elementType));
+                                    ThrowError(il, string.Format("In order to call a virtual method '{0}' on a value type '{1}' specify 'constrained' parameter", formattedMethod, Formatter.Format(elementType)));
                                 if(constrained != elementType)
-                                    ThrowError(il, string.Format("Invalid 'constrained' prefix to call a virtual method '{0}'. Expected '{1}' but was '{2}'", formattedMethod, constrained, elementType));
+                                    ThrowError(il, string.Format("Invalid 'constrained' parameter to call a virtual method '{0}'. Expected '{1}' but was '{2}'", formattedMethod, Formatter.Format(constrained), Formatter.Format(elementType)));
                             }
                         }
                     }
