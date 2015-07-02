@@ -13,7 +13,9 @@ namespace GrEmit.StackMutators
             Type[] parameterTypes;
             Type returnType;
             Type declaringType;
+            Type constrained;
             bool isStatic;
+            bool isVirtual;
             string formattedMethod;
             if(parameter is MethodILInstructionParameter)
             {
@@ -21,7 +23,10 @@ namespace GrEmit.StackMutators
                 declaringType = method.DeclaringType;
                 parameterTypes = ReflectionExtensions.GetParameterTypes(method);
                 returnType = ReflectionExtensions.GetReturnType(method);
+                var callILInstructionParameter = parameter as CallILInstructionParameter;
+                constrained = callILInstructionParameter == null ? null : callILInstructionParameter.Constrained;
                 isStatic = method.IsStatic;
+                isVirtual = method.IsVirtual;
                 formattedMethod = Formatter.Format(method);
             }
             else
@@ -30,7 +35,9 @@ namespace GrEmit.StackMutators
                 declaringType = constructor.DeclaringType;
                 parameterTypes = ReflectionExtensions.GetParameterTypes(constructor);
                 returnType = typeof(void);
+                constrained = null;
                 isStatic = false;
+                isVirtual = false;
                 formattedMethod = Formatter.Format(constructor);
             }
             for(var i = parameterTypes.Length - 1; i >= 0; --i)
@@ -52,7 +59,9 @@ namespace GrEmit.StackMutators
                     else
                     {
                         var elementType = instanceBaseType.GetElementType();
-                        if(elementType.IsValueType)
+                        if(!elementType.IsValueType)
+                            ThrowError(il, string.Format("Cannot call method '{0}' on type '{1}'", formattedMethod, instance));
+                        else
                         {
                             if(declaringType.IsInterface)
                             {
@@ -61,9 +70,14 @@ namespace GrEmit.StackMutators
                             }
                             else if(declaringType != typeof(object) && declaringType != elementType)
                                 ThrowError(il, string.Format("Cannot call method '{0}' on type '{1}'", formattedMethod, elementType));
+                            if(isVirtual)
+                            {
+                                if(constrained == null)
+                                    ThrowError(il, string.Format("In order to call a virtual method '{0}' on a value type '{1}' specify 'constrained' parameter", formattedMethod, Formatter.Format(elementType)));
+                                if(constrained != elementType)
+                                    ThrowError(il, string.Format("Invalid 'constrained' parameter to call a virtual method '{0}'. Expected '{1}' but was '{2}'", formattedMethod, Formatter.Format(constrained), Formatter.Format(elementType)));
+                            }
                         }
-                        else
-                            ThrowError(il, string.Format("Cannot call method '{0}' on type '{1}'", formattedMethod, instance));
                     }
                 }
             }

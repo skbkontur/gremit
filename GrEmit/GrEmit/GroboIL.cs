@@ -79,7 +79,8 @@ namespace GrEmit
             if(!analyzeStack || Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
                 return;
             var lastInstruction = ilCode.Count == 0 ? null : ilCode.GetInstruction(ilCode.Count - 1) as ILCode.ILInstruction;
-            if(lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw && lastInstruction.OpCode != OpCodes.Jmp))
+            if(lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br
+                                           && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw && lastInstruction.OpCode != OpCodes.Jmp))
                 throw new InvalidOperationException("An IL program must end with one of the following instructions: 'ret', 'br', 'br.s', 'throw', 'jmp'");
             ilCode.CheckLabels();
             if(symbolDocumentWriter != null)
@@ -89,7 +90,7 @@ namespace GrEmit
                 {
                     var instruction = (ILCode.ILInstruction)ilCode.GetInstruction(i);
                     var parameter = instruction.Parameter;
-                    if (instruction.Kind == ILCode.InstructionKind.Instruction || instruction.Kind == ILCode.InstructionKind.DebugWriteLine)
+                    if(instruction.Kind == ILCode.InstructionKind.Instruction || instruction.Kind == ILCode.InstructionKind.DebugWriteLine)
                         il.MarkSequencePoint(symbolDocumentWriter, linesInfo.Value[i].Key, 0, linesInfo.Value[i].Value, 1000);
                     foreach(var prefix in instruction.Prefixes ?? new List<KeyValuePair<OpCode, ILInstructionParameter>>())
                         Emit(prefix.Key, prefix.Value);
@@ -1760,7 +1761,7 @@ namespace GrEmit
                 if(symbolDocumentWriter == null)
                     il.Emit(OpCodes.Tailcall);
             }
-            var parameter = new MethodILInstructionParameter(method);
+            var parameter = new CallILInstructionParameter(method, constrained);
             var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
             if(analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
@@ -1935,7 +1936,7 @@ namespace GrEmit
             else if(parameter is MethodByAddressILInstructionParameter)
             {
                 var calliParameter = (MethodByAddressILInstructionParameter)parameter;
-                if (calliParameter.ManagedCallingConvention != null)
+                if(calliParameter.ManagedCallingConvention != null)
                     il.EmitCalli(opCode, calliParameter.ManagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes, null);
                 else
                     il.EmitCalli(opCode, calliParameter.UnmanagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes);
@@ -1986,9 +1987,9 @@ namespace GrEmit
                 if(unaligned != 1 && unaligned != 2 && unaligned != 4)
                     throw new ArgumentException("Value of alignment must be 1, 2 or 4.", "unaligned");
                 if(analyzeStack)
-                    ilCode.AppendPrefix(OpCodes.Unaligned, new PrimitiveILInstructionParameter(unaligned));
+                    ilCode.AppendPrefix(OpCodes.Unaligned, new PrimitiveILInstructionParameter((byte)unaligned.Value));
                 if(symbolDocumentWriter == null)
-                    il.Emit(OpCodes.Unaligned, (long)unaligned.Value);
+                    il.Emit(OpCodes.Unaligned, (byte)unaligned.Value);
             }
         }
 
