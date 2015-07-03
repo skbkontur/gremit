@@ -35,22 +35,22 @@ Besides more beautiful interface GroboIL has some more advantages over ILGenerat
  - During code generation GroboIL builds the content of the evaluation stack and validates instructions arguments, and if something went wrong, immediately throws an Exception.
  - There is a debug ouput of the code being generated.
  - Full generics support.
- - It is possible to debug MethodBuilders (use constructor of GroboIL with parameter [ISymbolDocumentWriter](http://msdn.microsoft.com/en-us/library/system.diagnostics.symbolstore.isymboldocumentwriter.aspx).)
- - Appropriate performance. For instance, once I had to compile a program with 500000 instructions and it was compiled by GroboIL in 3 seconds (I guess there is a way to break performance, but in practice such a program won't occure).
+ - It is possible to debug MethodBuilders (use constructor of GroboIL with parameter [ISymbolDocumentWriter](http://msdn.microsoft.com/en-us/library/system.diagnostics.symbolstore.isymboldocumentwriter.aspx)).
+ - Appropriate performance. For instance, once I had to compile a program with 500000 instructions and it was verified by GroboIL in 3 seconds (I guess there is a way to break performance, but in practice such a program won't occure).
 
 Example of debug output:
 
 GroboIL.GetILCode()
 ```
-        ldarg.0               // [List<T>]
-        dup                   // [List<T>, List<T>]
-        brtrue notNull_0      // [null]
-        pop                   // []
-        ldc.i4.0              // [Int32]
-        newarr T              // [T[]]
-notNull_0:                    // [{Object: IList, IList<T>, IReadOnlyList<T>}]
-        ldarg.1               // [{Object: IList, IList<T>, IReadOnlyList<T>}, Func<T, Int32>]
+        ldarg.0              // [List<T>]
+        dup                  // [List<T>, List<T>]
+        brtrue notNull_0     // [null]
+        pop                  // []
+        ldc.i4.0             // [Int32]
+        newarr T             // [T[]]
+notNull_0:                   // [{Object: IList, IList<T>, IReadOnlyList<T>}]
+        ldarg.1              // [{Object: IList, IList<T>, IReadOnlyList<T>}, Func<T, Int32>]
         call Int32 Enumerable.Sum<T>(IEnumerable<T>, Func<T, Int32>)
-                              // [Int32]
-        ret                   // []
+                             // [Int32]
+        ret                  // []
 ```
