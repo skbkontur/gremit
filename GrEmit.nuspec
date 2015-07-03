@@ -4,7 +4,7 @@
     <id>GrEmit</id>
     <version>2.0.7</version>
     <title>GrEmit</title>
-    <projectUrl>https://git.skbkontur.ru/codebases/gremit</projectUrl>
+    <projectUrl>https://github.com/homuroll/gremit</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
 	  <authors>Igor Chevdar</authors>
 	  <description>Smart wrapper over ILGenerator</description>
