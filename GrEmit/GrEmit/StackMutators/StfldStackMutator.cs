@@ -19,7 +19,7 @@ namespace GrEmit.StackMutators
                 if(instance != null)
                 {
                     if(instance.IsValueType)
-                        ThrowError(il, string.Format("In order to load field '{0}' of a value type '{1}' load instance by ref", field, Formatter.Format(instance)));
+                        ThrowError(il, string.Format("In order to load the field '{0}' of a value type '{1}' load an instance by ref", field, Formatter.Format(instance)));
                     else if(!instance.IsByRef)
                         CheckCanBeAssigned(il, declaringType, instance);
                     else
@@ -28,10 +28,10 @@ namespace GrEmit.StackMutators
                         if(elementType.IsValueType)
                         {
                             if(declaringType != elementType)
-                                ThrowError(il, string.Format("Cannot load field '{0}' of type '{1}'", field, elementType));
+                                ThrowError(il, string.Format("Cannot load the field '{0}' of an instance of type '{1}'", field, elementType));
                         }
                         else
-                            ThrowError(il, string.Format("Cannot load field '{0}' of type '{1}'", field, instance));
+                            ThrowError(il, string.Format("Cannot load the field '{0}' of an instance of type '{1}'", field, instance));
                     }
                 }
             }

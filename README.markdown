@@ -30,7 +30,7 @@ using(var il = new GroboIL(method))
 ```
 
 ##Advantages
-Besides more beautiful interface GroboIL has some more advantages over ILGenerator:
+Besides more beautiful interface GroboIL has some more assets over ILGenerator:
  - GroboIL has one method for all instructions from the same family, for instance, instead of 11 instructions OpCodes.Ldelem_* there is one method GroboIL.Ldelem(Type type).
  - During code generation GroboIL builds the content of the evaluation stack and validates instructions arguments, and if something went wrong, immediately throws an Exception.
  - There is a debug ouput of the code being generated.

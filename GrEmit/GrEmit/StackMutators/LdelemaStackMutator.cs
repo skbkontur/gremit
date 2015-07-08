@@ -15,7 +15,7 @@ namespace GrEmit.StackMutators
             var esType = stack.Pop();
             var array = esType.ToType();
             if(!array.IsArray && array != typeof(Array))
-                throw new InvalidOperationException("An array expected but was '" + esType + "'");
+                throw new InvalidOperationException(string.Format("An array expected but was '{0}'", esType));
             stack.Push(elementType.MakeByRefType());
         }
     }

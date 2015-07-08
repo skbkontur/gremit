@@ -674,7 +674,7 @@ namespace GrEmit
             if(index < 0)
                 throw new ArgumentOutOfRangeException("index", "Argument index cannot be less than zero");
             if(index >= methodParameterTypes.Length)
-                throw new ArgumentOutOfRangeException("index", "Argument index cannot be greater or equal than number of parameters");
+                throw new ArgumentOutOfRangeException("index", "Argument index cannot be greater than or equal to the number of parameters of the method being emitted");
             switch(index)
             {
             case 0:
@@ -711,7 +711,7 @@ namespace GrEmit
             if(index < 0)
                 throw new ArgumentOutOfRangeException("index", "Argument index cannot be less than zero");
             if(index >= methodParameterTypes.Length)
-                throw new ArgumentOutOfRangeException("index", "Argument index cannot be greater or equal than number of parameters");
+                throw new ArgumentOutOfRangeException("index", "Argument index cannot be greater than or equal to the number of parameters of the method being emitted");
             if(index < 256)
                 Emit(OpCodes.Starg_S, (byte)index);
             else
@@ -731,7 +731,7 @@ namespace GrEmit
             if(index < 0)
                 throw new ArgumentOutOfRangeException("index", "Argument index cannot be less than zero");
             if(index >= methodParameterTypes.Length)
-                throw new ArgumentOutOfRangeException("index", "Argument index cannot be greater or equal than number of parameters");
+                throw new ArgumentOutOfRangeException("index", "Argument index cannot be greater than or equal to the number of parameters of the method being emitted");
             if(index < 256)
                 Emit(OpCodes.Ldarga_S, (byte)index);
             else
@@ -828,6 +828,10 @@ namespace GrEmit
             Emit(OpCodes.Ldc_R8, value);
         }
 
+        /// <summary>
+        ///     Pushes a supplied value of type native int onto the evaluation stack.
+        /// </summary>
+        /// <param name="value">The value to push.</param>
         public void Ldc_IntPtr(IntPtr value)
         {
             if(IntPtr.Size == 4)

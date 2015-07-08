@@ -130,13 +130,13 @@ namespace GrEmit
         protected static void CheckCanBeAssigned(GroboIL il, Type to, ESType from)
         {
             if(!CanBeAssigned(to, from))
-                ThrowError(il, string.Format("Unable to set value of type '{0}' to value of type '{1}'", from, Formatter.Format(to)));
+                ThrowError(il, string.Format("Unable to set a value of type '{0}' to an instance of type '{1}'", from, Formatter.Format(to)));
         }
 
         protected static void CheckCanBeAssigned(GroboIL il, Type to, Type from)
         {
             if(!CanBeAssigned(to, from))
-                ThrowError(il, string.Format("Unable to set value of type '{0}' to value of type '{1}'", Formatter.Format(from), Formatter.Format(to)));
+                ThrowError(il, string.Format("Unable to set a value of type '{0}' to an instance of type '{1}'", Formatter.Format(from), Formatter.Format(to)));
         }
 
         private static bool CanBeAssigned(Type to, ESType esFrom)
@@ -290,7 +290,7 @@ namespace GrEmit
             return type.IsEnum ? ToCLIType(Enum.GetUnderlyingType(type)) : CLIType.Struct;
         }
 
-        private void Propogate(GroboIL il, int lineNumber, EvaluationStack stack)
+        private static void Propogate(GroboIL il, int lineNumber, EvaluationStack stack)
         {
             if(lineNumber < 0)
                 return;
@@ -311,7 +311,7 @@ namespace GrEmit
                     case StacksComparisonResult.Equal:
                         return;
                     case StacksComparisonResult.Inconsistent:
-                        ThrowError(il, string.Format("Inconsistent stacks for line {0}", (lineNumber + 1)));
+                        ThrowError(il, string.Format("Inconsistent stack for line {0}{1}Stack #1: {2}{1}Stack #2: {3}", (lineNumber + 1), Environment.NewLine, stack, new EvaluationStack(instructionStack)));
                         break;
                     case StacksComparisonResult.Equivalent:
                         stack = new EvaluationStack(merged);

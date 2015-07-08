@@ -27,14 +27,14 @@ namespace GrEmit
                 {
                     var label = (LabelILInstructionParameter)instruction.Parameter;
                     if(!labelLineNumbers.ContainsKey(label.Label))
-                        throw new InvalidOperationException(string.Format("Label '{0}' has not been marked", label.Label.Name));
+                        throw new InvalidOperationException(string.Format("The label '{0}' has not been marked", label.Label.Name));
                 }
                 if(instruction.Parameter is LabelsILInstructionParameter)
                 {
                     foreach(var label in ((LabelsILInstructionParameter)instruction.Parameter).Labels)
                     {
                         if(!labelLineNumbers.ContainsKey(label))
-                            throw new InvalidOperationException(string.Format("Label '{0}' has not been marked", label.Name));
+                            throw new InvalidOperationException(string.Format("The label '{0}' has not been marked", label.Name));
                     }
                 }
             }
