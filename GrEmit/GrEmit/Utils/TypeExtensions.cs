@@ -49,7 +49,7 @@ namespace GrEmit.Utils
 
             for(var currentType2 = type2; currentType2 != null; currentType2 = ReflectionExtensions.GetBaseType(currentType2))
             {
-                for (var currentType1 = type1; currentType1 != null; currentType1 = ReflectionExtensions.GetBaseType(currentType1))
+                for(var currentType1 = type1; currentType1 != null; currentType1 = ReflectionExtensions.GetBaseType(currentType1))
                 {
                     if(ReflectionExtensions.Equal(currentType2, currentType1))
                         return currentType2;
@@ -58,6 +58,7 @@ namespace GrEmit.Utils
 
             return null;
         }
+
 //
 //        public static Type FindEqualTypeWith(this Type type1, Type type2)
 //        {
@@ -71,14 +72,14 @@ namespace GrEmit.Utils
 //            return baseClass;
 //        }
 
-        private static Type[] Subtract(this Type[] ax, Type[] ay)
-        {
-            return Array.FindAll(ax, x => false == Array.Exists(ay, y => ReflectionExtensions.Equal(x, y)));
-        }
-
         public static Type[] Intersect(this Type[] ax, Type[] ay)
         {
             return Array.FindAll(ax, x => Array.Exists(ay, y => ReflectionExtensions.Equal(x, y)));
+        }
+
+        private static Type[] Subtract(this Type[] ax, Type[] ay)
+        {
+            return Array.FindAll(ax, x => false == Array.Exists(ay, y => ReflectionExtensions.Equal(x, y)));
         }
 
         private static int GetOccurrenceCount(this Type[] ax, Type ty)

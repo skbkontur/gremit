@@ -12,6 +12,6 @@ namespace GrEmit.InstructionParameters
             return Value.ToString();
         }
 
-        public object Value { get; set; }
+        public object Value { get; private set; }
     }
 }

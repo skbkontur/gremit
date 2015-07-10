@@ -1,10 +1,10 @@
 #GrEmit
 
-GrEmit is a library containing different helpers for generating code using Reflection.Emit with the main one being GroboIL - smart wrapper over [ILGenerator](http://msdn.microsoft.com/en-us/library/system.reflection.emit.ilgenerator.aspx).
+GrEmit is a library containing different helpers for generating code using Reflection.Emit with the main one being GroboIL - a smart wrapper over [ILGenerator](http://msdn.microsoft.com/en-us/library/system.reflection.emit.ilgenerator.aspx).
 
 ##Usage
 
-GroboIL is a replacement for ILGenerator. Instead of calling ILGenerator.Emit(OpCode, ..), call GroboIL.OpCode(..).
+GroboIL is a replacement for ILGenerator. Instead of calling ILGenerator.Emit(OpCode, ..), one calls GroboIL.OpCode(..).
 
 ###Example
 
