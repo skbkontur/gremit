@@ -14,31 +14,15 @@ namespace GrEmit.Utils
             var assembly = typeof(MethodInfo).Assembly;
             var types = assembly.GetTypes();
 
-            runtimeTypeType = types.FirstOrDefault(type => type.Name == "RuntimeType");
-            if(runtimeTypeType == null)
-                throw new InvalidOperationException("Type 'RuntimeType' is not found");
-            symbolTypeType = types.FirstOrDefault(type => type.Name == "SymbolType");
-            if(symbolTypeType == null)
-                throw new InvalidOperationException("Type 'SymbolType' is not found");
-            typeBuilderInstantiationType = assembly.GetTypes().FirstOrDefault(type => type.Name == "TypeBuilderInstantiation");
-            if(typeBuilderInstantiationType == null)
-                throw new InvalidOperationException("Type 'TypeBuilderInstantiation' is not found");
+            runtimeTypeType = FindType(types, "RuntimeType");
+            symbolTypeType = FindType(types, "SymbolType");
+            typeBuilderInstantiationType = FindType(types, "TypeBuilderInstantiation");
 
-            runtimeMethodInfoType = types.FirstOrDefault(type => type.Name == "RuntimeMethodInfo");
-            if(runtimeMethodInfoType == null)
-                throw new InvalidOperationException("Type 'RuntimeMethodInfo' is not found");
-            runtimeConstructorInfoType = types.FirstOrDefault(type => type.Name == "RuntimeConstructorInfo");
-            if(runtimeConstructorInfoType == null)
-                throw new InvalidOperationException("Type 'RuntimeConstructorInfo' is not found");
-            methodOnTypeBuilderInstantiationType = types.FirstOrDefault(type => type.Name == "MethodOnTypeBuilderInstantiation");
-            if(methodOnTypeBuilderInstantiationType == null)
-                throw new InvalidOperationException("Type 'MethodOnTypeBuilderInstantiation' is not found");
-            constructorOnTypeBuilderInstantiationType = types.FirstOrDefault(type => type.Name == "ConstructorOnTypeBuilderInstantiation");
-            if(constructorOnTypeBuilderInstantiationType == null)
-                throw new InvalidOperationException("Type 'ConstructorOnTypeBuilderInstantiation' is not found");
-            methodBuilderInstantiationType = types.FirstOrDefault(type => type.Name == "MethodBuilderInstantiation");
-            if(methodBuilderInstantiationType == null)
-                throw new InvalidOperationException("Type 'MethodBuilderInstantiation' is not found");
+            runtimeMethodInfoType = FindType(types, "RuntimeMethodInfo");
+            runtimeConstructorInfoType = FindType(types, "RuntimeConstructorInfo");
+            methodOnTypeBuilderInstantiationType = FindType(types, "MethodOnTypeBuilderInstantiation");
+            constructorOnTypeBuilderInstantiationType = FindType(types, "ConstructorOnTypeBuilderInstantiation");
+            methodBuilderInstantiationType = FindType(types, "MethodBuilderInstantiation");
 
             parameterTypesExtractors = new Hashtable();
             returnTypeExtractors = new Hashtable();
@@ -47,13 +31,19 @@ namespace GrEmit.Utils
             typeComparers = new Hashtable();
             hashCodeCalculators = new Hashtable();
             assignabilityCheckers = new Hashtable();
-            parameterTypesExtractors[runtimeMethodInfoType] = parameterTypesExtractors[typeof(DynamicMethod)] = parameterTypesExtractors[runtimeConstructorInfoType] =
-                                                                                                                (Func<MethodBase, Type[]>)(method => method.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
-            returnTypeExtractors[runtimeMethodInfoType] = returnTypeExtractors[typeof(DynamicMethod)] = returnTypeExtractors[typeof(MethodBuilder)] =
-                                                                                                        (Func<MethodInfo, Type>)(method => method.ReturnType);
-            baseTypeOfTypeExtractors[runtimeTypeType] = baseTypeOfTypeExtractors[typeof(TypeBuilder)]
-                                                        = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)] = baseTypeOfTypeExtractors[symbolTypeType]
-                                                                                                                          = (Func<Type, Type>)(type => type == typeof(object) ? type.BaseType : (type.BaseType ?? typeof(object)));
+            parameterTypesExtractors[runtimeMethodInfoType]
+                = parameterTypesExtractors[typeof(DynamicMethod)]
+                  = parameterTypesExtractors[runtimeConstructorInfoType] =
+                    (Func<MethodBase, Type[]>)(method => method.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
+            returnTypeExtractors[runtimeMethodInfoType]
+                = returnTypeExtractors[typeof(DynamicMethod)]
+                  = returnTypeExtractors[typeof(MethodBuilder)] =
+                    (Func<MethodInfo, Type>)(method => method.ReturnType);
+            baseTypeOfTypeExtractors[runtimeTypeType]
+                = baseTypeOfTypeExtractors[typeof(TypeBuilder)]
+                  = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)]
+                    = baseTypeOfTypeExtractors[symbolTypeType]
+                      = (Func<Type, Type>)(type => type == typeof(object) ? type.BaseType : (type.BaseType ?? typeof(object)));
             interfacesOfTypeExtractors[runtimeTypeType] = (Func<Type, Type[]>)(type => type.GetInterfaces());
             interfacesOfTypeExtractors[typeof(TypeBuilder)] = (Func<Type, Type[]>)(type => GetInterfaces(GetBaseType(type)).Concat(type.GetInterfaces()).Distinct().ToArray());
             interfacesOfTypeExtractors[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type[]>)(type => type.GetGenericParameterConstraints());
@@ -68,7 +58,10 @@ namespace GrEmit.Utils
                         return x.GetArrayRank() == y.GetArrayRank() && Equal(x.GetElementType(), y.GetElementType());
                     return x == y;
                 });
-            hashCodeCalculators[runtimeTypeType] = hashCodeCalculators[typeof(TypeBuilder)] = hashCodeCalculators[typeof(GenericTypeParameterBuilder)] = (Func<Type, int>)(type => type.GetHashCode());
+            hashCodeCalculators[runtimeTypeType]
+                = hashCodeCalculators[typeof(TypeBuilder)]
+                  = hashCodeCalculators[typeof(GenericTypeParameterBuilder)]
+                    = (Func<Type, int>)(type => type.GetHashCode());
             assignabilityCheckers[runtimeTypeType] = (Func<Type, Type, bool>)((to, from) =>
                 {
                     if(to.IsAssignableFrom(from)) return true;
@@ -107,7 +100,10 @@ namespace GrEmit.Utils
                     if(type.GetArrayRank() > 1)
                         return typeof(int[,]).GetInterfaces();
                     var elementType = type.GetElementType();
-                    return typeof(int[]).GetInterfaces().Select(interfaCe => interfaCe.IsGenericType ? interfaCe.GetGenericTypeDefinition().MakeGenericType(elementType) : interfaCe).ToArray();
+                    return typeof(int[]).GetInterfaces()
+                                        .Select(interfaCe => interfaCe.IsGenericType
+                                                                 ? interfaCe.GetGenericTypeDefinition().MakeGenericType(elementType)
+                                                                 : interfaCe).ToArray();
                 });
 
             typeComparers[typeBuilderInstantiationType] = (Func<Type, Type, bool>)((x, y) => new TypeBuilderInstantiationWrapper(x).Equals(new TypeBuilderInstantiationWrapper(y)));
@@ -237,6 +233,14 @@ namespace GrEmit.Utils
             {
                 return CalcHashCode(type);
             }
+        }
+
+        private static Type FindType(IEnumerable<Type> types, string name)
+        {
+            var type = types.FirstOrDefault(t => t.Name == name);
+            if(type == null)
+                throw new InvalidOperationException(string.Format("Type '{0}' is not found", name));
+            return type;
         }
 
         private static Func<ConstructorBuilder, Type[]> BuildConstructorBuilderParameterTypesExtractor()

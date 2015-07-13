@@ -29,7 +29,7 @@ namespace GrEmit
             OpCodes.Refanyval;
             OpCodes.Rethrow;
             OpCodes.Sizeof;
-            OpCodes.
+            OpCodes.Jmp
 */
         }
 
