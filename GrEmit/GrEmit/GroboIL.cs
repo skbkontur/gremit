@@ -663,7 +663,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        ///     Copies the value type located at the address of an object (type &, * or native int) to the address of the destination object (type &, * or native int).
+        ///     Copies the value type located at the address of an object (type &amp;, * or native int) to the address of the destination object (type &amp;, * or native int).
         /// </summary>
         /// <param name="type">
         ///     The <see cref="Type">Type</see> of objects being copied. Must be a value type.
