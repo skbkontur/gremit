@@ -13,10 +13,10 @@ namespace GrEmit.StackMutators
 
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
-            CheckNotEmpty(il, stack);
+            CheckNotEmpty(il, stack, string.Format("In order to perform the instruction '{0}' an instance must be loaded onto the evaluation stack", opCode));
             var type = stack.Pop();
             if(!Allowed(type))
-                ThrowError(il, string.Format("Unable to perform instruction '{0}' on type '{1}'", opCode, type));
+                ThrowError(il, string.Format("Unable to perform the instruction '{0}' on type '{1}'", opCode, type));
             stack.Push(to);
         }
 

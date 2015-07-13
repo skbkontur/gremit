@@ -9,7 +9,7 @@ namespace GrEmit.StackMutators
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var label = ((LabelILInstructionParameter)parameter).Label;
-            CheckNotEmpty(il, stack);
+            CheckNotEmpty(il, stack, "The 'brfalse' instruction required one argument but none is supplied");
             var value = stack.Pop();
             CheckNotStruct(il, value);
 

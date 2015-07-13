@@ -66,7 +66,7 @@ namespace GrEmit.StackMutators
                             if(declaringType.IsInterface)
                             {
                                 if(ReflectionExtensions.GetInterfaces(elementType).All(type => type != declaringType))
-                                    ThrowError(il, string.Format("Type '{0}' does not implement interface '{1}'", Formatter.Format(elementType), Formatter.Format(declaringType)));
+                                    ThrowError(il, string.Format("The type '{0}' does not implement interface '{1}'", Formatter.Format(elementType), Formatter.Format(declaringType)));
                             }
                             else if(declaringType != typeof(object) && declaringType != elementType)
                                 ThrowError(il, string.Format("Cannot call the method '{0}' on an instance of type '{1}'", formattedMethod, elementType));

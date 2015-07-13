@@ -42,6 +42,7 @@
     <Compile Include="FieldsExtractor.cs" />
     <Compile Include="InstructionParameters\CallILInstructionParameter.cs" />
     <Compile Include="StackMutators\Add_Ovf_UnStackMutator.cs" />
+    <Compile Include="StackMutators\Cgt_UnStackMutator.cs" />
     <Compile Include="StackMutators\Sub_Ovf_UnStackMutator.cs" />
     <Compile Include="Utils\ReflectionExtensions.cs" />
     <Compile Include="StackMutators\Add_UnStackMutator.cs" />

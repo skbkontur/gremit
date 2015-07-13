@@ -7,9 +7,9 @@ namespace GrEmit.StackMutators
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var type = ((TypeILInstructionParameter)parameter).Type;
-            CheckNotEmpty(il, stack);
+            CheckNotEmpty(il, stack, "A value must be put onto the evaluation stack in order to perform the 'stind' instruction");
             CheckCanBeAssigned(il, type, stack.Pop());
-            CheckNotEmpty(il, stack);
+            CheckNotEmpty(il, stack, "In order to perform the 'stind' instruction an address must be put onto the evaluation stack");
             var esType = stack.Pop();
             CheckIsAPointer(il, esType);
             var pointer = esType.ToType();
