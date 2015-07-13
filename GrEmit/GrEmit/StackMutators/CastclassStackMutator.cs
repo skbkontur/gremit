@@ -6,7 +6,7 @@ namespace GrEmit.StackMutators
     {
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
-            // todo проверить ВСЕ!
+            // todo test ALL!
             var to = ((TypeILInstructionParameter)parameter).Type;
             CheckNotEmpty(il, stack);
             var from = stack.Pop().ToType();

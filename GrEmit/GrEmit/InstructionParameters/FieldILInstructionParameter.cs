@@ -16,6 +16,6 @@ namespace GrEmit.InstructionParameters
             return Formatter.Format(Field);
         }
 
-        public FieldInfo Field { get; set; }
+        public FieldInfo Field { get; private set; }
     }
 }

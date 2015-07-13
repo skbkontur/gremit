@@ -44,7 +44,7 @@ namespace GrEmit
                 {OpCodes.Call, new CallStackMutator()},
                 {OpCodes.Callvirt, new CallStackMutator()},
                 {OpCodes.Calli, new CalliStackMutator()},
-//                {OpCodes.Jmp, new JmpStackMutator()},
+                {OpCodes.Jmp, new JmpStackMutator()},
                 {OpCodes.Leave, new BrStackMutator()},
                 {OpCodes.Br, new BrStackMutator()},
                 {OpCodes.Br_S, new BrStackMutator()},

@@ -28,9 +28,9 @@ namespace GrEmit.InstructionParameters
             return Formatter.Format(ReturnType) + " *i" + IntPtr.Size + "(" + string.Join(", ", ParameterTypes.Select(Formatter.Format).ToArray()) + ")";
         }
 
-        public CallingConventions? ManagedCallingConvention { get; set; }
-        public CallingConvention? UnmanagedCallingConvention { get; set; }
-        public Type ReturnType { get; set; }
-        public Type[] ParameterTypes { get; set; }
+        public CallingConventions? ManagedCallingConvention { get; private set; }
+        public CallingConvention? UnmanagedCallingConvention { get; private set; }
+        public Type ReturnType { get; private set; }
+        public Type[] ParameterTypes { get; private set; }
     }
 }

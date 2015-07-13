@@ -20,7 +20,7 @@ namespace Tests
             il.Brfalse(label);
             il.Ret();
             var e = Assert.Throws<InvalidOperationException>(il.Dispose);
-            Assert.AreEqual("Label 'L_0' has not been marked", e.Message);
+            Assert.AreEqual("The label 'L_0' has not been marked", e.Message);
         }
 
         [Test]
@@ -33,7 +33,7 @@ namespace Tests
             il.Switch(label);
             il.Ret();
             var e = Assert.Throws<InvalidOperationException>(il.Dispose);
-            Assert.AreEqual("Label 'L_0' has not been marked", e.Message);
+            Assert.AreEqual("The label 'L_0' has not been marked", e.Message);
         }
 
         [Test]

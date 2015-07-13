@@ -83,7 +83,7 @@ namespace GrEmit
             else if(!type.IsInterface)
                 Push(new SimpleESType(type));
             else
-                Push(new ComplexESType(typeof(object), new[] { type }));
+                Push(new ComplexESType(typeof(object), new[] {type}));
         }
 
         public override string ToString()
@@ -137,48 +137,6 @@ namespace GrEmit
         {
             if(!CanBeAssigned(to, from))
                 ThrowError(il, string.Format("Unable to set a value of type '{0}' to an instance of type '{1}'", Formatter.Format(from), Formatter.Format(to)));
-        }
-
-        private static bool CanBeAssigned(Type to, ESType esFrom)
-        {
-            var cliTo = ToCLIType(to);
-            var cliFrom = ToCLIType(esFrom);
-            var from = esFrom.ToType();
-            switch(cliTo)
-            {
-            case CLIType.Int32:
-                return cliFrom == CLIType.Int32 || cliFrom == CLIType.NativeInt || cliFrom == CLIType.Zero;
-            case CLIType.NativeInt:
-                return cliFrom == CLIType.Int32 || cliFrom == CLIType.NativeInt || cliFrom == CLIType.Zero;
-            case CLIType.Int64:
-                return cliFrom == CLIType.Int64 || cliFrom == CLIType.Zero;
-            case CLIType.Float:
-                return cliFrom == CLIType.Float || cliFrom == CLIType.Zero;
-            case CLIType.Struct:
-                return ReflectionExtensions.Equal(to, from);
-            case CLIType.Pointer:
-                if(cliFrom == CLIType.Zero || ReflectionExtensions.Equal(to, from))
-                    return true;
-                if(cliFrom != CLIType.Pointer)
-                    return false;
-                to = to.GetElementType();
-                from = from.GetElementType();
-                return to.IsValueType && from.IsValueType;
-            case CLIType.Object:
-                if(cliFrom == CLIType.Zero || ReflectionExtensions.Equal(to, from))
-                    return true;
-                if(cliFrom != CLIType.Object)
-                    return false;
-                var simpleESFrom = esFrom as SimpleESType;
-                if(simpleESFrom != null)
-                    return ReflectionExtensions.IsAssignableFrom(to, from);
-                var complexESFrom = (ComplexESType)esFrom;
-                return ReflectionExtensions.IsAssignableFrom(to, complexESFrom.BaseType) || complexESFrom.Interfaces.Any(interfaCe => ReflectionExtensions.IsAssignableFrom(to, interfaCe));
-            case CLIType.Zero:
-                return true;
-            default:
-                throw new InvalidOperationException(string.Format("CLI type '{0}' is not valid at this point", cliTo));
-            }
         }
 
         protected static bool CanBeAssigned(Type to, Type from)
@@ -288,6 +246,48 @@ namespace GrEmit
             if(type.IsGenericType) return CLIType.Struct;
             if(type is EnumBuilder) return ToCLIType(type.UnderlyingSystemType);
             return type.IsEnum ? ToCLIType(Enum.GetUnderlyingType(type)) : CLIType.Struct;
+        }
+
+        private static bool CanBeAssigned(Type to, ESType esFrom)
+        {
+            var cliTo = ToCLIType(to);
+            var cliFrom = ToCLIType(esFrom);
+            var from = esFrom.ToType();
+            switch(cliTo)
+            {
+            case CLIType.Int32:
+                return cliFrom == CLIType.Int32 || cliFrom == CLIType.NativeInt || cliFrom == CLIType.Zero;
+            case CLIType.NativeInt:
+                return cliFrom == CLIType.Int32 || cliFrom == CLIType.NativeInt || cliFrom == CLIType.Zero;
+            case CLIType.Int64:
+                return cliFrom == CLIType.Int64 || cliFrom == CLIType.Zero;
+            case CLIType.Float:
+                return cliFrom == CLIType.Float || cliFrom == CLIType.Zero;
+            case CLIType.Struct:
+                return ReflectionExtensions.Equal(to, from);
+            case CLIType.Pointer:
+                if(cliFrom == CLIType.Zero || ReflectionExtensions.Equal(to, from))
+                    return true;
+                if(cliFrom != CLIType.Pointer)
+                    return false;
+                to = to.GetElementType();
+                from = from.GetElementType();
+                return to.IsValueType && from.IsValueType;
+            case CLIType.Object:
+                if(cliFrom == CLIType.Zero || ReflectionExtensions.Equal(to, from))
+                    return true;
+                if(cliFrom != CLIType.Object)
+                    return false;
+                var simpleESFrom = esFrom as SimpleESType;
+                if(simpleESFrom != null)
+                    return ReflectionExtensions.IsAssignableFrom(to, from);
+                var complexESFrom = (ComplexESType)esFrom;
+                return ReflectionExtensions.IsAssignableFrom(to, complexESFrom.BaseType) || complexESFrom.Interfaces.Any(interfaCe => ReflectionExtensions.IsAssignableFrom(to, interfaCe));
+            case CLIType.Zero:
+                return true;
+            default:
+                throw new InvalidOperationException(string.Format("CLI type '{0}' is not valid at this point", cliTo));
+            }
         }
 
         private static void Propogate(GroboIL il, int lineNumber, EvaluationStack stack)

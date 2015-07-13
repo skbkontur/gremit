@@ -29,12 +29,15 @@ namespace GrEmit
             OpCodes.Refanyval;
             OpCodes.Rethrow;
             OpCodes.Sizeof;
-            OpCodes.
 */
         }
 
         public GroboIL(DynamicMethod method, bool analyzeStack = true)
-            : this(method.GetILGenerator(), method.ReturnType, ReflectionExtensions.GetParameterTypes(method), analyzeStack, null)
+            : this(method.GetILGenerator(),
+                   method.ReturnType,
+                   ReflectionExtensions.GetParameterTypes(method),
+                   analyzeStack,
+                   null)
         {
         }
 
@@ -63,12 +66,20 @@ namespace GrEmit
         }
 
         public GroboIL(ConstructorBuilder constructor, bool analyzeStack = true)
-            : this(constructor.GetILGenerator(), typeof(void), new[] {constructor.ReflectedType}.Concat(ReflectionExtensions.GetParameterTypes(constructor)).ToArray(), analyzeStack, null)
+            : this(constructor.GetILGenerator(),
+                   typeof(void),
+                   new[] {constructor.ReflectedType}.Concat(ReflectionExtensions.GetParameterTypes(constructor)).ToArray(),
+                   analyzeStack,
+                   null)
         {
         }
 
         public GroboIL(ConstructorBuilder constructor, ISymbolDocumentWriter symbolDocumentWriter)
-            : this(constructor.GetILGenerator(), typeof(void), new[] {constructor.ReflectedType}.Concat(ReflectionExtensions.GetParameterTypes(constructor)).ToArray(), true, symbolDocumentWriter)
+            : this(constructor.GetILGenerator(),
+                   typeof(void),
+                   new[] {constructor.ReflectedType}.Concat(ReflectionExtensions.GetParameterTypes(constructor)).ToArray(),
+                   true,
+                   symbolDocumentWriter)
         {
             if(symbolDocumentWriter == null)
                 throw new ArgumentNullException("symbolDocumentWriter");
@@ -144,13 +155,17 @@ namespace GrEmit
         /// </param>
         /// <param name="name">Name of the local being declared.</param>
         /// <param name="pinned">true to pin the object in memory; otherwise, false.</param>
+        /// <param name="appendUniquePrefix">true if a unique prefix is to be appended.</param>
         /// <returns>
         ///     A <see cref="Local">Local</see> object that represents the local variable.
         /// </returns>
-        public Local DeclareLocal(Type localType, string name, bool pinned = false)
+        public Local DeclareLocal(Type localType, string name, bool pinned = false, bool appendUniquePrefix = true)
         {
             var local = il.DeclareLocal(localType, pinned);
-            var uniqueName = (string.IsNullOrEmpty(name) ? "local" : name) + "_" + localId++;
+            name = string.IsNullOrEmpty(name) ? "local" : name;
+            var uniqueName = !appendUniquePrefix
+                                 ? name
+                                 : name + "_" + localId++;
             if(symbolDocumentWriter != null)
                 local.SetLocalSymInfo(uniqueName);
             return new Local(local, uniqueName);
@@ -179,12 +194,16 @@ namespace GrEmit
         ///     Declares a new label.
         /// </summary>
         /// <param name="name">Name of label.</param>
+        /// <param name="appendUniquePrefix">true if a unique prefix is to be appended.</param>
         /// <returns>
         ///     A <see cref="Label">Label</see> object that can be used as a token for branching.
         /// </returns>
-        public Label DefineLabel(string name)
+        public Label DefineLabel(string name, bool appendUniquePrefix = true)
         {
-            return new Label(il.DefineLabel(), name + "_" + labelId++);
+            var uniqueName = !appendUniquePrefix
+                                 ? name
+                                 : name + "_" + labelId++;
+            return new Label(il.DefineLabel(), uniqueName);
         }
 
         /// <summary>
@@ -387,14 +406,14 @@ namespace GrEmit
             if(method == null)
                 throw new ArgumentNullException("method");
             if(method.ReturnType != methodReturnType)
-                throw new ArgumentException(string.Format("Return type must be '{0}'", methodReturnType), "method");
+                throw new ArgumentException(string.Format("The return type must be of type '{0}'", methodReturnType), "method");
             var parameterTypes = method.GetParameters().Select(info => info.ParameterType).ToArray();
             if(parameterTypes.Length != methodParameterTypes.Length)
-                throw new ArgumentException(string.Format("The number of arguments must be {0}", methodParameterTypes.Length), "method");
+                throw new ArgumentException(string.Format("The number of arguments must be equal to {0}", methodParameterTypes.Length), "method");
             for(var i = 0; i < parameterTypes.Length; ++i)
             {
                 if(parameterTypes[i] != methodParameterTypes[i])
-                    throw new ArgumentException(string.Format("Argument #{0} must be of type '{1}'", i + 1, methodParameterTypes[i]), "method");
+                    throw new ArgumentException(string.Format("The argument #{0} must be of type '{1}'", i + 1, methodParameterTypes[i]), "method");
             }
             Emit(OpCodes.Jmp, method);
         }

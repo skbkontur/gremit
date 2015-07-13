@@ -16,6 +16,6 @@ namespace GrEmit.InstructionParameters
             return Type == null ? "null" : Formatter.Format(Type);
         }
 
-        public Type Type { get; set; }
+        public Type Type { get; private set; }
     }
 }
