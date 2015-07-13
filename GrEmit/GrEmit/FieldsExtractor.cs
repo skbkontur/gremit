@@ -32,7 +32,7 @@ namespace GrEmit
 
         private static Func<object, object> BuildExtractor(FieldInfo field)
         {
-            var dynamicMethod = new DynamicMethod(Guid.NewGuid().ToString(), typeof(object), new[] {typeof(object)}, typeof(FieldsExtractor), true);
+            var dynamicMethod = new DynamicMethod("FieldExtractor$" + field.Name + "$" + Guid.NewGuid(), typeof(object), new[] {typeof(object)}, typeof(FieldsExtractor), true);
             using(var il = new GroboIL(dynamicMethod))
             {
                 il.Ldarg(0);

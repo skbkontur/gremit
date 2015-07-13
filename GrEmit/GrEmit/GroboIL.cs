@@ -663,7 +663,9 @@ namespace GrEmit
         }
 
         /// <summary>
-        ///     Copies the value type located at the address of an object (type &, * or native int) to the address of the destination object (type &, * or native int).
+        ///     Copies the value type located at the address of an object (type &amp;, * or native int) to the address of the destination object (type &amp;, * or native int).
+        ///     <para></para>
+        ///     The parameters are: a destination address and a source address.
         /// </summary>
         /// <param name="type">
         ///     The <see cref="Type">Type</see> of objects being copied. Must be a value type.
@@ -1224,6 +1226,8 @@ namespace GrEmit
 
         /// <summary>
         ///     Copies a specified number of bytes from a source address to a destination address.
+        ///     <para></para>
+        ///     The parameters are: a destination address, a source address and a number of bytes to copy.
         /// </summary>
         /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
         /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>
@@ -1235,6 +1239,8 @@ namespace GrEmit
 
         /// <summary>
         ///     Initializes a specified block of memory at a specific address to a given size and initial value.
+        ///     <para></para>
+        ///     The parameters are: an address, an initial value and a number of bytes.
         /// </summary>
         /// <param name="isVolatile">True if an address on top of the evaluation stack must be treated as volatile.</param>
         /// <param name="unaligned">The value of alignment and null if address is aligned to the natural size.</param>

@@ -113,13 +113,6 @@ namespace GrEmit
                 ThrowError(il, message);
         }
 
-        // TODO kill and write readable messages everywhere
-        protected static void CheckNotEmpty(GroboIL il, EvaluationStack stack)
-        {
-            if(stack.Count == 0)
-                ThrowError(il, "Stack is empty");
-        }
-
         protected static void CheckIsAPointer(GroboIL il, ESType type)
         {
             var cliType = ToCLIType(type);

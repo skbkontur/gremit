@@ -11,23 +11,27 @@ namespace GrEmit.StackMutators
             if(!field.IsStatic)
             {
                 var declaringType = field.DeclaringType;
-                CheckNotEmpty(il, stack);
+                CheckNotEmpty(il, stack, string.Format("In order to load a reference to the field '{0}' an instance must be put onto the evaluation stack", Formatter.Format(field)));
 
                 var instance = stack.Pop().ToType();
-                if(instance.IsValueType)
-                    ThrowError(il, string.Format("In order to load the field '{0}' of a value type '{1}' load an instance by ref", field, Formatter.Format(instance)));
-                else if(instance.IsByRef)
+                if(instance != null)
                 {
-                    var elementType = instance.GetElementType();
-                    if(elementType.IsValueType)
-                    {
-                        if(declaringType != elementType)
-                            ThrowError(il, string.Format("Cannot load the field '{0}' of an instance of type '{1}'", field, elementType));
-                    }
+                    if(instance.IsValueType)
+                        ThrowError(il, string.Format("In order to load a reference to the field '{0}' of a value type '{1}' load an instance by ref", Formatter.Format(field), Formatter.Format(instance)));
+                    else if(!instance.IsByRef)
+                        CheckCanBeAssigned(il, declaringType, instance);
                     else
-                        ThrowError(il, string.Format("Cannot load the field '{0}' of an instance of type '{1}'", field, instance));
+                    {
+                        var elementType = instance.GetElementType();
+                        if(elementType.IsValueType)
+                        {
+                            if(declaringType != elementType)
+                                ThrowError(il, string.Format("Cannot load a reference to the field '{0}' of an instance of type '{1}'", Formatter.Format(field), Formatter.Format(elementType)));
+                        }
+                        else
+                            ThrowError(il, string.Format("Cannot load a reference to the field '{0}' of an instance of type '{1}'", Formatter.Format(field), Formatter.Format(instance)));
+                    }
                 }
-                else CheckCanBeAssigned(il, declaringType, instance);
             }
             stack.Push(field.FieldType.MakeByRefType());
         }
