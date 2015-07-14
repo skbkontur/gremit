@@ -154,7 +154,7 @@ namespace GrEmit
                 case StacksComparisonResult.Equal:
                     return;
                 case StacksComparisonResult.Inconsistent:
-                    ThrowError(il, string.Format("Inconsistent stack for label '{0}'{1}Stack #1: {2}{1}Stack #2: {3}", label.Name, Environment.NewLine, stack, new EvaluationStack(labelStack)));
+                    ThrowError(il, string.Format("Inconsistent stack for the label '{0}'{1}Stack #1: {2}{1}Stack #2: {3}", label.Name, Environment.NewLine, stack, new EvaluationStack(labelStack)));
                     break;
                 case StacksComparisonResult.Equivalent:
                     il.labelStacks[label] = merged;
@@ -304,7 +304,7 @@ namespace GrEmit
                     case StacksComparisonResult.Equal:
                         return;
                     case StacksComparisonResult.Inconsistent:
-                        ThrowError(il, string.Format("Inconsistent stack for line {0}{1}Stack #1: {2}{1}Stack #2: {3}", (lineNumber + 1), Environment.NewLine, stack, new EvaluationStack(instructionStack)));
+                        ThrowError(il, string.Format("Inconsistent stack for the line {0}{1}Stack #1: {2}{1}Stack #2: {3}", (lineNumber + 1), Environment.NewLine, stack, new EvaluationStack(instructionStack)));
                         break;
                     case StacksComparisonResult.Equivalent:
                         stack = new EvaluationStack(merged);

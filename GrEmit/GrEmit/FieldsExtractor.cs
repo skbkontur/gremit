@@ -24,19 +24,31 @@ namespace GrEmit
 
         public static Func<T, TResult> GetExtractor<T, TResult>(FieldInfo field)
             where T : class
-            where TResult : class
         {
             var extractor = GetExtractor(field);
             return arg => (TResult)extractor(arg);
         }
 
+        public static Func<TResult> GetExtractor<TResult>(FieldInfo field)
+        {
+            var extractor = GetExtractor(field);
+            return () => (TResult)extractor(null);
+        }
+
         private static Func<object, object> BuildExtractor(FieldInfo field)
         {
-            var dynamicMethod = new DynamicMethod("FieldExtractor$" + field.Name + "$" + Guid.NewGuid(), typeof(object), new[] {typeof(object)}, typeof(FieldsExtractor), true);
+            var methodName = "FieldExtractor$";
+            if(field.IsStatic)
+                methodName += field.DeclaringType + "$";
+            methodName += field.Name + "$" + Guid.NewGuid();
+            var dynamicMethod = new DynamicMethod(methodName, typeof(object), new[] {typeof(object)}, typeof(FieldsExtractor), true);
             using(var il = new GroboIL(dynamicMethod))
             {
-                il.Ldarg(0);
-                il.Castclass(field.DeclaringType);
+                if(!field.IsStatic)
+                {
+                    il.Ldarg(0);
+                    il.Castclass(field.DeclaringType);
+                }
                 il.Ldfld(field);
                 if(field.FieldType.IsValueType)
                     il.Box(field.FieldType);
