@@ -1930,6 +1930,11 @@ namespace GrEmit
                 return local.localBuilder;
             }
 
+            public void SetLocalSymInfo(string name)
+            {
+                localBuilder.SetLocalSymInfo(name);
+            }
+
             public string Name { get { return name; } }
             public Type Type { get { return localBuilder.LocalType; } }
 
