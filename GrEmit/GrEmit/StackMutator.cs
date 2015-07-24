@@ -107,10 +107,10 @@ namespace GrEmit
                 ThrowError(il, string.Format("Struct of type '{0}' is not valid at this point", type));
         }
 
-        protected static void CheckNotEmpty(GroboIL il, EvaluationStack stack, string message)
+        protected static void CheckNotEmpty(GroboIL il, EvaluationStack stack, Func<string> message)
         {
             if(stack.Count == 0)
-                ThrowError(il, message);
+                ThrowError(il, message());
         }
 
         protected static void CheckIsAPointer(GroboIL il, ESType type)
@@ -419,7 +419,7 @@ namespace GrEmit
                             secondInterfaces.Add(interfaCe);
                     }
                     HashSet<Type> intersected;
-                    if(firstInterfaces.Count < secondInterfaces.Count)
+                    if(firstInterfaces.Count > secondInterfaces.Count)
                     {
                         firstInterfaces.IntersectWith(secondInterfaces);
                         intersected = firstInterfaces;

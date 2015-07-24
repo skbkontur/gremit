@@ -11,7 +11,7 @@ namespace GrEmit.StackMutators
             if(!field.IsStatic)
             {
                 var declaringType = field.DeclaringType;
-                CheckNotEmpty(il, stack, string.Format("In order to load a reference to the field '{0}' an instance must be put onto the evaluation stack", Formatter.Format(field)));
+                CheckNotEmpty(il, stack, () => string.Format("In order to load a reference to the field '{0}' an instance must be put onto the evaluation stack", Formatter.Format(field)));
 
                 var instance = stack.Pop().ToType();
                 if(instance != null)
