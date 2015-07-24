@@ -12,9 +12,9 @@ namespace GrEmit.StackMutators
 
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
-            CheckNotEmpty(il, stack, string.Format("Expected two arguments for the operation '{0}'", opCode));
+            CheckNotEmpty(il, stack, () => string.Format("Expected two arguments for the operation '{0}'", opCode));
             var right = stack.Pop();
-            CheckNotEmpty(il, stack, string.Format("Expected two arguments for the operation '{0}'", opCode));
+            CheckNotEmpty(il, stack, () => string.Format("Expected two arguments for the operation '{0}'", opCode));
             var left = stack.Pop();
             if(!IsAllowed(ToCLIType(left), ToCLIType(right)))
                 ThrowError(il, string.Format("Cannot perform the instruction '{0}' on types '{1}' and '{2}'", opCode, left, right));

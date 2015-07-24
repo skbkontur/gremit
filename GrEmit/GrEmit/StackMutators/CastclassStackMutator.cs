@@ -8,7 +8,7 @@ namespace GrEmit.StackMutators
         {
             // todo test ALL!
             var to = ((TypeILInstructionParameter)parameter).Type;
-            CheckNotEmpty(il, stack, "In order to perform the 'castclass' instruction an instance must be loaded onto the evaluation stack");
+            CheckNotEmpty(il, stack, () => "In order to perform the 'castclass' instruction an instance must be loaded onto the evaluation stack");
             var from = stack.Pop().ToType();
             if(!(ToCLIType(from) == CLIType.Object && CanBeAssigned(to, from)))
                 CheckCanBeAssigned(il, from, to);

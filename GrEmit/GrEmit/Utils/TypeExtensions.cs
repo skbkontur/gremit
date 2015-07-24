@@ -1,9 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace GrEmit.Utils
 {
     public static class TypeExtensions
     {
+        public static void GetInterfacesCollectionStupid(this Type node, ICollection<Type> result)
+        {
+            if(node == null)
+                return;
+            GetInterfacesCollectionStupid(ReflectionExtensions.GetBaseType(node), result);
+            if(node.IsInterface)
+                result.Add(node);
+            foreach(var interfaCe in ReflectionExtensions.GetInterfaces(node))
+                result.Add(interfaCe);
+        }
+
         public static Type[] GetTypesArray(this Type node)
         {
             if(node == null)

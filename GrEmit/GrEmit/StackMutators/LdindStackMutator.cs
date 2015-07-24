@@ -8,7 +8,7 @@ namespace GrEmit.StackMutators
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var type = ((TypeILInstructionParameter)parameter).Type;
-            CheckNotEmpty(il, stack, "In order to perform the 'ldind' instruction load an address onto the evaluation stack");
+            CheckNotEmpty(il, stack, () => "In order to perform the 'ldind' instruction load an address onto the evaluation stack");
             var esType = stack.Pop();
             CheckIsAPointer(il, esType);
             var pointer = esType.ToType();
