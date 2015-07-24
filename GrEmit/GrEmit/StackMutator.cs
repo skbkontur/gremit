@@ -400,34 +400,65 @@ namespace GrEmit
             case CLIType.Object:
                 {
                     var baseType = first.ToType().FindBaseClassWith(second.ToType());
-                    var firstInterfaces = ((first is SimpleESType)
-                                               ? ((SimpleESType)first).Type.GetTypesArray()
-                                               : ((ComplexESType)first).BaseType.GetTypesArray().Concat(((ComplexESType)first).Interfaces)).Where(t => t.IsInterface).ToArray();
-                    var secondInterfaces = ((second is SimpleESType)
-                                                ? ((SimpleESType)second).Type.GetTypesArray()
-                                                : ((ComplexESType)second).BaseType.GetTypesArray().Concat(((ComplexESType)second).Interfaces)).Where(t => t.IsInterface).ToArray();
-                    var hashSet = new HashSet<Type>(firstInterfaces.Intersect(secondInterfaces).Concat(new[] {baseType}), new ReflectionExtensions.TypesComparer());
+                    var firstInterfaces = new HashSet<Type>(new ReflectionExtensions.TypesComparer());
+                    if(first is SimpleESType)
+                        ((SimpleESType)first).Type.GetInterfacesCollectionStupid(firstInterfaces);
+                    else
+                    {
+                        ((ComplexESType)first).BaseType.GetInterfacesCollectionStupid(firstInterfaces);
+                        foreach(var interfaCe in ((ComplexESType)first).Interfaces)
+                            firstInterfaces.Add(interfaCe);
+                    }
+                    var secondInterfaces = new HashSet<Type>(new ReflectionExtensions.TypesComparer());
+                    if(second is SimpleESType)
+                        ((SimpleESType)second).Type.GetInterfacesCollectionStupid(secondInterfaces);
+                    else
+                    {
+                        ((ComplexESType)second).BaseType.GetInterfacesCollectionStupid(secondInterfaces);
+                        foreach(var interfaCe in ((ComplexESType)second).Interfaces)
+                            secondInterfaces.Add(interfaCe);
+                    }
+                    HashSet<Type> intersected;
+                    if(firstInterfaces.Count < secondInterfaces.Count)
+                    {
+                        firstInterfaces.IntersectWith(secondInterfaces);
+                        intersected = firstInterfaces;
+                    }
+                    else
+                    {
+                        secondInterfaces.IntersectWith(firstInterfaces);
+                        intersected = secondInterfaces;
+                    }
+                    intersected.Add(baseType);
+
+                    //var firstInterfaces = ((first is SimpleESType)
+                    //                           ? ((SimpleESType)first).Type.GetTypesArray()
+                    //                           : ((ComplexESType)first).BaseType.GetTypesArray().Concat(((ComplexESType)first).Interfaces)).Where(t => t.IsInterface).ToArray();
+                    //var secondInterfaces = ((second is SimpleESType)
+                    //                            ? ((SimpleESType)second).Type.GetTypesArray()
+                    //                            : ((ComplexESType)second).BaseType.GetTypesArray().Concat(((ComplexESType)second).Interfaces)).Where(t => t.IsInterface).ToArray();
+                    //var hashSet = new HashSet<Type>(firstInterfaces.Intersect(secondInterfaces).Concat(new[] {baseType}), new ReflectionExtensions.TypesComparer());
                     while(true)
                     {
                         var end = true;
-                        foreach(var type in hashSet.ToArray())
+                        foreach(var type in intersected.ToArray())
                         {
                             var children = ReflectionExtensions.GetInterfaces(type);
                             foreach(var child in children)
                             {
-                                if(hashSet.Contains(child))
+                                if(intersected.Contains(child))
                                 {
                                     end = false;
-                                    hashSet.Remove(child);
+                                    intersected.Remove(child);
                                 }
                             }
                         }
                         if(end) break;
                     }
-                    hashSet.Remove(baseType);
-                    if(hashSet.Count == 0)
+                    intersected.Remove(baseType);
+                    if(intersected.Count == 0)
                         return new SimpleESType(baseType);
-                    return new ComplexESType(baseType, hashSet.ToArray());
+                    return new ComplexESType(baseType, intersected.ToArray());
                 }
             default:
                 throw new InvalidOperationException(string.Format("CLI type '{0}' is not valid at this point", cliType));
