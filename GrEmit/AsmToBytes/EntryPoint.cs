@@ -142,6 +142,8 @@ export 'TEMP.DLL',\
                         var result = new StringBuilder();
                         for(var j = i; j < k; ++j)
                             result.Append(string.Format("0x{0:x2},", dllContent[j]));
+                        result.AppendLine();
+                        result.AppendLine(Convert.ToBase64String(dllContent, i, k - i));
                         File.WriteAllText(outputFile, result.ToString());
                         Console.WriteLine("SUCCESS");
                         return;
