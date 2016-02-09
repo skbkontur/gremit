@@ -39,11 +39,10 @@ proc DllEntryPoint hinstDLL, fdwReason, lpvReserved
 	ret
 endp
 
-proc Main
 {1}
+Main:
 {2}
 {1}
-endp
 
 data fixups
 end data
@@ -67,11 +66,10 @@ proc DllEntryPoint hinstDLL, fdwReason, lpvReserved
 	ret
 endp
 
-proc Main
 {1}
+Main:
 {2}
 {1}
-endp
 
 data fixups
 end data
