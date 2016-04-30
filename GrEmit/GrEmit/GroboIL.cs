@@ -87,6 +87,10 @@ namespace GrEmit
 
         public void Dispose()
         {
+			// TODO create Flush() method
+			// TODO hack
+			if (ReflectionExtensions.IsMono)
+				return;
             if(!analyzeStack || Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
                 return;
             var lastInstruction = ilCode.Count == 0 ? null : ilCode.GetInstruction(ilCode.Count - 1) as ILCode.ILInstruction;
