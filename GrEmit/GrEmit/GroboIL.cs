@@ -85,19 +85,25 @@ namespace GrEmit
                 throw new ArgumentNullException("symbolDocumentWriter");
         }
 
-        public void Dispose()
+        public void Seal()
         {
-			// TODO create Flush() method
-			// TODO hack
-			if (ReflectionExtensions.IsMono)
-				return;
-            if(!analyzeStack || Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
+            if (!analyzeStack)
                 return;
             var lastInstruction = ilCode.Count == 0 ? null : ilCode.GetInstruction(ilCode.Count - 1) as ILCode.ILInstruction;
-            if(lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br
+            if (lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br
                                            && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw && lastInstruction.OpCode != OpCodes.Jmp))
                 throw new InvalidOperationException("An IL program must end with one of the following instructions: 'ret', 'br', 'br.s', 'throw', 'jmp'");
             ilCode.CheckLabels();
+        }
+
+        public void Dispose()
+        {
+            if(!ReflectionExtensions.IsMono)
+            {
+                if(Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
+                    return;
+                Seal();
+            }
             if(symbolDocumentWriter != null)
             {
                 var linesInfo = ilCode.GetLinesInfo();
@@ -141,6 +147,8 @@ namespace GrEmit
                     case ILCode.InstructionKind.TryEnd:
                         il.EndExceptionBlock();
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                     }
                 }
             }
@@ -167,9 +175,7 @@ namespace GrEmit
         {
             var local = il.DeclareLocal(localType, pinned);
             name = string.IsNullOrEmpty(name) ? "local" : name;
-            var uniqueName = !appendUniquePrefix
-                                 ? name
-                                 : name + "_" + localId++;
+            var uniqueName = !appendUniquePrefix ? name : name + "_" + localId++;
             if(symbolDocumentWriter != null)
                 local.SetLocalSymInfo(uniqueName);
             return new Local(local, uniqueName);
@@ -204,9 +210,7 @@ namespace GrEmit
         /// </returns>
         public Label DefineLabel(string name, bool appendUniquePrefix = true)
         {
-            var uniqueName = !appendUniquePrefix
-                                 ? name
-                                 : name + "_" + labelId++;
+            var uniqueName = !appendUniquePrefix ? name : name + "_" + labelId++;
             return new Label(il.DefineLabel(), uniqueName);
         }
 
