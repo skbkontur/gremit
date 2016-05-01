@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("SKB Kontur")]
 [assembly: AssemblyProduct("GrEmit")]
-[assembly: AssemblyCopyright("Copyright © 2012-2015")]
+[assembly: AssemblyCopyright("Copyright © 2012-2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
