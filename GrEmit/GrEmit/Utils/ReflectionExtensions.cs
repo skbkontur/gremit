@@ -27,7 +27,7 @@ namespace GrEmit.Utils
             runtimeGenericMethodInfoType = FindType(types, isMono ? "MonoGenericMethod" : "RuntimeMethodInfo");
             runtimeConstructorInfoType = FindType(types, isMono ? "MonoCMethod" : "RuntimeConstructorInfo");
             methodOnTypeBuilderInstType = FindType(types, isMono ? "MethodOnTypeBuilderInst" : "MethodOnTypeBuilderInstantiation");
-            //constructorOnTypeBuilderInstType = FindType(types, "ConstructorOnTypeBuilderInstantiation");
+            constructorOnTypeBuilderInstType = FindType(types, isMono ? "ConstructorOnTypeBuilderInst" : "ConstructorOnTypeBuilderInstantiation");
             if(!isMono)
                 methodBuilderInstType = FindType(types, "MethodBuilderInstantiation");
 
@@ -109,7 +109,8 @@ namespace GrEmit.Utils
                 parameterTypesExtractors[methodBuilderInstType]
                     = (Func<MethodBase, Type[]>)(method => new MethodBuilderInstWrapper(method).ParameterTypes);
             }
-            //parameterTypesExtractors[constructorOnTypeBuilderInstType] = (Func<MethodBase, Type[]>)(method => new ConstructorOnTypeBuilderInstWrapper(method).ParameterTypes);
+            parameterTypesExtractors[constructorOnTypeBuilderInstType]
+                = (Func<MethodBase, Type[]>)(method => new ConstructorOnTypeBuilderInstWrapper(method).ParameterTypes);
 
             returnTypeExtractors[methodOnTypeBuilderInstType]
                 = (Func<MethodInfo, Type>)(method => new MethodOnTypeBuilderInstWrapper(method).ReturnType);
@@ -367,10 +368,21 @@ namespace GrEmit.Utils
         {
             static ConstructorBuilderWrapper()
             {
-                var methodBuilderField = typeof(ConstructorBuilder).GetField("m_methodBuilder", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(methodBuilderField == null)
-                    throw new InvalidOperationException("Field 'ConstructorBuilder.m_methodBuilder' is not found");
-                m_methodBuilderExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodBuilderField);
+                if(!isMono)
+                {
+                    var methodBuilderField = typeof(ConstructorBuilder).GetField("m_methodBuilder", BindingFlags.Instance | BindingFlags.NonPublic);
+                    if(methodBuilderField == null)
+                        throw new InvalidOperationException("Field 'ConstructorBuilder.m_methodBuilder' is not found");
+                    m_methodBuilderExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodBuilderField);
+                }
+                else
+                {
+                    string parameterTypesFieldName = "parameters";
+                    var parameterTypesField = typeof(ConstructorBuilder).GetField(parameterTypesFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+                    if(parameterTypesField == null)
+                        throw new InvalidOperationException(string.Format("Field 'ConstructorBuilder.{0}' is not found", parameterTypesFieldName));
+                    m_parameterTypesExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(parameterTypesField);
+                }
             }
 
             public ConstructorBuilderWrapper(MethodBase inst)
@@ -378,10 +390,19 @@ namespace GrEmit.Utils
                 this.inst = inst;
             }
 
-            public Type[] ParameterTypes { get { return GetParameterTypes(m_methodBuilderExtractor(inst)); } }
+            public Type[] ParameterTypes
+            {
+                get
+                {
+                    if(!isMono)
+                        return GetParameterTypes(m_methodBuilderExtractor(inst));
+                    return m_parameterTypesExtractor(inst);
+                }
+            }
 
             private readonly MethodBase inst;
             private static readonly Func<MethodBase, MethodInfo> m_methodBuilderExtractor;
+            private static readonly Func<MethodBase, Type[]> m_parameterTypesExtractor;
         }
 
         private class TypeBuilderInstWrapper
@@ -567,13 +588,15 @@ namespace GrEmit.Utils
         {
             static ConstructorOnTypeBuilderInstWrapper()
             {
-                var ctorField = constructorOnTypeBuilderInstType.GetField("m_ctor", BindingFlags.Instance | BindingFlags.NonPublic);
+                string ctorFieldName = isMono ? "cb" : "m_ctor";
+                string typeFieldName = isMono ? "instantiation" : "m_type";
+                var ctorField = constructorOnTypeBuilderInstType.GetField(ctorFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if(ctorField == null)
-                    throw new InvalidOperationException(string.Format("Field '{0}.m_ctor' is not found", constructorOnTypeBuilderInstType.Name));
+                    throw new InvalidOperationException(string.Format("Field '{0}.{1}' is not found", constructorOnTypeBuilderInstType.Name, ctorFieldName));
                 m_ctorExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodBase>(ctorField);
-                var typeField = constructorOnTypeBuilderInstType.GetField("m_type", BindingFlags.Instance | BindingFlags.NonPublic);
+                var typeField = constructorOnTypeBuilderInstType.GetField(typeFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if(typeField == null)
-                    throw new InvalidOperationException(string.Format("Field '{0}.m_type' is not found", constructorOnTypeBuilderInstType.Name));
+                    throw new InvalidOperationException(string.Format("Field '{0}.{1}' is not found", constructorOnTypeBuilderInstType.Name, typeFieldName));
                 m_typeExtractor = FieldsExtractor.GetExtractor<MethodBase, Type>(typeField);
             }
 
@@ -586,8 +609,11 @@ namespace GrEmit.Utils
             {
                 get
                 {
+                    var result = GetParameterTypes(m_ctor);
                     var typeInst = new TypeBuilderInstWrapper(m_type);
-                    return SubstituteGenericParameters(GetParameterTypes(m_ctor), typeInst.m_type.GetGenericArguments(), typeInst.m_inst);
+                    if(typeInst.IsOk)
+                        result = SubstituteGenericParameters(result, typeInst.m_type.GetGenericArguments(), typeInst.m_inst);
+                    return result;
                 }
             }
 

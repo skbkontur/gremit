@@ -119,6 +119,29 @@ namespace Tests
         }
 
         [Test]
+        public void TestConstructorBuilder_NonGenericClass()
+        {
+            var typeBuilder = module.DefineType("NonGenericClass" + Guid.NewGuid(), TypeAttributes.Class | TypeAttributes.Public);
+            var methodBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] {typeof(int), typeof(string)});
+            var parameterTypes = ReflectionExtensions.GetParameterTypes(methodBuilder);
+            CollectionAssert.AreEqual(new[] {typeof(int), typeof(string)}, parameterTypes);
+        }
+
+        [Test]
+        public void TestConstructorBuilder_GenericClass()
+        {
+            var typeBuilder = module.DefineType("GenericClass" + Guid.NewGuid(), TypeAttributes.Class | TypeAttributes.Public);
+            var genericParameters = typeBuilder.DefineGenericParameters("T1", "T2");
+            var t1 = genericParameters[0];
+            var t2 = genericParameters[1];
+            // T1 x, int y, List<T2> s, T2 t, int z, T1[] q
+            var methodBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] { t1, typeof(int), typeof(List<>).MakeGenericType(t2), t2, typeof(int), t1.MakeArrayType() });
+            var instantiatedMethod = TypeBuilder.GetConstructor(typeBuilder.MakeGenericType(typeof(double), typeof(string)), methodBuilder);
+            var parameterTypes = ReflectionExtensions.GetParameterTypes(instantiatedMethod);
+            CollectionAssert.AreEqual(new[] {typeof(double), typeof(int), typeof(List<string>), typeof(string), typeof(int), typeof(double[])}, parameterTypes);
+        }
+
+        [Test]
         public void TestRuntimeType()
         {
             Assert.AreEqual(typeof(C1<List<int>>), ReflectionExtensions.GetBaseType(typeof(C2<int, string>)));
