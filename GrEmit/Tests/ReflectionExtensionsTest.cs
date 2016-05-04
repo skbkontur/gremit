@@ -57,6 +57,22 @@ namespace Tests
         }
 
         [Test]
+        public void TestRuntimeMethodInfo_NonGenericClassConstructor()
+        {
+            var methodInfo = HackHelpers.GetObjectConstruction(() => new NonGenericClass(0, null));
+            var parameterTypes = ReflectionExtensions.GetParameterTypes(methodInfo);
+            CollectionAssert.AreEqual(new[] {typeof(int), typeof(string)}, parameterTypes);
+        }
+
+        [Test]
+        public void TestRuntimeMethodInfo_GenericClassConstructor()
+        {
+            var methodInfo = HackHelpers.GetObjectConstruction(() => new GenericClass<double, string>(0, 0, null, null, 0, null));
+            var parameterTypes = ReflectionExtensions.GetParameterTypes(methodInfo);
+            CollectionAssert.AreEqual(new[] {typeof(double), typeof(int), typeof(List<string>), typeof(string), typeof(int), typeof(double[])}, parameterTypes);
+        }
+
+        [Test]
         public void TestMethodBuilder_NonGenericClassNonGenericMethod()
         {
             var typeBuilder = module.DefineType("NonGenericClass" + Guid.NewGuid(), TypeAttributes.Class | TypeAttributes.Public);
@@ -174,6 +190,10 @@ namespace Tests
 
         public class NonGenericClass
         {
+            public NonGenericClass(int x, string s)
+            {
+            }
+
             public string NonGenericMethod(int x, string s)
             {
                 return null;
@@ -187,6 +207,10 @@ namespace Tests
 
         public class GenericClass<T1, T2>
         {
+            public GenericClass(T1 x, int y, List<T2> s, T2 t, int z, T1[] q)
+            {
+            }
+
             public List<T2[]> NonGenericMethod(T1 x, int y, List<T2> s, T2 t, int z, T1[] q)
             {
                 return null;

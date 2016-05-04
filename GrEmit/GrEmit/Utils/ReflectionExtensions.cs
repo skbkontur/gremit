@@ -23,9 +23,10 @@ namespace GrEmit.Utils
 
             typeBuilderInstType = FindType(types, isMono ? "MonoGenericClass" : "TypeBuilderInstantiation");
 
-            runtimeMethodInfoType = FindType(types, isMono ? "MonoMethod" : "RuntimeMethodInfo");
-            runtimeGenericMethodInfoType = FindType(types, isMono ? "MonoGenericMethod" : "RuntimeMethodInfo");
-            runtimeConstructorInfoType = FindType(types, isMono ? "MonoCMethod" : "RuntimeConstructorInfo");
+            var runtimeMethodInfoType = FindType(types, isMono ? "MonoMethod" : "RuntimeMethodInfo");
+            var runtimeGenericMethodInfoType = FindType(types, isMono ? "MonoGenericMethod" : "RuntimeMethodInfo");
+            var runtimeConstructorInfoType = FindType(types, isMono ? "MonoCMethod" : "RuntimeConstructorInfo");
+            var runtimeGenericConstructorInfoType = FindType(types, isMono ? "MonoGenericCMethod" : "RuntimeConstructorInfo");
             methodOnTypeBuilderInstType = FindType(types, isMono ? "MethodOnTypeBuilderInst" : "MethodOnTypeBuilderInstantiation");
             constructorOnTypeBuilderInstType = FindType(types, isMono ? "ConstructorOnTypeBuilderInst" : "ConstructorOnTypeBuilderInstantiation");
             if(!isMono)
@@ -41,13 +42,14 @@ namespace GrEmit.Utils
             parameterTypesExtractors[runtimeMethodInfoType]
                 = parameterTypesExtractors[runtimeGenericMethodInfoType]
                   = parameterTypesExtractors[typeof(DynamicMethod)]
-                    = parameterTypesExtractors[runtimeConstructorInfoType] =
-                      (Func<MethodBase, Type[]>)(method => method.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
+                    = parameterTypesExtractors[runtimeConstructorInfoType]
+                      = parameterTypesExtractors[runtimeGenericConstructorInfoType]
+                        = (Func<MethodBase, Type[]>)(method => method.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
             returnTypeExtractors[runtimeMethodInfoType]
                 = returnTypeExtractors[runtimeGenericMethodInfoType]
                   = returnTypeExtractors[typeof(DynamicMethod)]
-                    = returnTypeExtractors[typeof(MethodBuilder)] =
-                      (Func<MethodInfo, Type>)(method => method.ReturnType);
+                    = returnTypeExtractors[typeof(MethodBuilder)]
+                      = (Func<MethodInfo, Type>)(method => method.ReturnType);
             baseTypeOfTypeExtractors[runtimeTypeType]
                 = baseTypeOfTypeExtractors[typeof(TypeBuilder)]
                   = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)]
@@ -310,9 +312,6 @@ namespace GrEmit.Utils
 
         private static readonly bool isMono;
 
-        private static readonly Type runtimeMethodInfoType;
-        private static readonly Type runtimeGenericMethodInfoType;
-        private static readonly Type runtimeConstructorInfoType;
         private static readonly Type runtimeTypeType;
         private static readonly Type typeBuilderInstType;
         private static readonly Type methodOnTypeBuilderInstType;
