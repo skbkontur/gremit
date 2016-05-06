@@ -19,7 +19,7 @@ namespace Tests
             il.Ldc_I4(0);
             il.Brfalse(label);
             il.Ret();
-            var e = Assert.Throws<InvalidOperationException>(il.Dispose);
+            var e = Assert.Throws<InvalidOperationException>(il.Seal);
             Assert.AreEqual("The label 'L_0' has not been marked", e.Message);
         }
 
@@ -32,7 +32,7 @@ namespace Tests
             il.Ldc_I4(0);
             il.Switch(label);
             il.Ret();
-            var e = Assert.Throws<InvalidOperationException>(il.Dispose);
+            var e = Assert.Throws<InvalidOperationException>(il.Seal);
             Assert.AreEqual("The label 'L_0' has not been marked", e.Message);
         }
 
