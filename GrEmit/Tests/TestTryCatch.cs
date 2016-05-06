@@ -65,7 +65,7 @@ namespace Tests
                 il.Add_Ovf(true);
                 // Store the result of the addition.
                 il.Stloc(tmp1);
-                il.Br(endOfMthd);
+                il.Leave(endOfMthd);
 
                 // If one of the arguments was greater than 100, we need to throw an
                 // exception. We'll use "OverflowException" with a customized message.
@@ -187,7 +187,7 @@ namespace Tests
                 il.Ldarg(1);
                 il.Add_Ovf(true);
                 il.Stloc(myLocalBuilder1);
-                il.Br(myEndOfMethodLabel);
+                il.Leave(myEndOfMethodLabel);
 
                 il.MarkLabel(myFailedLabel);
                 il.Ldstr("Cannot accept values over 10 for add.");
@@ -229,114 +229,6 @@ namespace Tests
 
                 Console.WriteLine(il.GetILCode());
             }
-        }
-
-        [Test]
-        public void Test3()
-        {
-            // Create an assembly.
-            AssemblyName myAssemblyName = new AssemblyName();
-            myAssemblyName.Name = "AdderExceptionAsm";
-
-            // Create dynamic assembly.
-            AppDomain myAppDomain = Thread.GetDomain();
-            AssemblyBuilder myAssemblyBuilder = myAppDomain.DefineDynamicAssembly(myAssemblyName,
-               AssemblyBuilderAccess.Run);
-
-            // Create a dynamic module.
-            ModuleBuilder myModuleBuilder = myAssemblyBuilder.DefineDynamicModule("AdderExceptionMod", true);
-            var symbolDocumentWriter = myModuleBuilder.GetSymWriter().DefineDocument("AdderException.cil", Guid.Empty, Guid.Empty, Guid.Empty);
-            TypeBuilder myTypeBuilder = myModuleBuilder.DefineType("Adder");
-            Type[] myAdderParams = new Type[] { typeof(int), typeof(int) };
-
-            // Create constructor.
-            ConstructorInfo myConstructorInfo = typeof(OverflowException).GetConstructor(
-               new Type[] { typeof(string) });
-            MethodInfo myExToStrMI = typeof(OverflowException).GetMethod("ToString");
-            MethodInfo myWriteLineMI = typeof(Console).GetMethod("WriteLine", new Type[] { typeof(string), typeof(object) });
-
-            // Method to add two numbers.
-            MethodBuilder myMethodBuilder = myTypeBuilder.DefineMethod("DoAdd", MethodAttributes.Public |
-               MethodAttributes.Static, typeof(int), myAdderParams);
-
-            using (var il = new GroboIL(myMethodBuilder, symbolDocumentWriter))
-            {
-
-                // Declare local variable.
-                GroboIL.Local myLocalBuilder1 = il.DeclareLocal(typeof(int));
-                GroboIL.Local myLocalBuilder2 = il.DeclareLocal(typeof(OverflowException));
-
-                // Define label.
-                GroboIL.Label myFailedLabel = il.DefineLabel("failed");
-                GroboIL.Label myEndOfMethodLabel = il.DefineLabel("end");
-
-                // Begin exception block.
-                il.BeginExceptionBlock();
-
-                il.Ldarg(0);
-                il.Ldc_I4(10);
-                il.Bgt(myFailedLabel, false);
-
-                il.Ldarg(1);
-                il.Ldc_I4(10);
-                il.Bgt(myFailedLabel, false);
-
-                il.Ldarg(0);
-                il.Ldarg(1);
-                il.Add_Ovf(true);
-                il.Stloc(myLocalBuilder1);
-                il.Br(myEndOfMethodLabel);
-
-                il.MarkLabel(myFailedLabel);
-                il.Ldstr("Cannot accept values over 10 for addition.");
-                il.Newobj(myConstructorInfo);
-
-                il.Stloc(myLocalBuilder2);
-                il.Ldloc(myLocalBuilder2);
-
-                // Call fault block.
-                il.BeginFaultBlock();
-                //Throw exception.
-                il.Newobj(typeof(NotSupportedException).GetConstructor(Type.EmptyTypes));
-                il.Throw();
-
-                // Call finally block.
-                il.BeginFinallyBlock();
-
-                il.Ldstr("{0}");
-                il.Ldloc(myLocalBuilder2);
-                il.Call(myExToStrMI);
-                il.Call(myWriteLineMI);
-                il.Ldc_I4(-1);
-                il.Stloc(myLocalBuilder1);
-
-                // End exception block.
-                il.EndExceptionBlock();
-
-                il.MarkLabel(myEndOfMethodLabel);
-                il.Ldloc(myLocalBuilder1);
-                il.Ret();
-
-                Console.WriteLine(il.GetILCode());
-            }
-
-            Type adderType = myTypeBuilder.CreateType();
-
-            object addIns = Activator.CreateInstance(adderType);
-
-            object[] addParams = new object[2];
-
-            addParams[0] = 20;
-
-            addParams[1] = 10;
-
-            Console.WriteLine("{0} + {1} = {2}",
-                  addParams[0], addParams[1],
-                  adderType.InvokeMember("DoAdd",
-                     BindingFlags.InvokeMethod,
-                     null,
-                     addIns,
-                     addParams)); 
         }
     }
 }
