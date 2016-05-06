@@ -1,0 +1,10 @@
+
+full-build:
+  deps:
+
+  build:
+    target: GrEmit\GrEmit.sln
+    configuration: Release
+
+  install:
+    - GrEmit\GrEmit\bin\Release\GrEmit.dll
