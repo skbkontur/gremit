@@ -304,8 +304,6 @@ namespace Tests
             public static string SProp { get; set; }
             public string Prop { get; set; }
             public TC GProp { get; set; }
-            public int fInt;
-            public TC fGen;
         }
 
         private class ClassWithMethods
@@ -331,7 +329,9 @@ namespace Tests
 
             public int P1 { get; set; }
             public string PS { get; set; }
+#pragma warning disable 649
             public int f;
+#pragma warning restore 649
 
             // ReSharper restore MemberCanBeMadeStatic.Local
         }

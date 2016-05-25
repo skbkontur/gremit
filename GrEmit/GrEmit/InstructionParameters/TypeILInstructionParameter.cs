@@ -4,7 +4,7 @@ using GrEmit.Utils;
 
 namespace GrEmit.InstructionParameters
 {
-    public class TypeILInstructionParameter : ILInstructionParameter
+    internal class TypeILInstructionParameter : ILInstructionParameter
     {
         public TypeILInstructionParameter(Type type)
         {
