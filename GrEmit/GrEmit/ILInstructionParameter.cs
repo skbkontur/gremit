@@ -1,6 +1,6 @@
 namespace GrEmit
 {
-    public abstract class ILInstructionParameter
+    internal abstract class ILInstructionParameter
     {
         public abstract string Format();
     }

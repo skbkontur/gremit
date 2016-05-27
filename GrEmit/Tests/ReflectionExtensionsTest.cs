@@ -175,7 +175,7 @@ namespace Tests
         }
 
         [Test]
-        public void TestTypeBuilder_Generic()
+        public void TestTypeBuilder_Generic_GetInterfaces()
         {
             var c3 = module.DefineType("C3" + Guid.NewGuid(), TypeAttributes.Class | TypeAttributes.Public);
             var genericParameters = c3.DefineGenericParameters("T1", "T2", "T3");
@@ -185,6 +185,9 @@ namespace Tests
             c3.SetParent(typeof(C3<,,>).MakeGenericType(t1, typeof(List<>).MakeGenericType(t2.MakeArrayType()), t3));
             var instantiatedType = c3.MakeGenericType(typeof(int), typeof(double), typeof(string));
             Assert.AreEqual(typeof(C3<int, List<double[]>, string>), ReflectionExtensions.GetBaseType(instantiatedType));
+            Assert.IsTrue(ReflectionExtensions.IsAssignableFrom(instantiatedType, instantiatedType));
+            Assert.IsTrue(ReflectionExtensions.IsAssignableFrom(c3, c3));
+            Assert.IsTrue(ReflectionExtensions.IsAssignableFrom(c3.MakeArrayType(), c3.MakeArrayType()));
             CollectionAssert.AreEquivalent(new[] { typeof(I3<int, List<double[]>, string>), typeof(I2<int, List<double[]>[]>), typeof(I1<List<int>>), typeof(I1<List<int[]>>) }, ReflectionExtensions.GetInterfaces(instantiatedType));
         }
 

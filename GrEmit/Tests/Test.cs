@@ -694,15 +694,17 @@ namespace Tests
 
         private struct Qxx
         {
-            private Guid X1;
-            private Guid X2;
-            private Guid X3;
-            private Guid X4;
-            private Guid X5;
-            private Guid X6;
-            private Guid X7;
-            private Guid X8;
-            private Guid X9;
+#pragma warning disable 169
+            private Guid x1;
+            private Guid x2;
+            private Guid x3;
+            private Guid x4;
+            private Guid x5;
+            private Guid x6;
+            private Guid x7;
+            private Guid x8;
+            private Guid x9;
+#pragma warning restore 169
         }
     }
 }

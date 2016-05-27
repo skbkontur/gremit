@@ -152,6 +152,19 @@ namespace GrEmit.Utils
             assignabilityCheckers[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type, bool>)((to, from) => to == from);
             assignabilityCheckers[typeBuilderInstType]
                 = (Func<Type, Type, bool>)((to, from) => new TypeBuilderInstWrapper(to).IsAssignableFrom(new TypeBuilderInstWrapper(from)));
+            assignabilityCheckers[byRefTypeType]
+                = assignabilityCheckers[pointerTypeType]
+                  = assignabilityCheckers[arrayTypeType]
+                    = (Func<Type, Type, bool>)((to, from) =>
+                        {
+                            if (to.IsByRef && from.IsByRef)
+                                return Equal(to.GetElementType(), from.GetElementType());
+                            if (to.IsPointer && from.IsPointer)
+                                return Equal(to.GetElementType(), from.GetElementType());
+                            if (to.IsArray && from.IsArray)
+                                return to.GetArrayRank() == from.GetArrayRank() && Equal(to.GetElementType(), from.GetElementType());
+                            return to == from;
+                        });
         }
 
         internal static bool IsMono { get { return isMono; } }
