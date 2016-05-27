@@ -12,6 +12,26 @@ using GrEmit.Utils;
 
 namespace GrEmit
 {
+    /// <summary>
+    /// Level of verification of types compatibility
+    /// </summary>
+    public enum TypesAssignabilityVerificationKind
+    {
+        /// <summary>
+        /// Performs no checks at all with regard to types assignability
+        /// </summary>
+        None,
+        /// <summary>
+        /// Makes no difference between CLI pointer types (objects, managed pointers, unmanaged pointers).
+        /// Still performs all verifications between these low level types (u can't store int64 to int32 for intance).
+        /// </summary>
+        LowLevelOnly,
+        /// <summary>
+        /// Performs all verifications with regard to types assignability. This is the default behaviour.
+        /// </summary>
+        HighLevel
+    }
+
     // ReSharper disable InconsistentNaming
     public class GroboIL : IDisposable
     {
@@ -22,6 +42,7 @@ namespace GrEmit
             this.symbolDocumentWriter = symbolDocumentWriter;
             methodReturnType = returnType;
             methodParameterTypes = parameterTypes;
+            VerificationKind = TypesAssignabilityVerificationKind.HighLevel;
 /*
             OpCodes.Localloc;
             OpCodes.Mkrefany;
@@ -31,6 +52,11 @@ namespace GrEmit
             OpCodes.Sizeof;
 */
         }
+
+        /// <summary>
+        /// Gets or sets level of verifications with regard to types compatibility
+        /// </summary>
+        public TypesAssignabilityVerificationKind VerificationKind { get; set; }
 
         public GroboIL(DynamicMethod method, bool analyzeStack = true)
             : this(method.GetILGenerator(),
@@ -868,6 +894,28 @@ namespace GrEmit
             else
                 Ldc_I8(value.ToInt64());
             Conv<IntPtr>();
+        }
+
+        /// <summary>
+        /// Clears the specified pinned local by setting it to null
+        /// </summary>
+        /// <param name="local"></param>
+        public void FreePinnedLocal(Local local)
+        {
+            if(!ReflectionExtensions.IsMono || !(local.Type.IsPointer || local.Type.IsByRef))
+            {
+                Ldnull();
+                Stloc(local);
+            }
+            else
+            {
+                var prevVerificationKind = VerificationKind;
+                VerificationKind = TypesAssignabilityVerificationKind.LowLevelOnly;
+                Ldc_I4(0);
+                Conv<UIntPtr>();
+                Stloc(local);
+                VerificationKind = prevVerificationKind;
+            }
         }
 
         /// <summary>

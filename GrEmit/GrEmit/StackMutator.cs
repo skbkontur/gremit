@@ -122,19 +122,19 @@ namespace GrEmit
 
         protected static void CheckCanBeAssigned(GroboIL il, Type to, ESType from)
         {
-            if(!CanBeAssigned(to, from))
+            if(!CanBeAssigned(to, from, il.VerificationKind))
                 ThrowError(il, string.Format("Unable to set a value of type '{0}' to an instance of type '{1}'", from, Formatter.Format(to)));
         }
 
         protected static void CheckCanBeAssigned(GroboIL il, Type to, Type from)
         {
-            if(!CanBeAssigned(to, from))
+            if(!CanBeAssigned(to, from, il.VerificationKind))
                 ThrowError(il, string.Format("Unable to set a value of type '{0}' to an instance of type '{1}'", Formatter.Format(from), Formatter.Format(to)));
         }
 
-        protected static bool CanBeAssigned(Type to, Type from)
+        protected static bool CanBeAssigned(Type to, Type from, TypesAssignabilityVerificationKind verificationKind)
         {
-            return CanBeAssigned(to, new SimpleESType(from));
+            return CanBeAssigned(to, new SimpleESType(from), verificationKind);
         }
 
         protected void SaveOrCheck(GroboIL il, EvaluationStack stack, GroboIL.Label label)
@@ -200,6 +200,14 @@ namespace GrEmit
             return simpleESType == null ? CLIType.Object : ToCLIType(simpleESType.Type); // ComplexESType is always an object
         }
 
+        private static CLIType ToLowLevelCLIType(ESType esType)
+        {
+            if(esType == null)
+                return CLIType.NativeInt;
+            var simpleESType = esType as SimpleESType;
+            return simpleESType == null ? CLIType.NativeInt : ToCLIType(simpleESType.Type); // ComplexESType is always an object
+        }
+
         protected static CLIType ToCLIType(Type type)
         {
             if(type == null)
@@ -241,10 +249,51 @@ namespace GrEmit
             return type.IsEnum ? ToCLIType(Enum.GetUnderlyingType(type)) : CLIType.Struct;
         }
 
-        private static bool CanBeAssigned(Type to, ESType esFrom)
+        private static CLIType ToLowLevelCLIType(Type type)
         {
-            var cliTo = ToCLIType(to);
-            var cliFrom = ToCLIType(esFrom);
+            if (type == null)
+                return CLIType.NativeInt;
+            if(!type.IsValueType)
+                return CLIType.NativeInt;
+            if (type.IsPrimitive)
+            {
+                if (type == typeof(IntPtr) || type == typeof(UIntPtr))
+                    return CLIType.NativeInt;
+                var typeCode = Type.GetTypeCode(type);
+                switch (typeCode)
+                {
+                    case TypeCode.Boolean:
+                    case TypeCode.Byte:
+                    case TypeCode.Char:
+                    case TypeCode.Int16:
+                    case TypeCode.Int32:
+                    case TypeCode.SByte:
+                    case TypeCode.UInt16:
+                    case TypeCode.UInt32:
+                        return CLIType.Int32;
+                    case TypeCode.Int64:
+                    case TypeCode.UInt64:
+                        return CLIType.Int64;
+                    case TypeCode.Double:
+                    case TypeCode.Single:
+                        return CLIType.Float;
+                    default:
+                        return CLIType.Struct;
+                }
+            }
+            if (type.IsGenericType) return CLIType.Struct;
+            if (type is EnumBuilder) return ToLowLevelCLIType(type.UnderlyingSystemType);
+            return type.IsEnum ? ToLowLevelCLIType(Enum.GetUnderlyingType(type)) : CLIType.Struct;
+        }
+
+
+        private static bool CanBeAssigned(Type to, ESType esFrom, TypesAssignabilityVerificationKind verificationKind)
+        {
+            if(verificationKind == TypesAssignabilityVerificationKind.None)
+                return true;
+            var cliTo = verificationKind == TypesAssignabilityVerificationKind.HighLevel ? ToCLIType(to) : ToLowLevelCLIType(to);
+            var cliFrom = verificationKind == TypesAssignabilityVerificationKind.HighLevel ? ToCLIType(esFrom) : ToLowLevelCLIType(esFrom);
+
             var from = esFrom.ToType();
             switch(cliTo)
             {
