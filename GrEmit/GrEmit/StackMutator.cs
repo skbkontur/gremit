@@ -80,10 +80,11 @@ namespace GrEmit
         {
             if(type == null)
                 Push(ESType.Zero);
-            else if(!type.IsInterface)
-                Push(new SimpleESType(type));
+            else if(type.IsInterface && !type.IsByRef && !type.IsPointer) // todo hack for Mono: typeof(IList).MakeByRefType().IsInterface = true
+                Push(new ComplexESType(typeof(object), new[] { type }));
             else
-                Push(new ComplexESType(typeof(object), new[] {type}));
+                Push(new SimpleESType(type));
+                
         }
 
         public override string ToString()
