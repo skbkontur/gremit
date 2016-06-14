@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace GrEmit
     }
 
     // ReSharper disable InconsistentNaming
-    public class GroboIL : IDisposable
+    public class GroboIL : IDisposable, IEnumerable
     {
         private GroboIL(ILGenerator il, Type returnType, Type[] parameterTypes, bool analyzeStack, ISymbolDocumentWriter symbolDocumentWriter)
         {
@@ -935,6 +936,17 @@ namespace GrEmit
             if(method == null)
                 throw new ArgumentNullException("method");
             Emit(OpCodes.Ldftn, method);
+        }
+
+        /// <summary>
+        ///     Pushes an unmanaged pointer (type native int) to the native code implementing a particular virtual method associated with a specified object onto the evaluation stack.
+        /// </summary>
+        /// <param name="method">The method to load address of.</param>
+        public void Ldvirtftn(MethodInfo method)
+        {
+            if(method == null)
+                throw new ArgumentNullException("method");
+            Emit(OpCodes.Ldvirtftn, method);
         }
 
         /// <summary>
@@ -2280,6 +2292,10 @@ namespace GrEmit
         private readonly ILGenerator il;
         private readonly bool analyzeStack = true;
         private readonly ISymbolDocumentWriter symbolDocumentWriter;
+        public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     // ReSharper restore InconsistentNaming
