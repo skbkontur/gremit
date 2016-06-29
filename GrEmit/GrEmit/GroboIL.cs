@@ -391,6 +391,14 @@ namespace GrEmit
         }
 
         /// <summary>
+        ///     Rethrows the current exception.
+        /// </summary>
+        public void Rethrow()
+        {
+            Emit(OpCodes.Rethrow);
+        }
+
+        /// <summary>
         ///     Implements a jump table.
         /// </summary>
         /// <param name="labels">
@@ -731,6 +739,7 @@ namespace GrEmit
                 throw new ArgumentOutOfRangeException("index", "Argument index cannot be less than zero");
             if(index >= methodParameterTypes.Length)
                 throw new ArgumentOutOfRangeException("index", "Argument index cannot be greater than or equal to the number of parameters of the method being emitted");
+
             switch(index)
             {
             case 0:
@@ -1836,11 +1845,14 @@ namespace GrEmit
         ///     True if the method call is a tail call. Emits the <see cref="OpCodes.Tailcall">Tailcall</see> prefix.
         /// </param>
         /// <param name="optionalParameterTypes">The types of the optional arguments if the method is a varargs method; otherwise, null.</param>
-        public void Call(MethodInfo method, Type constrained = null, bool tailcall = false, Type[] optionalParameterTypes = null)
+        /// <param name="isVirtual">Only if you sure, that method is virtual</param>
+        public void Call(MethodInfo method, Type constrained = null, bool tailcall = false, Type[] optionalParameterTypes = null, bool isVirtual = false)
         {
             if(method == null)
                 throw new ArgumentNullException("method");
             var opCode = method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call;
+            if (isVirtual)
+                opCode = OpCodes.Callvirt;
             if(opCode == OpCodes.Callvirt)
             {
                 if(constrained != null && constrained.IsValueType)

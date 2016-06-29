@@ -206,7 +206,7 @@ namespace GrEmit
             if(esType == null)
                 return CLIType.NativeInt;
             var simpleESType = esType as SimpleESType;
-            return simpleESType == null ? CLIType.NativeInt : ToCLIType(simpleESType.Type); // ComplexESType is always an object
+            return simpleESType == null ? CLIType.NativeInt : ToLowLevelCLIType(simpleESType.Type); // ComplexESType is always an object
         }
 
         protected static CLIType ToCLIType(Type type)
