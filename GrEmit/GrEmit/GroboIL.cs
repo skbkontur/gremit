@@ -1404,7 +1404,7 @@ namespace GrEmit
         {
             if(type == null)
                 throw new ArgumentNullException("type");
-            if(!type.IsValueType)
+            if(!type.IsValueType && !type.IsGenericParameter)
                 throw new ArgumentException("A value type expected", "type");
             Emit(OpCodes.Unbox_Any, type);
         }
@@ -1419,7 +1419,7 @@ namespace GrEmit
         {
             if(type == null)
                 throw new ArgumentNullException("type");
-            if(!type.IsValueType)
+            if(!type.IsValueType && !type.IsGenericParameter)
                 throw new ArgumentException("A value type expected", "type");
             Emit(OpCodes.Box, type);
         }
