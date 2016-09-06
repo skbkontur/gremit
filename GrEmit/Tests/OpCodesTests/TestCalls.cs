@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
-
 using GrEmit;
 using GrEmit.Utils;
-
 using NUnit.Framework;
 
 namespace Tests.OpCodesTests
@@ -76,5 +76,60 @@ namespace Tests.OpCodesTests
                 il.Ret();
             }
         }
+
+        public interface I1
+        {
+            void Zzz();
+        }
+
+        public class C1 : I1
+        {
+            public void Zzz()
+            {
+                
+            }
+        }
+
+        public class C2
+        {
+
+        }
+
+        [Test]
+        public void Test_ldvirtftn1()
+        {
+            C1 c1 = new C1();
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), Type.EmptyTypes, typeof(string), true);
+            using (var il = new GroboIL(method))
+            {
+                il.Newobj(typeof(C1).GetConstructor(Type.EmptyTypes));
+                il.Ldvirtftn(typeof(C1).GetMethod("Zzz"));
+                il.Pop();
+                il.Ret();
+            }
+        }
+
+        [Test]
+        public void Test_ldvirtftn2()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), Type.EmptyTypes, typeof(string), true);
+            using (var il = new GroboIL(method))
+            {
+                il.Newobj(typeof(C1).GetConstructor(Type.EmptyTypes));
+                il.Ldvirtftn(typeof(I1).GetMethod("Zzz"));
+                il.Pop();
+                il.Ret();
+            }
+        }
+
+        [Test]
+        public void Test_ldvirtftn3()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof (void), Type.EmptyTypes, typeof (string), true);
+            var il = new GroboIL(method);
+            il.Newobj(typeof (C2).GetConstructor(Type.EmptyTypes));
+            Assert.Throws<InvalidOperationException>(() => il.Ldvirtftn(typeof (I1).GetMethod("Zzz")));
+        }
+
     }
 }

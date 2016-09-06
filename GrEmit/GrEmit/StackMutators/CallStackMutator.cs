@@ -8,6 +8,11 @@ namespace GrEmit.StackMutators
 {
     internal class CallStackMutator : StackMutator
     {
+        public CallStackMutator(bool callvirt)
+        {
+            this.callvirt = callvirt;
+        }
+
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             Type[] parameterTypes;
@@ -70,7 +75,7 @@ namespace GrEmit.StackMutators
                             }
                             else if(declaringType != typeof(object) && declaringType != elementType)
                                 ThrowError(il, string.Format("Cannot call the method '{0}' on an instance of type '{1}'", formattedMethodGetter(), elementType));
-                            if(isVirtual)
+                            if(isVirtual && callvirt)
                             {
                                 if(constrained == null)
                                     ThrowError(il, string.Format("In order to call a virtual method '{0}' on a value type '{1}' specify 'constrained' parameter", formattedMethodGetter(), Formatter.Format(elementType)));
@@ -84,5 +89,7 @@ namespace GrEmit.StackMutators
             if(returnType != typeof(void))
                 stack.Push(returnType);
         }
+
+        private readonly bool callvirt;
     }
 }
