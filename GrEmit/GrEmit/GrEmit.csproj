@@ -24,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\GrEmit.XML</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,6 +35,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\GrEmit.XML</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -42,7 +44,45 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FieldsExtractor.cs" />
+    <Compile Include="Injection\MethodUtil.cs" />
     <Compile Include="InstructionParameters\CallILInstructionParameter.cs" />
+    <Compile Include="MethodBodyParsing\ByteBuffer.cs" />
+    <Compile Include="MethodBodyParsing\Code.cs" />
+    <Compile Include="MethodBodyParsing\Collection.cs" />
+    <Compile Include="MethodBodyParsing\DynamicILGenerator.cs" />
+    <Compile Include="MethodBodyParsing\DynamicILInfoWrapper.cs" />
+    <Compile Include="MethodBodyParsing\DynamicMethodWrapper.cs" />
+    <Compile Include="MethodBodyParsing\DynamicResolver.cs" />
+    <Compile Include="MethodBodyParsing\DynamicScope.cs" />
+    <Compile Include="MethodBodyParsing\ElementType.cs" />
+    <Compile Include="MethodBodyParsing\Empty.cs" />
+    <Compile Include="MethodBodyParsing\ExceptionHandler.cs" />
+    <Compile Include="MethodBodyParsing\ExceptionsBaker.cs" />
+    <Compile Include="MethodBodyParsing\ExceptionsInfoReader.cs" />
+    <Compile Include="MethodBodyParsing\FullMethodBodyBaker.cs" />
+    <Compile Include="MethodBodyParsing\ILCodeBaker.cs" />
+    <Compile Include="MethodBodyParsing\ILCodeReader.cs" />
+    <Compile Include="MethodBodyParsing\Instruction.cs" />
+    <Compile Include="MethodBodyParsing\InstructionCollection.cs" />
+    <Compile Include="MethodBodyParsing\LocalInfo.cs" />
+    <Compile Include="MethodBodyParsing\LocalInfoCollection.cs" />
+    <Compile Include="MethodBodyParsing\LocalVarSigBuilder.cs" />
+    <Compile Include="MethodBodyParsing\MaxStackSizeCalculator.cs" />
+    <Compile Include="MethodBodyParsing\MetadataExtensions.cs" />
+    <Compile Include="MethodBodyParsing\MetadataToken.cs" />
+    <Compile Include="MethodBodyParsing\MethodBody.cs" />
+    <Compile Include="MethodBodyParsing\MethodBodyOnDynamicILGenerator.cs" />
+    <Compile Include="MethodBodyParsing\MethodBodyOnDynamicILInfo.cs" />
+    <Compile Include="MethodBodyParsing\MethodBodyOnMethodBase.cs" />
+    <Compile Include="MethodBodyParsing\MethodBodyOnUnmanagedBuffer.cs" />
+    <Compile Include="MethodBodyParsing\MethodBodyRocks.cs" />
+    <Compile Include="MethodBodyParsing\MethodHeader.cs" />
+    <Compile Include="MethodBodyParsing\MethodHeaderReader.cs" />
+    <Compile Include="MethodBodyParsing\OpCode.cs" />
+    <Compile Include="MethodBodyParsing\OpCodes.cs" />
+    <Compile Include="MethodBodyParsing\SignatureReader.cs" />
+    <Compile Include="MethodBodyParsing\TokenType.cs" />
+    <Compile Include="MethodBodyParsing\UnmanagedByteBuffer.cs" />
     <Compile Include="StackMutators\Add_Ovf_UnStackMutator.cs" />
     <Compile Include="StackMutators\Cgt_UnStackMutator.cs" />
     <Compile Include="StackMutators\LdvirtftnStackMutator.cs" />
