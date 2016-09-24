@@ -30,11 +30,10 @@ namespace GrEmit.Injection
             PAGE_TARGETS_NO_UPDATE = 0x40000000,
         }
 
-        public static unsafe bool HookMethod(MethodBase dest, MethodBase victim)
+        public static unsafe bool HookMethod(MethodBase victim, MethodBase dest, out Action unhook)
         {
-            if(compareExchange2Words == null)
-                return false;
             var destAddr = GetMethodAddress(dest);
+            unhook = null;
 
             //var genericArguments = new Type[0];
 
@@ -79,18 +78,23 @@ namespace GrEmit.Injection
                     };
                 long x = BitConverter.ToInt64(hookCode, 0);
 
-                MEMORY_PROTECTION_CONSTANTS oldProtect;
-                if(!VirtualProtect(victimAddr, 8, MEMORY_PROTECTION_CONSTANTS.PAGE_EXECUTE_READWRITE, &oldProtect))
+                long oldCode;
+                if(!PlantRelJmpHook(victimAddr, x, out oldCode))
                     return false;
 
-                relJmpHooker(victimAddr, x);
-
-                VirtualProtect(victimAddr, 8, oldProtect, &oldProtect);
+                unhook = () =>
+                    {
+                        long tmp;
+                        PlantRelJmpHook(victimAddr, oldCode, out tmp);
+                    };
 
                 return true;
             }
             else
             {
+                // todo: set unhook delegate
+                if(compareExchange2Words == null)
+                    return false;
                 // Make absolute jump
                 UIntPtr lo, hi;
                 if(IntPtr.Size == 8)
@@ -136,29 +140,48 @@ namespace GrEmit.Injection
             }
         }
 
-        public static Action<IntPtr, long> EmitRelJmpHooker()
+        private static unsafe bool PlantRelJmpHook(IntPtr victimAddr, long newCode, out long oldCode)
         {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(IntPtr), typeof(long)}, typeof(string), true);
-            var il = method.GetILGenerator();
-            var cycleLabel = il.DefineLabel();
-            il.MarkLabel(cycleLabel);
-            il.Emit(OpCodes.Ldarg_0); // stack: [ptr]
-            il.Emit(OpCodes.Dup); // stack: [ptr, ptr]
-            var x = il.DeclareLocal(typeof(long));
-            il.Emit(OpCodes.Ldind_I8); // stack: [ptr, *ptr]
-            il.Emit(OpCodes.Dup);
-            il.Emit(OpCodes.Stloc, x); // x = *ptr; stack: [ptr, x]
-            il.Emit(OpCodes.Ldc_I8, unchecked((long)0xFFFFFF0000000000));
-            il.Emit(OpCodes.And); // stack: [ptr, x & 0xFFFFFF0000000000]
-            il.Emit(OpCodes.Ldarg_1); // stack: [ptr, x & 0xFFFFFF0000000000, code]
-            il.Emit(OpCodes.Or); // stack: [ptr, (x & 0xFFFFFF0000000000) | code]
-            il.Emit(OpCodes.Ldloc, x); // stack: [ptr, (x & 0xFFFFFF0000000000) | code, x]
-            var methodInfo = typeof(Interlocked).GetMethod("CompareExchange", BindingFlags.Static | BindingFlags.Public, null, new[] {typeof(long).MakeByRefType(), typeof(long), typeof(long)}, null);
-            il.EmitCall(OpCodes.Call, methodInfo, null); // stack: [Interlocked.CompareExchange(ptr, (x & 0xFFFFFF0000000000) | code, x)]
-            il.Emit(OpCodes.Ldloc, x); // stack: [Interlocked.CompareExchange(ptr, (x & 0xFFFFFF0000000000) | code, x), x]
-            il.Emit(OpCodes.Bne_Un_S, cycleLabel); // if(Interlocked.CompareExchange(ptr, (x & 0xFFFFFF0000000000) | code, x) != x) goto cycle; stack: []
-            il.Emit(OpCodes.Ret);
-            return (Action<IntPtr, long>)method.CreateDelegate(typeof(Action<IntPtr, long>));
+            MEMORY_PROTECTION_CONSTANTS oldProtect;
+            if(!VirtualProtect(victimAddr, 8, MEMORY_PROTECTION_CONSTANTS.PAGE_EXECUTE_READWRITE, &oldProtect))
+            {
+                oldCode = 0;
+                return false;
+            }
+
+            oldCode = relJmpHooker(victimAddr, newCode);
+
+            VirtualProtect(victimAddr, 8, oldProtect, &oldProtect);
+            return true;
+        }
+
+        private static Func<IntPtr, long, long> EmitRelJmpHooker()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(long), new[] {typeof(IntPtr), typeof(long)}, typeof(string), true);
+            using(var il = new GroboIL(method))
+            {
+                il.VerificationKind = TypesAssignabilityVerificationKind.LowLevelOnly;
+                var cycleLabel = il.DefineLabel("cycle");
+                il.MarkLabel(cycleLabel);
+                il.Ldarg(0); // stack: [ptr]
+                il.Dup(); // stack: [ptr, ptr]
+                var x = il.DeclareLocal(typeof(long));
+                il.Ldind(typeof(long)); // stack: [ptr, *ptr]
+                il.Dup();
+                il.Stloc(x); // x = *ptr; stack: [ptr, newCode]
+                il.Ldc_I8(unchecked((long)0xFFFFFF0000000000));
+                il.And(); // stack: [ptr, x & 0xFFFFFF0000000000]
+                il.Ldarg(1); // stack: [ptr, x & 0xFFFFFF0000000000, code]
+                il.Or(); // stack: [ptr, (x & 0xFFFFFF0000000000) | code]
+                il.Ldloc(x); // stack: [ptr, (x & 0xFFFFFF0000000000) | code, newCode]
+                var methodInfo = typeof(Interlocked).GetMethod("CompareExchange", BindingFlags.Static | BindingFlags.Public, null, new[] {typeof(long).MakeByRefType(), typeof(long), typeof(long)}, null);
+                il.Call(methodInfo); // stack: [Interlocked.CompareExchange(ptr, (x & 0xFFFFFF0000000000) | code, newCode)]
+                il.Ldloc(x); // stack: [Interlocked.CompareExchange(ptr, (x & 0xFFFFFF0000000000) | code, newCode), newCode]
+                il.Bne_Un(cycleLabel); // if(Interlocked.CompareExchange(ptr, (x & 0xFFFFFF0000000000) | code, newCode) != newCode) goto cycle; stack: []
+                il.Ldloc(x);
+                il.Ret();
+            }
+            return (Func<IntPtr, long, long>)method.CreateDelegate(typeof(Func<IntPtr, long, long>));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -220,8 +243,10 @@ namespace GrEmit.Injection
         /// <returns></returns>
         public static IntPtr GetMethodAddress(MethodBase method)
         {
-            if((method is DynamicMethod))
+            if(method is DynamicMethod)
                 return GetDynamicMethodAddress(method);
+            if (method.GetType() == rtDynamicMethodType)
+                return GetDynamicMethodAddress(m_ownerExtractor(method));
 
             // Prepare the method so it gets jited
             RuntimeHelpers.PrepareMethod(method.MethodHandle);
@@ -256,6 +281,8 @@ namespace GrEmit.Injection
         }
 
         private static readonly CompareExchange2WordsDelegate compareExchange2Words = EmitCompareExchange2Words();
-        private static readonly Action<IntPtr, long> relJmpHooker = EmitRelJmpHooker();
+        private static readonly Func<IntPtr, long, long> relJmpHooker = EmitRelJmpHooker();
+        private static readonly Type rtDynamicMethodType = typeof(DynamicMethod).GetNestedType("RTDynamicMethod", BindingFlags.NonPublic);
+        private static readonly Func<MethodBase, DynamicMethod> m_ownerExtractor = FieldsExtractor.GetExtractor<MethodBase, DynamicMethod>(rtDynamicMethodType.GetField("m_owner", BindingFlags.NonPublic | BindingFlags.Instance));
     }
 }

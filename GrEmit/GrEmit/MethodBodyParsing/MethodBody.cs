@@ -1,7 +1,10 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+
+using GrEmit.Utils;
 
 namespace GrEmit.MethodBodyParsing
 {
@@ -98,6 +101,44 @@ namespace GrEmit.MethodBodyParsing
             dynamicILInfo.SetLocalSignature(GetLocalSignature());
             if(HasExceptionHandlers)
                 dynamicILInfo.SetExceptions(new ExceptionsBaker(ExceptionHandlers, Instructions, wrapper.GetTokenFor).BakeExceptions());
+        }
+
+        public Delegate CreateDelegate(Type delegateType, int? maxStack = null)
+        {
+            var invokeMethod = delegateType.GetMethod("Invoke");
+            if(invokeMethod == null)
+                throw new InvalidOperationException(string.Format("Type '{0}' is not a delegate", Formatter.Format(delegateType)));
+            var parameterTypes = invokeMethod.GetParameters().Select(p => p.ParameterType).ToArray();
+            var dynamicMethod = new DynamicMethod(Guid.NewGuid().ToString(), invokeMethod.ReturnType, parameterTypes, typeof(string), true);
+            WriteToDynamicMethod(dynamicMethod, maxStack);
+            return dynamicMethod.CreateDelegate(delegateType);
+        }
+
+        public TDelegate CreateDelegate<TDelegate>(int? maxStack = null)
+            where TDelegate : class
+        {
+            return (TDelegate)(object)CreateDelegate(typeof(TDelegate), maxStack);
+        }
+
+        public Delegate CreateDelegate(Type returnType, Type[] parameterTypes, int? maxStack = null)
+        {
+            return CreateDelegate(GetDelegateType(returnType, parameterTypes), maxStack);
+        }
+
+        private static Type GetDelegateType(Type returnType, Type[] parameterTypes)
+        {
+            if(returnType == typeof(void) && parameterTypes.Length == 0)
+                return typeof(Action);
+            bool isFunc = returnType != typeof(void);
+
+            var typeName = isFunc
+                               ? string.Format("System.{0}`{1}", "Func", parameterTypes.Length + 1)
+                               : string.Format("System.{0}`{1}", "Action", parameterTypes.Length);
+
+            var type = typeof(Action).Assembly.GetType(typeName) ?? typeof(Action<,,,,,,,,>).Assembly.GetType(typeName);
+            if(type == null)
+                throw new NotSupportedException("Too many paramters");
+            return type.MakeGenericType(isFunc ? parameterTypes.Concat(new[] {returnType}).ToArray() : parameterTypes);
         }
 
         public byte[] GetFullMethodBody(Func<byte[], MetadataToken> signatureTokenBuilder, int? maxStack)

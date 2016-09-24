@@ -126,46 +126,56 @@ namespace GrEmit.MethodBodyParsing
             }
         }
 
+        private static MethodSignature GetMethodSignature(MethodBase method)
+        {
+            return new MethodSignature
+                {
+                    hasThis = method.CallingConvention.HasFlag(CallingConventions.HasThis)
+                              && !method.CallingConvention.HasFlag(CallingConventions.ExplicitThis),
+                    parametersCount = method.GetParameters().Length,
+                    hasReturnType = method is MethodInfo && ((MethodInfo)method).ReturnType != typeof(void)
+                };
+        }
+
+        private MethodSignature GetMethodSignature(MetadataToken token, OpCode opCode)
+        {
+            if(opCode.Code != Code.Calli)
+                return GetMethodSignature((MethodBase)tokenResolver(token));
+            var signature = (byte[])tokenResolver(token);
+            var parsedSignature = new SignatureReader(signature).ReadAndParseMethodSignature();
+            return new MethodSignature
+                {
+                    hasThis = parsedSignature.HasThis && !parsedSignature.ExplicitThis,
+                    parametersCount = parsedSignature.ParamCount,
+                    hasReturnType = parsedSignature.HasReturnType
+                };
+        }
+
+        private MethodSignature GetMethodSignature(Instruction instruction)
+        {
+            if(instruction.Operand is MetadataToken)
+                return GetMethodSignature((MetadataToken)instruction.Operand, instruction.OpCode);
+            return GetMethodSignature((MethodBase)instruction.Operand);
+        }
+
         private void ComputeStackDelta(Instruction instruction, ref int stack_size)
         {
             switch(instruction.OpCode.FlowControl)
             {
             case FlowControl.Call:
                 {
-                    var token = (MetadataToken)instruction.Operand;
-                    bool hasThis;
-                    int parametersCount;
-                    bool hasReturnType;
-
-                    if(instruction.OpCode.Code == Code.Calli)
-                    {
-                        var signature = (byte[])tokenResolver(token);
-                        var parsedSignature = new SignatureReader(signature).ReadAndParseMethodSignature();
-                        hasThis = parsedSignature.HasThis && !parsedSignature.ExplicitThis;
-                        parametersCount = parsedSignature.ParamCount;
-                        hasReturnType = parsedSignature.HasReturnType;
-                    }
-                    else
-                    {
-                        var methodBase = (MethodBase)tokenResolver(token);
-
-                        hasThis = methodBase.CallingConvention.HasFlag(CallingConventions.HasThis)
-                                  && !methodBase.CallingConvention.HasFlag(CallingConventions.ExplicitThis);
-                        parametersCount = methodBase.GetParameters().Length;
-                        var methodInfo = methodBase as MethodInfo;
-                        hasReturnType = methodInfo != null && methodInfo.ReturnType != typeof(void);
-                    }
+                    var methodSignature = GetMethodSignature(instruction);
 
                     // pop 'this' argument
-                    if(hasThis && instruction.OpCode.Code != Code.Newobj)
+                    if(methodSignature.hasThis && instruction.OpCode.Code != Code.Newobj)
                         stack_size--;
                     // pop normal arguments
-                    stack_size -= parametersCount;
+                    stack_size -= methodSignature.parametersCount;
                     // pop function pointer
                     if(instruction.OpCode.Code == Code.Calli)
                         stack_size--;
                     // push return value
-                    if(hasReturnType || instruction.OpCode.Code == Code.Newobj)
+                    if(methodSignature.hasReturnType || instruction.OpCode.Code == Code.Newobj)
                         stack_size++;
                     break;
                 }
@@ -229,5 +239,12 @@ namespace GrEmit.MethodBodyParsing
 
         private readonly MethodBody body;
         private readonly Func<MetadataToken, object> tokenResolver;
+
+        private class MethodSignature
+        {
+            public bool hasThis;
+            public int parametersCount;
+            public bool hasReturnType;
+        }
     }
 }
