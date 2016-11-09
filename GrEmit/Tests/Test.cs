@@ -15,6 +15,24 @@ namespace Tests
     [TestFixture]
     public class Test
     {
+        public static void Qzz()
+        {
+            var list = new List<int>();
+            list.Add(1);
+        }
+
+        [Test, Ignore]
+        public void TestZzz()
+        {
+            var method = HackHelpers.GetMethodDefinition<int>(x => Qzz());
+            var body = GrEmit.MethodBodyParsing.MethodBody.Read(method, true);
+            var z = body.CreateDelegate<Action>();
+            z();
+            var body2 = GrEmit.MethodBodyParsing.MethodBody.Read(z.Method, true);
+            var z2 = body2.CreateDelegate<Action>();
+            z2();
+        }
+
         [Test]
         public void TestDifferentStructs()
         {

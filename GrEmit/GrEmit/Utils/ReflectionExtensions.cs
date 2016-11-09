@@ -11,25 +11,25 @@ namespace GrEmit.Utils
     {
         static ReflectionExtensions()
         {
-            isMono = Type.GetType("Mono.Runtime") != null;
+            IsMono = Type.GetType("Mono.Runtime") != null;
 
             var assembly = typeof(MethodInfo).Assembly;
             var types = assembly.GetTypes();
 
-            runtimeTypeType = FindType(types, isMono ? "MonoType" : "RuntimeType");
-            var byRefTypeType = FindType(types, isMono ? "ByRefType" : "SymbolType");
-            var pointerTypeType = FindType(types, isMono ? "PointerType" : "SymbolType");
-            var arrayTypeType = FindType(types, isMono ? "ArrayType" : "SymbolType");
+            runtimeTypeType = FindType(types, "RuntimeType", "MonoType");
+            var byRefTypeType = FindType(types, IsMono ? "ByRefType" : "SymbolType");
+            var pointerTypeType = FindType(types, IsMono ? "PointerType" : "SymbolType");
+            var arrayTypeType = FindType(types, IsMono ? "ArrayType" : "SymbolType");
 
-            typeBuilderInstType = FindType(types, isMono ? "MonoGenericClass" : "TypeBuilderInstantiation");
+            typeBuilderInstType = FindType(types, IsMono ? "MonoGenericClass" : "TypeBuilderInstantiation");
 
-            var runtimeMethodInfoType = FindType(types, isMono ? "MonoMethod" : "RuntimeMethodInfo");
-            var runtimeGenericMethodInfoType = FindType(types, isMono ? "MonoGenericMethod" : "RuntimeMethodInfo");
-            var runtimeConstructorInfoType = FindType(types, isMono ? "MonoCMethod" : "RuntimeConstructorInfo");
-            var runtimeGenericConstructorInfoType = FindType(types, isMono ? "MonoGenericCMethod" : "RuntimeConstructorInfo");
-            methodOnTypeBuilderInstType = FindType(types, isMono ? "MethodOnTypeBuilderInst" : "MethodOnTypeBuilderInstantiation");
-            constructorOnTypeBuilderInstType = FindType(types, isMono ? "ConstructorOnTypeBuilderInst" : "ConstructorOnTypeBuilderInstantiation");
-            if(!isMono)
+            var runtimeMethodInfoType = FindType(types, IsMono ? "MonoMethod" : "RuntimeMethodInfo");
+            var runtimeGenericMethodInfoType = FindType(types, IsMono ? "MonoGenericMethod" : "RuntimeMethodInfo");
+            var runtimeConstructorInfoType = FindType(types, IsMono ? "MonoCMethod" : "RuntimeConstructorInfo");
+            var runtimeGenericConstructorInfoType = FindType(types, IsMono ? "MonoGenericCMethod" : "RuntimeConstructorInfo");
+            methodOnTypeBuilderInstType = FindType(types, IsMono ? "MethodOnTypeBuilderInst" : "MethodOnTypeBuilderInstantiation");
+            constructorOnTypeBuilderInstType = FindType(types, IsMono ? "ConstructorOnTypeBuilderInst" : "ConstructorOnTypeBuilderInstantiation");
+            if(!IsMono)
                 methodBuilderInstType = FindType(types, "MethodBuilderInstantiation");
 
             parameterTypesExtractors = new Hashtable();
@@ -106,7 +106,7 @@ namespace GrEmit.Utils
                 = (Func<MethodBase, Type[]>)(method => new ConstructorBuilderWrapper(method).ParameterTypes);
             parameterTypesExtractors[methodOnTypeBuilderInstType]
                 = (Func<MethodBase, Type[]>)(method => new MethodOnTypeBuilderInstWrapper(method).ParameterTypes);
-            if(!isMono)
+            if(!IsMono)
             {
                 parameterTypesExtractors[methodBuilderInstType]
                     = (Func<MethodBase, Type[]>)(method => new MethodBuilderInstWrapper(method).ParameterTypes);
@@ -116,7 +116,7 @@ namespace GrEmit.Utils
 
             returnTypeExtractors[methodOnTypeBuilderInstType]
                 = (Func<MethodInfo, Type>)(method => new MethodOnTypeBuilderInstWrapper(method).ReturnType);
-            if(!isMono)
+            if(!IsMono)
             {
                 returnTypeExtractors[methodBuilderInstType]
                     = (Func<MethodInfo, Type>)(method => new MethodBuilderInstWrapper(method).ReturnType);
@@ -157,17 +157,17 @@ namespace GrEmit.Utils
                   = assignabilityCheckers[arrayTypeType]
                     = (Func<Type, Type, bool>)((to, from) =>
                         {
-                            if (to.IsByRef && from.IsByRef)
+                            if(to.IsByRef && from.IsByRef)
                                 return Equal(to.GetElementType(), from.GetElementType());
-                            if (to.IsPointer && from.IsPointer)
+                            if(to.IsPointer && from.IsPointer)
                                 return Equal(to.GetElementType(), from.GetElementType());
-                            if (to.IsArray && from.IsArray)
+                            if(to.IsArray && from.IsArray)
                                 return to.GetArrayRank() == from.GetArrayRank() && Equal(to.GetElementType(), from.GetElementType());
                             return to == from;
                         });
         }
 
-        internal static bool IsMono { get { return isMono; } }
+        internal static bool IsMono { get; }
 
         public static Type[] GetParameterTypes(MethodBase method)
         {
@@ -277,11 +277,21 @@ namespace GrEmit.Utils
             return result;
         }
 
-        private static Type FindType(IEnumerable<Type> types, string name)
+        private static Type FindType(IEnumerable<Type> types, params string[] names)
         {
-            var type = types.FirstOrDefault(t => t.Name == name);
+            Type type = null;
+            foreach(var name in names)
+            {
+                type = types.FirstOrDefault(t => t.Name == name);
+                if(type != null)
+                    break;
+            }
             if(type == null)
-                throw new InvalidOperationException(string.Format("Type '{0}' is not found", name));
+            {
+                if(names.Length == 1)
+                    throw new InvalidOperationException(string.Format("Type '{0}' is not found", names[0]));
+                throw new InvalidOperationException(string.Format("None of types {0} is not found", string.Join(", ", names.Select(name => "'" + name + "'"))));
+            }
             return type;
         }
 
@@ -323,8 +333,6 @@ namespace GrEmit.Utils
             return type;
         }
 
-        private static readonly bool isMono;
-
         private static readonly Type runtimeTypeType;
         private static readonly Type typeBuilderInstType;
         private static readonly Type methodOnTypeBuilderInstType;
@@ -358,7 +366,7 @@ namespace GrEmit.Utils
         {
             static MethodBuilderWrapper()
             {
-                string parameterTypesFieldName = isMono ? "parameters" : "m_parameterTypes";
+                string parameterTypesFieldName = IsMono ? "parameters" : "m_parameterTypes";
                 var parameterTypesField = typeof(MethodBuilder).GetField(parameterTypesFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if(parameterTypesField == null)
                     throw new InvalidOperationException(string.Format("Field 'MethodBuilder.{0}' is not found", parameterTypesFieldName));
@@ -380,7 +388,7 @@ namespace GrEmit.Utils
         {
             static ConstructorBuilderWrapper()
             {
-                if(!isMono)
+                if(!IsMono)
                 {
                     var methodBuilderField = typeof(ConstructorBuilder).GetField("m_methodBuilder", BindingFlags.Instance | BindingFlags.NonPublic);
                     if(methodBuilderField == null)
@@ -406,7 +414,7 @@ namespace GrEmit.Utils
             {
                 get
                 {
-                    if(!isMono)
+                    if(!IsMono)
                         return GetParameterTypes(m_methodBuilderExtractor(inst));
                     return m_parameterTypesExtractor(inst);
                 }
@@ -421,8 +429,8 @@ namespace GrEmit.Utils
         {
             static TypeBuilderInstWrapper()
             {
-                string typeFieldName = isMono ? "generic_type" : "m_type";
-                string instFieldName = isMono ? "type_arguments" : "m_inst";
+                string typeFieldName = IsMono ? "generic_type" : "m_type";
+                string instFieldName = IsMono ? "type_arguments" : "m_inst";
                 var typeField = typeBuilderInstType.GetField(typeFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if(typeField == null)
                     throw new InvalidOperationException(string.Format("Field '{0}.{1}' is not found", typeBuilderInstType.Name, typeFieldName));
@@ -516,8 +524,8 @@ namespace GrEmit.Utils
         {
             static MethodOnTypeBuilderInstWrapper()
             {
-                string methodFieldName = isMono ? "base_method" : "m_method";
-                string typeFieldName = isMono ? "instantiation" : "m_type";
+                string methodFieldName = IsMono ? "base_method" : "m_method";
+                string typeFieldName = IsMono ? "instantiation" : "m_type";
                 var methodField = methodOnTypeBuilderInstType.GetField(methodFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if(methodField == null)
                     throw new InvalidOperationException(string.Format("Field '{0}.{1}' is not found", methodOnTypeBuilderInstType.Name, methodFieldName));
@@ -526,7 +534,7 @@ namespace GrEmit.Utils
                 if(typeField == null)
                     throw new InvalidOperationException(string.Format("Field '{0}.{1}' is not found", methodOnTypeBuilderInstType.Name, typeFieldName));
                 m_typeExtractor = FieldsExtractor.GetExtractor<MethodBase, Type>(typeField);
-                if(isMono)
+                if(IsMono)
                 {
                     var genericMethodField = methodOnTypeBuilderInstType.GetField("generic_method_definition", BindingFlags.Instance | BindingFlags.NonPublic);
                     if(genericMethodField == null)
@@ -554,7 +562,7 @@ namespace GrEmit.Utils
                     var typeInst = new TypeBuilderInstWrapper(type);
                     if(typeInst.IsOk)
                         result = SubstituteGenericParameters(result, typeInst.m_type.GetGenericArguments(), typeInst.m_inst);
-                    if(isMono)
+                    if(IsMono)
                     {
                         var methodArguments = m_methodArguments;
                         if(methodArguments != null)
@@ -574,7 +582,7 @@ namespace GrEmit.Utils
                     var typeInst = new TypeBuilderInstWrapper(type);
                     if(typeInst.IsOk)
                         result = SubstituteGenericParameters(result, typeInst.m_type.GetGenericArguments(), typeInst.m_inst);
-                    if(isMono)
+                    if(IsMono)
                     {
                         var methodArguments = m_methodArguments;
                         if(methodArguments != null)
@@ -600,8 +608,8 @@ namespace GrEmit.Utils
         {
             static ConstructorOnTypeBuilderInstWrapper()
             {
-                string ctorFieldName = isMono ? "cb" : "m_ctor";
-                string typeFieldName = isMono ? "instantiation" : "m_type";
+                string ctorFieldName = IsMono ? "cb" : "m_ctor";
+                string typeFieldName = IsMono ? "instantiation" : "m_type";
                 var ctorField = constructorOnTypeBuilderInstType.GetField(ctorFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if(ctorField == null)
                     throw new InvalidOperationException(string.Format("Field '{0}.{1}' is not found", constructorOnTypeBuilderInstType.Name, ctorFieldName));
