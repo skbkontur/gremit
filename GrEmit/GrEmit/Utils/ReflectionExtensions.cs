@@ -167,7 +167,7 @@ namespace GrEmit.Utils
                         });
         }
 
-        internal static bool IsMono { get; }
+        internal static bool IsMono { get; private set; }
 
         public static Type[] GetParameterTypes(MethodBase method)
         {
