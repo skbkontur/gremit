@@ -10,4 +10,4 @@ full-build:
     configuration: Release
 
   install:
-    - GrEmit\GrEmit\bin\Release\GrEmit.dll
+    - Assemblies\GrEmit.dll
