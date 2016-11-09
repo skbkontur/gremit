@@ -82,6 +82,7 @@
     <Compile Include="MethodBodyParsing\OpCodes.cs" />
     <Compile Include="MethodBodyParsing\SignatureReader.cs" />
     <Compile Include="MethodBodyParsing\TokenType.cs" />
+    <Compile Include="MethodBodyParsing\TypeSignatureReader.cs" />
     <Compile Include="MethodBodyParsing\UnmanagedByteBuffer.cs" />
     <Compile Include="StackMutators\Add_Ovf_UnStackMutator.cs" />
     <Compile Include="StackMutators\Cgt_UnStackMutator.cs" />

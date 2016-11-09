@@ -27,7 +27,10 @@ namespace GrEmit.MethodBodyParsing
 
         public static MethodBody Read(MethodBase method, bool resolveTokens)
         {
-            return new MethodBodyOnMethodBase(method, resolveTokens);
+            var dynamicMethod = tryCastToDynamicMethod(method);
+            return dynamicMethod == null
+                       ? new MethodBodyOnMethodBase(method, resolveTokens)
+                       : Read(dynamicMethod, resolveTokens);
         }
 
         public static unsafe MethodBody Read(DynamicMethod dynamicMethod, bool resolveTokens)
@@ -60,6 +63,17 @@ namespace GrEmit.MethodBodyParsing
         protected void SetLocalSignature(byte[] localSignature)
         {
             localVarSigBuilder = new LocalVarSigBuilder(localSignature);
+            if(resolveTokens)
+            {
+                for(int i = 0; i < localVarSigBuilder.Count; ++i)
+                {
+                    var local = localVarSigBuilder[i];
+                    var resolved = new TypeSignatureReader(local.Signature, ResolveToken).Resolve();
+                    local.LocalType = resolved.Key;
+                    local.IsPinned = resolved.Value;
+                    local.Signature = null;
+                }
+            }
         }
 
         public LocalInfo AddLocalVariable(byte[] signature)
@@ -200,6 +214,31 @@ namespace GrEmit.MethodBodyParsing
             DynamicScope.Init();
             DynamicResolver.Init();
         }
+
+        private static Func<MethodBase, DynamicMethod> EmitTryCastToDynamicMethod()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(DynamicMethod), new[] {typeof(MethodBase)}, typeof(string), true);
+            using(var il = new GroboIL(method))
+            {
+                var RTDynamicMethod_t = typeof(DynamicMethod).GetNestedType("RTDynamicMethod", BindingFlags.NonPublic);
+                if(RTDynamicMethod_t == null)
+                    throw new InvalidOperationException("Missing type 'System.Reflection.Emit.DynamicMethod.RTDynamicMethod'");
+                il.Ldarg(0); // stack: [method]
+                il.Isinst(RTDynamicMethod_t); // stack: [method as RTDynamicMethod]
+                il.Dup(); // stack: [method as RTDynamicMethod, method as RTDynamicMethod]
+                var retLabel = il.DefineLabel("ret");
+                il.Brfalse(retLabel); // if(!(method is RTDynamicMethod)] goto ret; stack: [method as RTDynamicMethod]
+                var m_owner_f = RTDynamicMethod_t.GetField("m_owner", BindingFlags.Instance | BindingFlags.NonPublic);
+                if(m_owner_f == null)
+                    throw new InvalidOperationException("Missing field 'System.Reflection.Emit.DynamicMethod.RTDynamicMethod.m_owner'");
+                il.Ldfld(m_owner_f); // stack: [((RTDynamicMethod)method).m_owner]
+                il.MarkLabel(retLabel);
+                il.Ret();
+            }
+            return (Func<MethodBase, DynamicMethod>)method.CreateDelegate(typeof(Func<MethodBase, DynamicMethod>));
+        }
+
+        private static readonly Func<MethodBase, DynamicMethod> tryCastToDynamicMethod = EmitTryCastToDynamicMethod();
 
         protected readonly bool resolveTokens;
 

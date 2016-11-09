@@ -29,7 +29,7 @@ namespace GrEmit.MethodBodyParsing
 
         protected override object ResolveToken(MetadataToken token)
         {
-            return scope[token.ToInt32()];
+            return DynamicMethodHelpers.Resolve(scope[token.ToInt32()]);
         }
 
         private static byte[] GetMethodSignature(DynamicILInfo dynamicILInfo)

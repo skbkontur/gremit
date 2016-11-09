@@ -38,7 +38,12 @@ namespace GrEmit.MethodBodyParsing
             if(value is MethodBase)
                 return GetTokenForMethod((MethodBase)value, opCode);
             if(value is FieldInfo)
-                return new MetadataToken((uint)inst.GetTokenFor(((FieldInfo)value).FieldHandle));
+            {
+                var field = (FieldInfo)value;
+                if (field.DeclaringType != null && field.DeclaringType.IsGenericType)
+                    return new MetadataToken((uint)inst.GetTokenFor(field.FieldHandle, field.DeclaringType.TypeHandle));
+                return new MetadataToken((uint)inst.GetTokenFor(field.FieldHandle));
+            }
             if(value is Type)
                 return new MetadataToken((uint)inst.GetTokenFor(((Type)value).TypeHandle));
             if(value is byte[])
@@ -52,6 +57,8 @@ namespace GrEmit.MethodBodyParsing
         {
             if(opcode == OpCodes.Call || opcode == OpCodes.Callvirt)
                 return m_scope.GetTokenFor(methodBase, MetadataExtensions.BuildMemberRefSignature(methodBase));
+            if(methodBase.DeclaringType != null && methodBase.DeclaringType.IsGenericType)
+                return new MetadataToken((uint)inst.GetTokenFor(methodBase.MethodHandle, methodBase.DeclaringType.TypeHandle));
             return new MetadataToken((uint)inst.GetTokenFor(methodBase.MethodHandle));
         }
 

@@ -24,8 +24,11 @@ namespace GrEmit.MethodBodyParsing
 
         public static void Read(byte[] buffer, Func<MetadataToken, object> tokenResolver, bool resolveTokens, MethodBody body)
         {
-            fixed(byte* b = &buffer[0])
-                new ExceptionsInfoReader(b, tokenResolver, resolveTokens).Read(body);
+            if(buffer != null && buffer.Length > 0)
+            {
+                fixed(byte* b = &buffer[0])
+                    new ExceptionsInfoReader(b, tokenResolver, resolveTokens).Read(body);
+            }
         }
 
         public void Read(MethodBody body)
