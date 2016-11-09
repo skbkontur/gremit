@@ -18,7 +18,7 @@ namespace GrEmit.MethodBodyParsing
         public static void SimplifyMacros(this Collection<Instruction> instructions)
         {
             if(instructions == null)
-                throw new ArgumentNullException("instructions");
+                throw new ArgumentNullException(nameof(instructions));
 
             foreach(var instruction in instructions)
             {
@@ -175,7 +175,7 @@ namespace GrEmit.MethodBodyParsing
         public static void OptimizeMacros(this Collection<Instruction> instructions)
         {
             if(instructions == null)
-                throw new ArgumentNullException("instructions");
+                throw new ArgumentNullException(nameof(instructions));
 
             foreach(var instruction in instructions)
             {

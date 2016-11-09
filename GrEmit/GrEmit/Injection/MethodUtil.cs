@@ -245,7 +245,7 @@ namespace GrEmit.Injection
         {
             if(method is DynamicMethod)
                 return GetDynamicMethodAddress(method);
-            if (method.GetType() == rtDynamicMethodType)
+            if(method.GetType() == rtDynamicMethodType)
                 return GetDynamicMethodAddress(m_ownerExtractor(method));
 
             // Prepare the method so it gets jited

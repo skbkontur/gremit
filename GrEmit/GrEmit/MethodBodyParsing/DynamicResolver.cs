@@ -162,7 +162,7 @@ namespace GrEmit.MethodBodyParsing
             getEHInfoDelegate(inst, excNumber, exc);
         }
 
-        public byte[] m_localSignature { get { return m_localSignatureExtractor(inst); } }
+        public byte[] m_localSignature => m_localSignatureExtractor(inst);
 
         public static void Init()
         {

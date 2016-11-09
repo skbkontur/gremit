@@ -15,7 +15,7 @@ namespace GrEmit.MethodBodyParsing
 {
     public class ParsedMethodSignature
     {
-        public bool HasReturnType { get { return !(ReturnTypeSignature.Length == 1 && ReturnTypeSignature[0] == (byte)ElementType.Void); } }
+        public bool HasReturnType => !(ReturnTypeSignature.Length == 1 && ReturnTypeSignature[0] == (byte)ElementType.Void);
         public byte CallingConvention;
         public bool HasThis;
         public bool ExplicitThis;

@@ -51,7 +51,7 @@ namespace GrEmit
         }
 
         public static Action<T, TValue> GetSetter<T, TValue>(FieldInfo field)
-            where T: class
+            where T : class
         {
             var foister = GetSetter(field);
             return (inst, value) => foister(inst, value);

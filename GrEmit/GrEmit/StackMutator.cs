@@ -81,10 +81,9 @@ namespace GrEmit
             if(type == null)
                 Push(ESType.Zero);
             else if(type.IsInterface && !type.IsByRef && !type.IsPointer) // todo hack for Mono: typeof(IList).MakeByRefType().IsInterface = true
-                Push(new ComplexESType(typeof(object), new[] { type }));
+                Push(new ComplexESType(typeof(object), new[] {type}));
             else
                 Push(new SimpleESType(type));
-                
         }
 
         public override string ToString()
@@ -252,41 +251,40 @@ namespace GrEmit
 
         private static CLIType ToLowLevelCLIType(Type type)
         {
-            if (type == null)
+            if(type == null)
                 return CLIType.NativeInt;
             if(!type.IsValueType)
                 return CLIType.NativeInt;
-            if (type.IsPrimitive)
+            if(type.IsPrimitive)
             {
-                if (type == typeof(IntPtr) || type == typeof(UIntPtr))
+                if(type == typeof(IntPtr) || type == typeof(UIntPtr))
                     return CLIType.NativeInt;
                 var typeCode = Type.GetTypeCode(type);
-                switch (typeCode)
+                switch(typeCode)
                 {
-                    case TypeCode.Boolean:
-                    case TypeCode.Byte:
-                    case TypeCode.Char:
-                    case TypeCode.Int16:
-                    case TypeCode.Int32:
-                    case TypeCode.SByte:
-                    case TypeCode.UInt16:
-                    case TypeCode.UInt32:
-                        return CLIType.Int32;
-                    case TypeCode.Int64:
-                    case TypeCode.UInt64:
-                        return CLIType.Int64;
-                    case TypeCode.Double:
-                    case TypeCode.Single:
-                        return CLIType.Float;
-                    default:
-                        return CLIType.Struct;
+                case TypeCode.Boolean:
+                case TypeCode.Byte:
+                case TypeCode.Char:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.SByte:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                    return CLIType.Int32;
+                case TypeCode.Int64:
+                case TypeCode.UInt64:
+                    return CLIType.Int64;
+                case TypeCode.Double:
+                case TypeCode.Single:
+                    return CLIType.Float;
+                default:
+                    return CLIType.Struct;
                 }
             }
-            if (type.IsGenericType) return CLIType.Struct;
-            if (type is EnumBuilder) return ToLowLevelCLIType(type.UnderlyingSystemType);
+            if(type.IsGenericType) return CLIType.Struct;
+            if(type is EnumBuilder) return ToLowLevelCLIType(type.UnderlyingSystemType);
             return type.IsEnum ? ToLowLevelCLIType(Enum.GetUnderlyingType(type)) : CLIType.Struct;
         }
-
 
         private static bool CanBeAssigned(Type to, ESType esFrom, TypesAssignabilityVerificationKind verificationKind)
         {

@@ -5,10 +5,6 @@ namespace GrEmit.MethodBodyParsing
 {
     internal unsafe class UnmanagedByteBuffer
     {
-        // TODO rewrite
-        internal byte* buffer;
-        internal int position;
-
         public UnmanagedByteBuffer(byte* buffer)
         {
             this.buffer = buffer;
@@ -81,12 +77,14 @@ namespace GrEmit.MethodBodyParsing
         public uint ReadCompressedUInt32()
         {
             byte first = ReadByte();
-            if ((first & 0x80) == 0)
+            if((first & 0x80) == 0)
                 return first;
 
-            if ((first & 0x40) == 0)
+            if((first & 0x40) == 0)
+            {
                 return ((uint)(first & ~0x80) << 8)
                        | ReadByte();
+            }
 
             return ((uint)(first & ~0xc0) << 24)
                    | (uint)ReadByte() << 16
@@ -97,20 +95,20 @@ namespace GrEmit.MethodBodyParsing
         public int ReadCompressedInt32()
         {
             var value = (int)(ReadCompressedUInt32() >> 1);
-            if ((value & 1) == 0)
+            if((value & 1) == 0)
                 return value;
-            if (value < 0x40)
+            if(value < 0x40)
                 return value - 0x40;
-            if (value < 0x2000)
+            if(value < 0x2000)
                 return value - 0x2000;
-            if (value < 0x10000000)
+            if(value < 0x10000000)
                 return value - 0x10000000;
             return value - 0x20000000;
         }
 
         public float ReadSingle()
         {
-            if (!BitConverter.IsLittleEndian)
+            if(!BitConverter.IsLittleEndian)
             {
                 var bytes = ReadBytes(4);
                 Array.Reverse(bytes);
@@ -125,7 +123,7 @@ namespace GrEmit.MethodBodyParsing
 
         public double ReadDouble()
         {
-            if (!BitConverter.IsLittleEndian)
+            if(!BitConverter.IsLittleEndian)
             {
                 var bytes = ReadBytes(8);
                 Array.Reverse(bytes);
@@ -138,5 +136,8 @@ namespace GrEmit.MethodBodyParsing
             return value;
         }
 
+        // TODO rewrite
+        internal byte* buffer;
+        internal int position;
     }
 }

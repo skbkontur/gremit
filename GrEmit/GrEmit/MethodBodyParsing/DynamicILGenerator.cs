@@ -12,12 +12,12 @@ namespace GrEmit.MethodBodyParsing
             var dynamicILGeneratorType = assembly.GetType("System.Reflection.Emit.DynamicILGenerator");
 
             var m_methodSigTokenField = dynamicILGeneratorType.GetField("m_methodSigToken", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (m_methodSigTokenField == null)
+            if(m_methodSigTokenField == null)
                 throw new InvalidOperationException("Field 'DynamicILGenerator.m_methodSigToken' is not found");
             m_methodSigTokenExtractor = FieldsExtractor.GetExtractor<ILGenerator, int>(m_methodSigTokenField);
 
             var m_scopeField = dynamicILGeneratorType.GetField("m_scope", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (m_scopeField == null)
+            if(m_scopeField == null)
                 throw new InvalidOperationException("Field 'DynamicILGenerator.m_scope' is not found");
             m_scopeExtractor = FieldsExtractor.GetExtractor<ILGenerator, object>(m_scopeField);
         }
@@ -27,8 +27,8 @@ namespace GrEmit.MethodBodyParsing
             this.inst = inst;
         }
 
-        public int m_methodSigToken { get { return m_methodSigTokenExtractor(inst); } }
-        public DynamicScope m_scope { get { return new DynamicScope(m_scopeExtractor(inst)); } }
+        public int m_methodSigToken => m_methodSigTokenExtractor(inst);
+        public DynamicScope m_scope => new DynamicScope(m_scopeExtractor(inst));
 
         public static void Init()
         {

@@ -14,21 +14,23 @@ using GrEmit.Utils;
 namespace GrEmit
 {
     /// <summary>
-    /// Level of verification of types compatibility
+    ///     Level of verification of types compatibility
     /// </summary>
     public enum TypesAssignabilityVerificationKind
     {
         /// <summary>
-        /// Performs no checks at all with regard to types assignability
+        ///     Performs no checks at all with regard to types assignability
         /// </summary>
         None,
+
         /// <summary>
-        /// Makes no difference between CLI pointer types (objects, managed pointers, unmanaged pointers).
-        /// Still performs all verifications between these low level types (u can't store int64 to int32 for intance).
+        ///     Makes no difference between CLI pointer types (objects, managed pointers, unmanaged pointers).
+        ///     Still performs all verifications between these low level types (u can't store int64 to int32 for intance).
         /// </summary>
         LowLevelOnly,
+
         /// <summary>
-        /// Performs all verifications with regard to types assignability. This is the default behaviour.
+        ///     Performs all verifications with regard to types assignability. This is the default behaviour.
         /// </summary>
         HighLevel
     }
@@ -53,11 +55,6 @@ namespace GrEmit
             OpCodes.Sizeof;
 */
         }
-
-        /// <summary>
-        /// Gets or sets level of verifications with regard to types compatibility
-        /// </summary>
-        public TypesAssignabilityVerificationKind VerificationKind { get; set; }
 
         public GroboIL(DynamicMethod method, bool analyzeStack = true)
             : this(method.GetILGenerator(),
@@ -112,12 +109,17 @@ namespace GrEmit
                 throw new ArgumentNullException("symbolDocumentWriter");
         }
 
+        /// <summary>
+        ///     Gets or sets level of verifications with regard to types compatibility
+        /// </summary>
+        public TypesAssignabilityVerificationKind VerificationKind { get; set; }
+
         public void Seal()
         {
-            if (!analyzeStack)
+            if(!analyzeStack)
                 return;
             var lastInstruction = ilCode.Count == 0 ? null : ilCode.GetInstruction(ilCode.Count - 1) as ILCode.ILInstruction;
-            if (lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br
+            if(lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br
                                            && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw && lastInstruction.OpCode != OpCodes.Jmp))
                 throw new InvalidOperationException("An IL program must end with one of the following instructions: 'ret', 'br', 'br.s', 'throw', 'jmp'");
             ilCode.CheckLabels();
@@ -907,7 +909,7 @@ namespace GrEmit
         }
 
         /// <summary>
-        /// Clears the specified pinned local by setting it to null
+        ///     Clears the specified pinned local by setting it to null
         /// </summary>
         /// <param name="local"></param>
         public void FreePinnedLocal(Local local)
@@ -1851,7 +1853,7 @@ namespace GrEmit
             if(method == null)
                 throw new ArgumentNullException("method");
             var opCode = method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call;
-            if (isVirtual)
+            if(isVirtual)
                 opCode = OpCodes.Callvirt;
             if(opCode == OpCodes.Callvirt)
             {
@@ -1977,55 +1979,6 @@ namespace GrEmit
             if(symbolDocumentWriter == null)
                 il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes);
         }
-
-        public class Label
-        {
-            public Label(System.Reflection.Emit.Label label, string name)
-            {
-                this.label = label;
-                this.name = name;
-            }
-
-            public static implicit operator System.Reflection.Emit.Label(Label label)
-            {
-                return label.label;
-            }
-
-            public string Name { get { return name; } }
-
-            private readonly System.Reflection.Emit.Label label;
-            private readonly string name;
-        }
-
-        public class Local
-        {
-            public Local(LocalBuilder localBuilder, string name)
-            {
-                this.localBuilder = localBuilder;
-                this.name = name;
-            }
-
-            public static implicit operator LocalBuilder(Local local)
-            {
-                return local.localBuilder;
-            }
-
-            public void SetLocalSymInfo(string name)
-            {
-                localBuilder.SetLocalSymInfo(name);
-            }
-
-            public string Name { get { return name; } }
-            public Type Type { get { return localBuilder.LocalType; } }
-
-            private readonly LocalBuilder localBuilder;
-            private readonly string name;
-        }
-
-        internal readonly Dictionary<Label, ESType[]> labelStacks = new Dictionary<Label, ESType[]>();
-        internal readonly ILCode ilCode = new ILCode();
-        internal readonly Type methodReturnType;
-        internal readonly Type[] methodParameterTypes;
 
         private void Emit(OpCode opCode, ILInstructionParameter parameter)
         {
@@ -2296,6 +2249,16 @@ namespace GrEmit
                 il.Emit(opCode, constructor);
         }
 
+        public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal readonly Dictionary<Label, ESType[]> labelStacks = new Dictionary<Label, ESType[]>();
+        internal readonly ILCode ilCode = new ILCode();
+        internal readonly Type methodReturnType;
+        internal readonly Type[] methodParameterTypes;
+
         private int localId;
         private int labelId;
 
@@ -2304,9 +2267,47 @@ namespace GrEmit
         private readonly ILGenerator il;
         private readonly bool analyzeStack = true;
         private readonly ISymbolDocumentWriter symbolDocumentWriter;
-        public IEnumerator GetEnumerator()
+
+        public class Label
         {
-            throw new NotImplementedException();
+            public Label(System.Reflection.Emit.Label label, string name)
+            {
+                this.label = label;
+                this.Name = name;
+            }
+
+            public static implicit operator System.Reflection.Emit.Label(Label label)
+            {
+                return label.label;
+            }
+
+            public string Name { get; }
+
+            private readonly System.Reflection.Emit.Label label;
+        }
+
+        public class Local
+        {
+            public Local(LocalBuilder localBuilder, string name)
+            {
+                this.localBuilder = localBuilder;
+                this.Name = name;
+            }
+
+            public static implicit operator LocalBuilder(Local local)
+            {
+                return local.localBuilder;
+            }
+
+            public void SetLocalSymInfo(string name)
+            {
+                localBuilder.SetLocalSymInfo(name);
+            }
+
+            public string Name { get; }
+            public Type Type { get { return localBuilder.LocalType; } }
+
+            private readonly LocalBuilder localBuilder;
         }
     }
 

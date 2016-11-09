@@ -12,12 +12,12 @@ namespace GrEmit.MethodBodyParsing
             dynamicScopeType = assembly.GetType("System.Reflection.Emit.DynamicScope");
 
             var m_DynamicILInfoField = typeof(DynamicMethod).GetField("m_DynamicILInfo", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (m_DynamicILInfoField == null)
+            if(m_DynamicILInfoField == null)
                 throw new InvalidOperationException("Field 'DynamicMethod.m_DynamicILInfo' is not found");
             m_DynamicILInfoExtractor = FieldsExtractor.GetExtractor<DynamicMethod, DynamicILInfo>(m_DynamicILInfoField);
 
             var m_ilGeneratorField = typeof(DynamicMethod).GetField("m_ilGenerator", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (m_ilGeneratorField == null)
+            if(m_ilGeneratorField == null)
                 throw new InvalidOperationException("Field 'DynamicMethod.m_ilGenerator' is not found");
             m_ilGeneratorExtractor = FieldsExtractor.GetExtractor<DynamicMethod, ILGenerator>(m_ilGeneratorField);
 
@@ -47,8 +47,8 @@ namespace GrEmit.MethodBodyParsing
             return (Func<DynamicMethod, object, DynamicILInfo>)method.CreateDelegate(typeof(Func<DynamicMethod, object, DynamicILInfo>));
         }
 
-        public DynamicILInfo m_DynamicILInfo { get { return m_DynamicILInfoExtractor(inst); } }
-        public ILGenerator m_ilGenerator { get { return m_ilGeneratorExtractor(inst); } }
+        public DynamicILInfo m_DynamicILInfo => m_DynamicILInfoExtractor(inst);
+        public ILGenerator m_ilGenerator => m_ilGeneratorExtractor(inst);
 
         public static void Init()
         {

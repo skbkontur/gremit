@@ -82,35 +82,35 @@ namespace GrEmit.MethodBodyParsing
             instruction.Append(' ');
             instruction.Append(OpCode.Name);
 
-            if (Operand == null)
+            if(Operand == null)
                 return instruction.ToString();
 
             instruction.Append(' ');
 
-            switch (OpCode.OperandType)
+            switch(OpCode.OperandType)
             {
-                case OperandType.ShortInlineBrTarget:
-                case OperandType.InlineBrTarget:
-                    AppendLabel(instruction, (Instruction)Operand);
-                    break;
-                case OperandType.InlineSwitch:
-                    var labels = (Instruction[])Operand;
-                    for (int i = 0; i < labels.Length; i++)
-                    {
-                        if (i > 0)
-                            instruction.Append(',');
+            case OperandType.ShortInlineBrTarget:
+            case OperandType.InlineBrTarget:
+                AppendLabel(instruction, (Instruction)Operand);
+                break;
+            case OperandType.InlineSwitch:
+                var labels = (Instruction[])Operand;
+                for(int i = 0; i < labels.Length; i++)
+                {
+                    if(i > 0)
+                        instruction.Append(',');
 
-                        AppendLabel(instruction, labels[i]);
-                    }
-                    break;
-                case OperandType.InlineString:
-                    instruction.Append('\"');
-                    instruction.Append(Operand);
-                    instruction.Append('\"');
-                    break;
-                default:
-                    instruction.Append(Operand);
-                    break;
+                    AppendLabel(instruction, labels[i]);
+                }
+                break;
+            case OperandType.InlineString:
+                instruction.Append('\"');
+                instruction.Append(Operand);
+                instruction.Append('\"');
+                break;
+            default:
+                instruction.Append(Operand);
+                break;
             }
 
             return instruction.ToString();
@@ -133,17 +133,17 @@ namespace GrEmit.MethodBodyParsing
         public static Instruction Create(OpCode opcode, MetadataToken value)
         {
             if(value == MetadataToken.Zero)
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
 
             return new Instruction(opcode, value);
         }
 
         public static Instruction Create(OpCode opcode, Type type)
         {
-            if (type == null)
-                throw new ArgumentNullException("type");
-            if (opcode.OperandType != OperandType.InlineType &&
-                opcode.OperandType != OperandType.InlineTok)
+            if(type == null)
+                throw new ArgumentNullException(nameof(type));
+            if(opcode.OperandType != OperandType.InlineType
+               && opcode.OperandType != OperandType.InlineTok)
                 throw new ArgumentException("opcode");
 
             return new Instruction(opcode, type);
@@ -151,20 +151,20 @@ namespace GrEmit.MethodBodyParsing
 
         public static Instruction Create(OpCode opcode, byte[] site)
         {
-            if (site == null)
-                throw new ArgumentNullException("site");
-            if (opcode.Code != Code.Calli)
-                throw new ArgumentException("code");
+            if(site == null)
+                throw new ArgumentNullException(nameof(site));
+            if(opcode.Code != Code.Calli)
+                throw new ArgumentException("opcode");
 
             return new Instruction(opcode, site);
         }
 
         public static Instruction Create(OpCode opcode, MethodBase method)
         {
-            if (method == null)
-                throw new ArgumentNullException("method");
-            if (opcode.OperandType != OperandType.InlineMethod &&
-                opcode.OperandType != OperandType.InlineTok)
+            if(method == null)
+                throw new ArgumentNullException(nameof(method));
+            if(opcode.OperandType != OperandType.InlineMethod
+               && opcode.OperandType != OperandType.InlineTok)
                 throw new ArgumentException("opcode");
 
             return new Instruction(opcode, method);
@@ -172,10 +172,10 @@ namespace GrEmit.MethodBodyParsing
 
         public static Instruction Create(OpCode opcode, FieldInfo field)
         {
-            if (field == null)
-                throw new ArgumentNullException("field");
-            if (opcode.OperandType != OperandType.InlineField &&
-                opcode.OperandType != OperandType.InlineTok)
+            if(field == null)
+                throw new ArgumentNullException(nameof(field));
+            if(opcode.OperandType != OperandType.InlineField
+               && opcode.OperandType != OperandType.InlineTok)
                 throw new ArgumentException("opcode");
 
             return new Instruction(opcode, field);
@@ -183,9 +183,9 @@ namespace GrEmit.MethodBodyParsing
 
         public static Instruction Create(OpCode opcode, string value)
         {
-            if (value == null)
-                throw new ArgumentNullException("value");
-            if (opcode.OperandType != OperandType.InlineString)
+            if(value == null)
+                throw new ArgumentNullException(nameof(value));
+            if(opcode.OperandType != OperandType.InlineString)
                 throw new ArgumentException("opcode");
 
             return new Instruction(opcode, value);
@@ -193,8 +193,8 @@ namespace GrEmit.MethodBodyParsing
 
         public static Instruction Create(OpCode opcode, sbyte value)
         {
-            if(opcode.OperandType != OperandType.ShortInlineI &&
-               opcode != OpCodes.Ldc_I4_S)
+            if(opcode.OperandType != OperandType.ShortInlineI
+               && opcode != OpCodes.Ldc_I4_S)
                 throw new ArgumentException("opcode");
 
             return new Instruction(opcode, value);
@@ -212,10 +212,10 @@ namespace GrEmit.MethodBodyParsing
         public static Instruction Create(OpCode opcode, int value)
         {
             if(opcode.OperandType != OperandType.InlineI
-                && opcode.OperandType != OperandType.InlineVar
-                && opcode.OperandType != OperandType.ShortInlineVar
-                && opcode.OperandType != OperandType.InlineArg
-                && opcode.OperandType != OperandType.ShortInlineArg)
+               && opcode.OperandType != OperandType.InlineVar
+               && opcode.OperandType != OperandType.ShortInlineVar
+               && opcode.OperandType != OperandType.InlineArg
+               && opcode.OperandType != OperandType.ShortInlineArg)
                 throw new ArgumentException("opcode");
 
             return new Instruction(opcode, value);
@@ -248,7 +248,7 @@ namespace GrEmit.MethodBodyParsing
         public static Instruction Create(OpCode opcode, Instruction target)
         {
             if(target == null)
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
             if(opcode.OperandType != OperandType.InlineBrTarget &&
                opcode.OperandType != OperandType.ShortInlineBrTarget)
                 throw new ArgumentException("opcode");
@@ -259,12 +259,11 @@ namespace GrEmit.MethodBodyParsing
         public static Instruction Create(OpCode opcode, Instruction[] targets)
         {
             if(targets == null)
-                throw new ArgumentNullException("targets");
+                throw new ArgumentNullException(nameof(targets));
             if(opcode.OperandType != OperandType.InlineSwitch)
                 throw new ArgumentException("opcode");
 
             return new Instruction(opcode, targets);
         }
-
     }
 }

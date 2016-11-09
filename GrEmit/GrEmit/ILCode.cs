@@ -14,9 +14,9 @@ namespace GrEmit
         {
             if(labelLineNumbers.ContainsKey(label))
                 throw new InvalidOperationException(string.Format("The label '{0}' has already been marked", label.Name));
-            labelLineNumbers.Add(label, lineNumber);
+            labelLineNumbers.Add(label, Count);
             instructions.Add(new ILInstruction(InstructionKind.Label, default(OpCode), new LabelILInstructionParameter(label), comment));
-            return lineNumber++;
+            return Count++;
         }
 
         public void CheckLabels()
@@ -42,86 +42,86 @@ namespace GrEmit
 
         public int Append(OpCode opCode, ILInstructionComment comment)
         {
-            var lastInstructionPrefix = lineNumber > 0 ? instructions[lineNumber - 1] as ILInstructionPrefix : null;
+            var lastInstructionPrefix = Count > 0 ? instructions[Count - 1] as ILInstructionPrefix : null;
             if(lastInstructionPrefix == null)
             {
                 instructions.Add(new ILInstruction(InstructionKind.Instruction, opCode, null, comment));
-                return lineNumber++;
+                return Count++;
             }
-            instructions[lineNumber - 1] = new ILInstruction(InstructionKind.Instruction, opCode, null, comment) {Prefixes = lastInstructionPrefix.Prefixes};
-            return lineNumber - 1;
+            instructions[Count - 1] = new ILInstruction(InstructionKind.Instruction, opCode, null, comment) {Prefixes = lastInstructionPrefix.Prefixes};
+            return Count - 1;
         }
 
         public int Append(OpCode opCode, ILInstructionParameter parameter, ILInstructionComment comment)
         {
-            var lastInstructionPrefix = lineNumber > 0 ? instructions[lineNumber - 1] as ILInstructionPrefix : null;
+            var lastInstructionPrefix = Count > 0 ? instructions[Count - 1] as ILInstructionPrefix : null;
             if(lastInstructionPrefix == null)
             {
                 instructions.Add(new ILInstruction(InstructionKind.Instruction, opCode, parameter, comment));
-                return lineNumber++;
+                return Count++;
             }
-            instructions[lineNumber - 1] = new ILInstruction(InstructionKind.Instruction, opCode, parameter, comment) {Prefixes = lastInstructionPrefix.Prefixes};
-            return lineNumber - 1;
+            instructions[Count - 1] = new ILInstruction(InstructionKind.Instruction, opCode, parameter, comment) {Prefixes = lastInstructionPrefix.Prefixes};
+            return Count - 1;
         }
 
         public int AppendPrefix(OpCode prefix, ILInstructionParameter parameter)
         {
-            var lastInstructionPrefix = instructions[lineNumber - 1] as ILInstructionPrefix;
+            var lastInstructionPrefix = instructions[Count - 1] as ILInstructionPrefix;
             if(lastInstructionPrefix != null)
             {
                 lastInstructionPrefix.Prefixes.Add(new KeyValuePair<OpCode, ILInstructionParameter>(prefix, parameter));
-                return lineNumber - 1;
+                return Count - 1;
             }
             instructions.Add(new ILInstructionPrefix {Prefixes = new List<KeyValuePair<OpCode, ILInstructionParameter>> {new KeyValuePair<OpCode, ILInstructionParameter>(prefix, parameter)}});
-            return lineNumber++;
+            return Count++;
         }
 
         public int BeginExceptionBlock(ILInstructionComment comment)
         {
             instructions.Add(new ILInstruction(InstructionKind.TryStart, default(OpCode), null, comment));
-            return lineNumber++;
+            return Count++;
         }
 
         public int BeginCatchBlock(TypeILInstructionParameter parameter, ILInstructionComment comment)
         {
             instructions.Add(new ILInstruction(InstructionKind.Catch, default(OpCode), parameter, comment));
-            return lineNumber++;
+            return Count++;
         }
 
         public int BeginExceptFilterBlock(ILInstructionComment comment)
         {
             instructions.Add(new ILInstruction(InstructionKind.FilteredException, default(OpCode), null, comment));
-            return lineNumber++;
+            return Count++;
         }
 
         public int BeginFaultBlock(ILInstructionComment comment)
         {
             instructions.Add(new ILInstruction(InstructionKind.Fault, default(OpCode), null, comment));
-            return lineNumber++;
+            return Count++;
         }
 
         public int BeginFinallyBlock(ILInstructionComment comment)
         {
             instructions.Add(new ILInstruction(InstructionKind.Finally, default(OpCode), null, comment));
-            return lineNumber++;
+            return Count++;
         }
 
         public int EndExceptionBlock(ILInstructionComment comment)
         {
             instructions.Add(new ILInstruction(InstructionKind.TryEnd, default(OpCode), null, comment));
-            return lineNumber++;
+            return Count++;
         }
 
         public int WriteLine(StringILInstructionParameter parameter, ILInstructionComment comment)
         {
             instructions.Add(new ILInstruction(InstructionKind.DebugWriteLine, default(OpCode), parameter, comment));
-            return lineNumber++;
+            return Count++;
         }
 
         public int WriteLine(LocalILInstructionParameter parameter, ILInstructionComment comment)
         {
             instructions.Add(new ILInstruction(InstructionKind.DebugWriteLine, default(OpCode), parameter, comment));
-            return lineNumber++;
+            return Count++;
         }
 
         public int GetLabelLineNumber(GroboIL.Label label)
@@ -238,33 +238,7 @@ namespace GrEmit
             return GetLinesInfo().Key;
         }
 
-        public int Count { get { return lineNumber; } }
-
-        public class ILInstructionBase
-        {
-            public ILInstructionComment Comment { get; set; }
-        }
-
-        public class ILInstruction : ILInstructionBase
-        {
-            public ILInstruction(InstructionKind kind, OpCode opCode, ILInstructionParameter parameter, ILInstructionComment comment)
-            {
-                Kind = kind;
-                OpCode = opCode;
-                Parameter = parameter;
-                Comment = comment;
-            }
-
-            public InstructionKind Kind { get; set; }
-            public OpCode OpCode { get; set; }
-            public ILInstructionParameter Parameter { get; private set; }
-            public List<KeyValuePair<OpCode, ILInstructionParameter>> Prefixes { get; set; }
-        }
-
-        public class ILInstructionPrefix : ILInstructionBase
-        {
-            public List<KeyValuePair<OpCode, ILInstructionParameter>> Prefixes { get; set; }
-        }
+        public int Count { get; private set; }
 
         public enum InstructionKind
         {
@@ -295,14 +269,39 @@ namespace GrEmit
             return margins[length];
         }
 
+        private const int maxCommentStart = 50;
+        private const string margin = "        ";
+
         private static string[] margins;
 
         private readonly List<ILInstructionBase> instructions = new List<ILInstructionBase>();
 
         private readonly Dictionary<Label, int> labelLineNumbers = new Dictionary<Label, int>();
 
-        private int lineNumber;
-        private const int maxCommentStart = 50;
-        private const string margin = "        ";
+        public class ILInstructionBase
+        {
+            public ILInstructionComment Comment { get; set; }
+        }
+
+        public class ILInstruction : ILInstructionBase
+        {
+            public ILInstruction(InstructionKind kind, OpCode opCode, ILInstructionParameter parameter, ILInstructionComment comment)
+            {
+                Kind = kind;
+                OpCode = opCode;
+                Parameter = parameter;
+                Comment = comment;
+            }
+
+            public InstructionKind Kind { get; set; }
+            public OpCode OpCode { get; set; }
+            public ILInstructionParameter Parameter { get; private set; }
+            public List<KeyValuePair<OpCode, ILInstructionParameter>> Prefixes { get; set; }
+        }
+
+        public class ILInstructionPrefix : ILInstructionBase
+        {
+            public List<KeyValuePair<OpCode, ILInstructionParameter>> Prefixes { get; set; }
+        }
     }
 }

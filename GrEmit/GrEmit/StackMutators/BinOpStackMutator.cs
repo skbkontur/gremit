@@ -38,7 +38,7 @@ namespace GrEmit.StackMutators
             return allowedTypes[(int)left, (int)right];
         }
 
-        private readonly bool[,] allowedTypes = new bool[8,8];
+        private readonly bool[,] allowedTypes = new bool[8, 8];
         private readonly OpCode opCode;
     }
 }

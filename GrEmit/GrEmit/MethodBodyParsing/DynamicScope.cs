@@ -69,7 +69,7 @@ namespace GrEmit.MethodBodyParsing
             return (Func<object, MethodBase, SignatureHelper, uint>)method.CreateDelegate(typeof(Func<object, MethodBase, SignatureHelper, uint>));
         }
 
-        public object this[int token] { get { return itemGetter(inst, token); } }
+        public object this[int token] => itemGetter(inst, token);
 
         public MetadataToken GetTokenFor(MethodBase method, SignatureHelper signature)
         {

@@ -24,7 +24,7 @@ namespace GrEmit.MethodBodyParsing
                     if(operand is MetadataToken)
                         return (MetadataToken)operand;
                     if(tokenBuilder == null)
-                        throw new InvalidOperationException(string.Format("Operand {0} is not resolved to metadata token", operand));
+                        throw new InvalidOperationException($"Operand {operand} is not resolved to metadata token");
                     return tokenBuilder(opCode, operand);
                 };
         }

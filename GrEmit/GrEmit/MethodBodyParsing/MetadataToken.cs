@@ -4,6 +4,7 @@
 //
 // Copyright (c) 2008 - 2015 Jb Evain
 // Copyright (c) 2008 - 2011 Novell, Inc.
+// Copyright (c) 2016 Igor Chevdar
 //
 // Licensed under the MIT/X11 license.
 //
@@ -34,9 +35,9 @@ namespace GrEmit.MethodBodyParsing
             token = (uint)type | (uint)rid;
         }
 
-        public uint RID { get { return token & 0x00ffffff; } }
+        public uint RID => token & 0x00ffffff;
 
-        public TokenType TokenType { get { return (TokenType)(token & 0xff000000); } }
+        public TokenType TokenType => (TokenType)(token & 0xff000000);
 
         public int ToInt32()
         {
@@ -81,7 +82,7 @@ namespace GrEmit.MethodBodyParsing
 
         public override string ToString()
         {
-            return string.Format("[{0}:0x{1}]", TokenType, RID.ToString("x4"));
+            return $"[{TokenType}:0x{RID.ToString("x4")}]";
         }
 
         readonly uint token;

@@ -59,12 +59,9 @@ namespace GrEmit.MethodBodyParsing
             return result;
         }
 
-        public int Count { get { return localVariables.Count; } }
+        public int Count => localVariables.Count;
 
-        public LocalInfo this[int index]
-        {
-            get { return localVariables[index]; }
-        }
+        public LocalInfo this[int index] => localVariables[index];
 
         private readonly LocalInfoCollection localVariables;
     }

@@ -9,7 +9,6 @@
 // Licensed under the MIT/X11 license.
 //
 
-using System;
 using System.Text;
 
 namespace GrEmit.MethodBodyParsing
@@ -26,7 +25,7 @@ namespace GrEmit.MethodBodyParsing
     {
         public ExceptionHandler(ExceptionHandlerType handlerType)
         {
-            this.HandlerType = handlerType;
+            HandlerType = handlerType;
         }
 
         public Instruction TryStart { get; set; }
@@ -41,15 +40,15 @@ namespace GrEmit.MethodBodyParsing
 
         public object CatchType { get; set; }
 
-        public ExceptionHandlerType HandlerType { get; set; }
+        public ExceptionHandlerType HandlerType { get; }
 
         public override string ToString()
         {
             var result = new StringBuilder();
 
             result.AppendLine(HandlerType.ToString());
-            result.AppendLine(String.Format("TryStart: {0}, TryEnd: {1}", TryStart, TryEnd));
-            result.AppendLine(String.Format("HandlerStart: {0}, HandlerEnd: {1}", HandlerStart, HandlerEnd));
+            result.AppendLine($"TryStart: {TryStart}, TryEnd: {TryEnd}");
+            result.AppendLine($"HandlerStart: {HandlerStart}, HandlerEnd: {HandlerEnd}");
 
             return result.ToString();
         }

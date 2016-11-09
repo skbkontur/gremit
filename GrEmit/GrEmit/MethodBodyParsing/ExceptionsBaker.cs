@@ -15,7 +15,9 @@ namespace GrEmit.MethodBodyParsing
 {
     internal sealed class ExceptionsBaker : ByteBuffer
     {
-        public ExceptionsBaker(Collection<ExceptionHandler> exceptionHandlers, Collection<Instruction> instructions, Func<OpCode, object, MetadataToken> tokenBuilder)
+        public ExceptionsBaker(Collection<ExceptionHandler> exceptionHandlers,
+                               Collection<Instruction> instructions,
+                               Func<OpCode, object, MetadataToken> tokenBuilder)
             : base(0)
         {
             handlers = exceptionHandlers;

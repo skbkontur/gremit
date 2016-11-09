@@ -5,7 +5,7 @@ using System.Reflection.Emit;
 
 namespace GrEmit.MethodBodyParsing
 {
-    public static class MetadataExtensions
+    internal static class MetadataExtensions
     {
         public static object Resolve(this Module module, MetadataToken token)
         {
@@ -89,7 +89,7 @@ namespace GrEmit.MethodBodyParsing
                 return methodInfo.ReturnType;
             if(methodBase is ConstructorInfo)
                 return typeof(void);
-            throw new InvalidOperationException(string.Format("{0} is not supported", methodBase.GetType()));
+            throw new InvalidOperationException($"{methodBase.GetType()} is not supported");
         }
 
         private static readonly Type __Canon = typeof(object).Assembly.GetType("System.__Canon");

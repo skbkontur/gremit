@@ -69,8 +69,8 @@ namespace GrEmit.MethodBodyParsing
                     var targets = (Instruction[])operand;
                     WriteInt32(targets.Length);
                     var diff = instruction.Offset + opcode.Size + (4 * (targets.Length + 1));
-                    for(int i = 0; i < targets.Length; i++)
-                        WriteInt32(GetTargetOffset(targets[i]) - diff);
+                    foreach(var target in targets)
+                        WriteInt32(GetTargetOffset(target) - diff);
                     break;
                 }
             case OperandType.ShortInlineBrTarget:

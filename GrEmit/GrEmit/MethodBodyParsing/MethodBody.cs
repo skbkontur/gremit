@@ -146,8 +146,8 @@ namespace GrEmit.MethodBodyParsing
             bool isFunc = returnType != typeof(void);
 
             var typeName = isFunc
-                               ? string.Format("System.{0}`{1}", "Func", parameterTypes.Length + 1)
-                               : string.Format("System.{0}`{1}", "Action", parameterTypes.Length);
+                               ? $"System.{"Func"}`{parameterTypes.Length + 1}"
+                               : $"System.{"Action"}`{parameterTypes.Length}";
 
             var type = typeof(Action).Assembly.GetType(typeName) ?? typeof(Action<,,,,,,,,>).Assembly.GetType(typeName);
             if(type == null)
