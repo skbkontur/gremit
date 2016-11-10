@@ -1,4 +1,7 @@
 language: csharp
+mono:
+    - 4.4.2
+    - latest
 solution: GrEmit/GrEmit.sln
 install:
   - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
