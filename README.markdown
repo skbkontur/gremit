@@ -1,4 +1,4 @@
-#GrEmit
+#GrEmit [![Build Status][build-status-travis]][travis]
 
 GrEmit is a library containing different helpers for generating code using Reflection.Emit with the main one being GroboIL - a smart wrapper over [ILGenerator](http://msdn.microsoft.com/en-us/library/system.reflection.emit.ilgenerator.aspx).
 
