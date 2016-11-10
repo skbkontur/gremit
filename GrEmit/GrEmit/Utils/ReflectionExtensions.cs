@@ -16,7 +16,9 @@ namespace GrEmit.Utils
             var assembly = typeof(MethodInfo).Assembly;
             var types = assembly.GetTypes();
 
-            runtimeTypeType = FindType(types, "RuntimeType", "MonoType");
+            var runtimeTypeType = FindType(types, "RuntimeType");
+            var monoTypeType = !IsMono ? runtimeTypeType : FindType(types, "MonoType");
+            runtimeTypeTypes = new HashSet<Type> {runtimeTypeType, monoTypeType};
             var byRefTypeType = FindType(types, IsMono ? "ByRefType" : "SymbolType");
             var pointerTypeType = FindType(types, IsMono ? "PointerType" : "SymbolType");
             var arrayTypeType = FindType(types, IsMono ? "ArrayType" : "SymbolType");
@@ -51,19 +53,23 @@ namespace GrEmit.Utils
                     = returnTypeExtractors[typeof(MethodBuilder)]
                       = (Func<MethodInfo, Type>)(method => method.ReturnType);
             baseTypeOfTypeExtractors[runtimeTypeType]
-                = baseTypeOfTypeExtractors[typeof(TypeBuilder)]
-                  = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)]
-                    = baseTypeOfTypeExtractors[byRefTypeType]
-                      = baseTypeOfTypeExtractors[pointerTypeType]
-                        = baseTypeOfTypeExtractors[arrayTypeType]
-                          = (Func<Type, Type>)(type => type == typeof(object) ? type.BaseType : (type.BaseType ?? typeof(object)));
-            interfacesOfTypeExtractors[runtimeTypeType] = (Func<Type, Type[]>)(type => type.GetInterfaces());
+                = baseTypeOfTypeExtractors[monoTypeType]
+                  = baseTypeOfTypeExtractors[typeof(TypeBuilder)]
+                    = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)]
+                      = baseTypeOfTypeExtractors[byRefTypeType]
+                        = baseTypeOfTypeExtractors[pointerTypeType]
+                          = baseTypeOfTypeExtractors[arrayTypeType]
+                            = (Func<Type, Type>)(type => type == typeof(object) ? type.BaseType : (type.BaseType ?? typeof(object)));
+            interfacesOfTypeExtractors[runtimeTypeType]
+                = interfacesOfTypeExtractors[monoTypeType]
+                  = (Func<Type, Type[]>)(type => type.GetInterfaces());
             interfacesOfTypeExtractors[typeof(TypeBuilder)]
                 = (Func<Type, Type[]>)(type => GetInterfaces(GetBaseType(type)).Concat(type.GetInterfaces()).Distinct().ToArray());
             interfacesOfTypeExtractors[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type[]>)(type => type.GetGenericParameterConstraints());
             typeComparers[runtimeTypeType]
-                = typeComparers[typeof(TypeBuilder)]
-                  = typeComparers[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type, bool>)((x, y) => x == y);
+                = typeComparers[monoTypeType]
+                  = typeComparers[typeof(TypeBuilder)]
+                    = typeComparers[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type, bool>)((x, y) => x == y);
             typeComparers[byRefTypeType]
                 = typeComparers[pointerTypeType]
                   = typeComparers[arrayTypeType]
@@ -78,26 +84,29 @@ namespace GrEmit.Utils
                             return x == y;
                         });
             hashCodeCalculators[runtimeTypeType]
-                = hashCodeCalculators[typeof(TypeBuilder)]
-                  = hashCodeCalculators[typeof(GenericTypeParameterBuilder)]
-                    = (Func<Type, int>)(type => type.GetHashCode());
-            assignabilityCheckers[runtimeTypeType] = (Func<Type, Type, bool>)((to, from) =>
-                {
-                    if(to.IsAssignableFrom(from)) return true;
-                    if(Equal(to, from)) return true;
-                    if(to.IsInterface)
-                    {
-                        var interfaces = GetInterfaces(from);
-                        return interfaces.Any(interfaCe => Equal(interfaCe, to));
-                    }
-                    while(from != null)
-                    {
-                        if(Equal(to, from))
-                            return true;
-                        from = GetBaseType(from);
-                    }
-                    return false;
-                });
+                = hashCodeCalculators[monoTypeType]
+                  = hashCodeCalculators[typeof(TypeBuilder)]
+                    = hashCodeCalculators[typeof(GenericTypeParameterBuilder)]
+                      = (Func<Type, int>)(type => type.GetHashCode());
+            assignabilityCheckers[runtimeTypeType]
+                = assignabilityCheckers[monoTypeType]
+                  = (Func<Type, Type, bool>)((to, from) =>
+                      {
+                          if(to.IsAssignableFrom(from)) return true;
+                          if(Equal(to, from)) return true;
+                          if(to.IsInterface)
+                          {
+                              var interfaces = GetInterfaces(from);
+                              return interfaces.Any(interfaCe => Equal(interfaCe, to));
+                          }
+                          while(from != null)
+                          {
+                              if(Equal(to, from))
+                                  return true;
+                              from = GetBaseType(from);
+                          }
+                          return false;
+                      });
             assignabilityCheckers[typeof(TypeBuilder)] = (Func<Type, Type, bool>)((to, from) => to.IsAssignableFrom(from));
 
             parameterTypesExtractors[typeof(MethodBuilder)]
@@ -242,7 +251,7 @@ namespace GrEmit.Utils
         public static bool IsAssignableFrom(Type to, Type from)
         {
             var type = to.GetType();
-            if(from == null || (from.GetType() != type && type != runtimeTypeType))
+            if(from == null || (from.GetType() != type && !runtimeTypeTypes.Contains(type)))
                 return false;
             var checker = (Func<Type, Type, bool>)assignabilityCheckers[type];
             if(checker == null)
@@ -277,21 +286,16 @@ namespace GrEmit.Utils
             return result;
         }
 
-        private static Type FindType(IEnumerable<Type> types, params string[] names)
+        private static Type TryFindType(IEnumerable<Type> types, string name)
         {
-            Type type = null;
-            foreach(var name in names)
-            {
-                type = types.FirstOrDefault(t => t.Name == name);
-                if(type != null)
-                    break;
-            }
+            return types.FirstOrDefault(t => t.Name == name);
+        }
+
+        private static Type FindType(IEnumerable<Type> types, string name)
+        {
+            var type = TryFindType(types, name);
             if(type == null)
-            {
-                if(names.Length == 1)
-                    throw new InvalidOperationException($"Type '{names[0]}' is not found");
-                throw new InvalidOperationException($"None of types {string.Join(", ", names.Select(name => "'" + name + "'"))} is found");
-            }
+                throw new InvalidOperationException($"Type '{name}' is not found");
             return type;
         }
 
@@ -333,7 +337,7 @@ namespace GrEmit.Utils
             return type;
         }
 
-        private static readonly Type runtimeTypeType;
+        private static readonly HashSet<Type> runtimeTypeTypes;
         private static readonly Type typeBuilderInstType;
         private static readonly Type methodOnTypeBuilderInstType;
         private static readonly Type constructorOnTypeBuilderInstType;
