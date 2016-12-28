@@ -20,13 +20,14 @@ namespace GrEmit.MethodBodyParsing
                 return module.ResolveField(token.ToInt32(), universalArguments, universalArguments);
             case TokenType.TypeDef:
             case TokenType.TypeRef:
+            case TokenType.TypeSpec:
                 return module.ResolveType(token.ToInt32(), universalArguments, universalArguments);
             case TokenType.Signature:
                 return module.ResolveSignature(token.ToInt32());
             case TokenType.String:
                 return module.ResolveString(token.ToInt32());
             default:
-                throw new NotSupportedException();
+                throw new NotSupportedException($"Token type ${token.TokenType} is not supported");
             }
         }
 
