@@ -5,9 +5,9 @@ using System.Reflection.Emit;
 
 namespace GrEmit.MethodBodyParsing
 {
-    internal static class MetadataExtensions
+    public static class MetadataExtensions
     {
-        public static object Resolve(this Module module, MetadataToken token)
+        internal static object Resolve(this Module module, MetadataToken token)
         {
             switch(token.TokenType)
             {
@@ -52,7 +52,7 @@ namespace GrEmit.MethodBodyParsing
             }
         }
 
-        public static SignatureHelper BuildMemberRefSignature(MethodBase methodBase)
+        internal static SignatureHelper BuildMemberRefSignature(MethodBase methodBase)
         {
             return BuildMemberRefSignature(methodBase.CallingConvention,
                                            GetReturnType(methodBase),
