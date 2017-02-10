@@ -56,6 +56,6 @@ notNull_0:                   // [{Object: IList, IList<T>, IReadOnlyList<T>}]
         ret                  // []
 ```
 
-[build-status-travis]: https://travis-ci.org/homuroll/gremit.svg?branch=master
+[build-status-travis]: https://travis-ci.org/skbkontur/gremit.svg?branch=master
 
-[travis]: https://travis-ci.org/homuroll/gremit
+[travis]: https://travis-ci.org/skbkontur/gremit
