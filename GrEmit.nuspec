@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>GrEmit</id>
-    <version>2.1.9</version>
+    <version>2.2.0</version>
     <title>GrEmit</title>
     <projectUrl>https://github.com/skbkontur/gremit</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
