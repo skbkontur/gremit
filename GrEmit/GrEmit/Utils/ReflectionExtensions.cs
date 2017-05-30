@@ -88,6 +88,19 @@ namespace GrEmit.Utils
                   = hashCodeCalculators[typeof(TypeBuilder)]
                     = hashCodeCalculators[typeof(GenericTypeParameterBuilder)]
                       = (Func<Type, int>)(type => type.GetHashCode());
+            hashCodeCalculators[byRefTypeType]
+              = hashCodeCalculators[pointerTypeType]
+                = hashCodeCalculators[arrayTypeType]
+                  = (Func<Type, int>)(type =>
+                      {
+                          if (type.IsByRef)
+                              return CalcHashCode(type.GetElementType()) * 31 + 1;
+                          if (type.IsPointer)
+                              return CalcHashCode(type.GetElementType()) * 31 + 2;
+                          if (type.IsArray)
+                              return (CalcHashCode(type.GetElementType()) * 31 + type.GetArrayRank()) * 31 + 3;
+                          return type.GetHashCode();
+                      });
             assignabilityCheckers[runtimeTypeType]
                 = assignabilityCheckers[monoTypeType]
                   = (Func<Type, Type, bool>)((to, from) =>
