@@ -3,9 +3,6 @@ full-build:
   deps:
 
   build:
-    tool:
-      name: msbuild
-      version: "14.0"
     target: GrEmit\GrEmit.sln
     configuration: Release
 
