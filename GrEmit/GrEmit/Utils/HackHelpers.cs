@@ -222,6 +222,10 @@ namespace GrEmit.Utils
             var methodCallExpression = body as MethodCallExpression;
             if(methodCallExpression != null)
                 return (methodCallExpression).Method;
+            var memberExpression = body as MemberExpression;
+            var propertyInfo = memberExpression?.Member as PropertyInfo;
+            if(propertyInfo != null)
+                return propertyInfo.GetMethod;
             throw new InvalidOperationException("unknown expression " + body);
         }
     }
