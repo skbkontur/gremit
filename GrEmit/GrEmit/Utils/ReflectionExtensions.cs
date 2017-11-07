@@ -23,12 +23,12 @@ namespace GrEmit.Utils
             var pointerTypeType = FindType(types, IsMono ? "PointerType" : "SymbolType");
             var arrayTypeType = FindType(types, IsMono ? "ArrayType" : "SymbolType");
 
-            typeBuilderInstType = FindType(types, IsMono ? "MonoGenericClass" : "TypeBuilderInstantiation");
+            typeBuilderInstType = FindType(types, "TypeBuilderInstantiation");
 
             var runtimeMethodInfoType = FindType(types, IsMono ? "MonoMethod" : "RuntimeMethodInfo");
-            var runtimeGenericMethodInfoType = FindType(types, IsMono ? "MonoGenericMethod" : "RuntimeMethodInfo");
+            var runtimeGenericMethodInfoType = FindType(types,"RuntimeMethodInfo");
             var runtimeConstructorInfoType = FindType(types, IsMono ? "MonoCMethod" : "RuntimeConstructorInfo");
-            var runtimeGenericConstructorInfoType = FindType(types, IsMono ? "MonoGenericCMethod" : "RuntimeConstructorInfo");
+            var runtimeGenericConstructorInfoType = FindType(types, "RuntimeConstructorInfo");
             methodOnTypeBuilderInstType = FindType(types, IsMono ? "MethodOnTypeBuilderInst" : "MethodOnTypeBuilderInstantiation");
             constructorOnTypeBuilderInstType = FindType(types, IsMono ? "ConstructorOnTypeBuilderInst" : "ConstructorOnTypeBuilderInstantiation");
             if(!IsMono)
