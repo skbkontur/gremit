@@ -4,7 +4,7 @@ namespace GrEmit.MethodBodyParsing
 {
     internal class MethodBodyOnDynamicILInfo : MethodBody
     {
-        public MethodBodyOnDynamicILInfo(DynamicMethod dynamicMethod, DynamicILInfo dynamicILInfo, bool resolveTokens)
+        public MethodBodyOnDynamicILInfo(DynamicMethod dynamicMethod, GrEmit.Utils.DynamicILInfo dynamicILInfo, bool resolveTokens)
             : base(GetMethodSignature(dynamicILInfo), resolveTokens)
         {
             scope = new DynamicILInfoWrapper(dynamicILInfo).m_scope;
@@ -32,7 +32,7 @@ namespace GrEmit.MethodBodyParsing
             return DynamicMethodHelpers.Resolve(scope[token.ToInt32()]);
         }
 
-        private static byte[] GetMethodSignature(DynamicILInfo dynamicILInfo)
+        private static byte[] GetMethodSignature(GrEmit.Utils.DynamicILInfo dynamicILInfo)
         {
             var wrapper = new DynamicILInfoWrapper(dynamicILInfo);
             return (byte[])wrapper.m_scope[wrapper.m_methodSignature];

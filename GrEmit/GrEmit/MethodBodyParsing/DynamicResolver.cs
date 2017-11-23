@@ -34,7 +34,7 @@ namespace GrEmit.MethodBodyParsing
             m_localSignatureExtractor = FieldsExtractor.GetExtractor<object, byte[]>(m_localSignatureField);
         }
 
-        public DynamicResolver(DynamicMethod dynamicMethod, DynamicILInfo dynamicILInfo)
+        public DynamicResolver(DynamicMethod dynamicMethod, GrEmit.Utils.DynamicILInfo dynamicILInfo)
         {
             this.dynamicMethod = dynamicMethod;
             inst = factoryByDynamicILInfo(dynamicILInfo);
@@ -117,7 +117,7 @@ namespace GrEmit.MethodBodyParsing
                 il.Ret();
             }
 
-            factoryByDynamicILInfo = (Func<DynamicILInfo, object>)method.CreateDelegate(typeof(Func<DynamicILInfo, object>));
+            factoryByDynamicILInfo = (Func<GrEmit.Utils.DynamicILInfo, object>)method.CreateDelegate(typeof(Func<GrEmit.Utils.DynamicILInfo, object>));
         }
 
         private static void BuildFactoryByDynamicILGenerator()
@@ -171,7 +171,7 @@ namespace GrEmit.MethodBodyParsing
         private readonly DynamicMethod dynamicMethod;
         private readonly object inst;
 
-        private static Func<DynamicILInfo, object> factoryByDynamicILInfo;
+        private static Func<GrEmit.Utils.DynamicILInfo, object> factoryByDynamicILInfo;
         private static Func<ILGenerator, object> factoryByDynamicILGenerator;
         private static GetCodeInfoDelegate getCodeInfoDelegate;
         private static GetEHInfoDelegate getEHInfoDelegate;

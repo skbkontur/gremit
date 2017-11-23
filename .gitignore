@@ -4,3 +4,4 @@ obj
 *.suo
 _ReSharper.*
 Assemblies/GrEmit.*
+.vs
