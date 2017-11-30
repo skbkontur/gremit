@@ -129,8 +129,10 @@ namespace GrEmit
         {
             if(!ReflectionExtensions.IsMono)
             {
-                //if(Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
-                //    return;
+#if NET45
+                if(Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
+                    return;
+#endif
                 Seal();
             }
             if(symbolDocumentWriter != null)
@@ -299,8 +301,11 @@ namespace GrEmit
 
         public static void MarkSequencePoint(ILGenerator il, ISymbolDocumentWriter document, int startLine, int startColumn, int endLine, int endColumn)
         {
+#if NETSTANDARD20
             throw new InvalidOperationException("Not supported.");
-            //il.MarkSequencePoint(document, startLine, startColumn, endLine, endColumn);
+#else
+            il.MarkSequencePoint(document, startLine, startColumn, endLine, endColumn);
+#endif
         }
 
         /// <summary>
@@ -1967,6 +1972,27 @@ namespace GrEmit
                 il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes, optionalParameterTypes);
         }
 
+#if NET45
+        /// <summary>
+        ///     Calls the method indicated on the evaluation stack (as a pointer to an entry point) with arguments described by a calling convention.
+        /// </summary>
+        /// <param name="callingConvention">The unmanaged calling convention to be used.</param>
+        /// <param name="returnType">
+        ///     The <see cref="Type">Type</see> of the result.
+        /// </param>
+        /// <param name="parameterTypes">The types of the required arguments to the instruction.</param>
+        public void Calli(CallingConvention callingConvention, Type returnType, Type[] parameterTypes)
+        {
+            var parameter = new MethodByAddressILInstructionParameter(callingConvention, returnType, parameterTypes);
+            var lineNumber = ilCode.Append(OpCodes.Calli, parameter, new EmptyILInstructionComment());
+            if (analyzeStack && stack != null)
+                MutateStack(OpCodes.Calli, parameter);
+            ilCode.SetComment(lineNumber, GetComment());
+            if (symbolDocumentWriter == null)
+                il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes);
+        }
+#endif
+
         private void Emit(OpCode opCode, ILInstructionParameter parameter)
         {
             if(parameter == null)
@@ -1993,7 +2019,11 @@ namespace GrEmit
                 if(calliParameter.ManagedCallingConvention != null)
                     il.EmitCalli(opCode, calliParameter.ManagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes, null);
                 else
+#if NET45
+                    il.EmitCalli(opCode, calliParameter.UnmanagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes);
+#else
                     throw new ArgumentException("Unmanaged function call is not supported.");
+#endif
             }
             else
             {
@@ -2298,7 +2328,11 @@ namespace GrEmit
 
             public static void SetLocalSymInfo(LocalBuilder localBuilder, string name)
             {
+#if NETSTANDARD20
                 throw new InvalidOperationException("Not supported");
+#else
+                localBuilder.SetLocalSymInfo(name);
+#endif
             }
         }
     }
