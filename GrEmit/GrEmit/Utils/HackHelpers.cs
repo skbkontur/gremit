@@ -14,18 +14,17 @@ namespace GrEmit.Utils
             return valueType;
         }
 
-   //     //NOTE MetadataToken's reassigned on compilation !!! use inside appdomain
-   //     public static ulong GetMemberUniqueToken(MemberInfo mi)
-   //     {
-   //         return ((ulong)mi.Module.MetadataToken) << 32 | (ulong)mi.MetadataToken;
-   //     }
+        //NOTE MetadataToken's reassigned on compilation !!! use inside appdomain
+        public static ulong GetMemberUniqueToken(MemberInfo mi)
+        {
+            return ((ulong)mi.Module.MetadataToken) << 32 | (ulong)mi.MetadataToken;
+        }
 
-   //     //BUG может быть одинаков для типов из разных сборок
-   //     public static ulong GetTypeUniqueToken(Type type)
-   //     {
-
-			//return ((ulong)type.Module.MetadataToken) << 32 | (ulong)type.MetadataToken;
-   //     }
+        //BUG может быть одинаков для типов из разных сборок
+        public static ulong GetTypeUniqueToken(Type type)
+        {
+            return ((ulong)type.Module.MetadataToken) << 32 | (ulong)type.MetadataToken;
+        }
 
         public static ConstructorInfo GetObjectConstruction<T>(Expression<Func<T>> constructorCall,
                                                                params Type[] classGenericArgs)
