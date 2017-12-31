@@ -1,93 +1,44 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{FA3769F0-39AD-4413-BA0E-B45A116EA957}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Tests</RootNamespace>
-    <AssemblyName>Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <TargetFrameworks>net45</TargetFrameworks>
+    <Authors>SKB Kontur.</Authors>
+    <Company>SKB Kontur</Company>
+    <Description>GrEmit is a library containing different helpers for generating code using Reflection.Emit with the main one being GroboIL - a smart wrapper over ILGenerator.</Description>
+    <Copyright>Copyright � SKB Kontur 2017.</Copyright>
+    <PackageProjectUrl>https://github.com/skbkontur/gremit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/skbkontur/gremit</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>.NET</PackageTags>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
+    <DefineConstants>NET45</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <DefineConstants>NETSTANDARD20</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="System" />
+    <PackageReference Include="System.Core" Version="4.3.0" />
+    <PackageReference Include="System.Xml.Linq" Version="4.3.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.3.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+    <PackageReference Include="System.Data" Version="4.3.0" />
+    <PackageReference Include="System.Xml" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="2.6.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GrEmit\GrEmit.csproj" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\Assemblies\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="OpCodesTests\TestCalls.cs" />
-    <Compile Include="OpCodesTests\Test_Not.cs" />
-    <Compile Include="OpCodesTests\Test_Neg.cs" />
-    <Compile Include="OpCodesTests\Test_Xor.cs" />
-    <Compile Include="OpCodesTests\Test_Or.cs" />
-    <Compile Include="OpCodesTests\Test_And.cs" />
-    <Compile Include="OpCodesTests\Test_Rem_Un.cs" />
-    <Compile Include="OpCodesTests\Test_Rem.cs" />
-    <Compile Include="OpCodesTests\Test_Div_Un.cs" />
-    <Compile Include="OpCodesTests\Test_Div.cs" />
-    <Compile Include="OpCodesTests\Test_Mul_Ovf_Un.cs" />
-    <Compile Include="OpCodesTests\Test_Mul_Ovf.cs" />
-    <Compile Include="OpCodesTests\Test_Mul.cs" />
-    <Compile Include="OpCodesTests\Test_Sub_Ovf.cs" />
-    <Compile Include="OpCodesTests\Test_Sub_Ovf_Un.cs" />
-    <Compile Include="OpCodesTests\Test_Sub.cs" />
-    <Compile Include="OpCodesTests\Test_Add_Ovf.cs" />
-    <Compile Include="OpCodesTests\Test_Add_Ovf_Un.cs" />
-    <Compile Include="OpCodesTests\Test_Add.cs" />
-    <Compile Include="ReflectionExtensionsTest.cs" />
-    <Compile Include="HackHelpersTest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Test.cs" />
-    <Compile Include="TestArgumentOutOfRange.cs" />
-    <Compile Include="TestLabels.cs" />
-    <Compile Include="TestTryCatch.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GrEmit\GrEmit.csproj">
-      <Project>{049F27EE-942B-4F5F-BFA8-BD199538E3A8}</Project>
-      <Name>GrEmit</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

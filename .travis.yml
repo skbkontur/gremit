@@ -1,9 +1,0 @@
-language: csharp
-mono:
-    - latest
-solution: GrEmit/GrEmit.sln
-install:
-  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
-script:
-  - xbuild /p:Configuration=Release GrEmit/GrEmit.sln
-  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./GrEmit/Tests/bin/Release/Tests.dll

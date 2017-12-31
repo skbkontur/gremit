@@ -129,8 +129,10 @@ namespace GrEmit
         {
             if(!ReflectionExtensions.IsMono)
             {
+#if NET45
                 if(Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
                     return;
+#endif
                 Seal();
             }
             if(symbolDocumentWriter != null)
@@ -141,7 +143,7 @@ namespace GrEmit
                     var instruction = (ILCode.ILInstruction)ilCode.GetInstruction(i);
                     var parameter = instruction.Parameter;
                     if(instruction.Kind == ILCode.InstructionKind.Instruction || instruction.Kind == ILCode.InstructionKind.DebugWriteLine)
-                        il.MarkSequencePoint(symbolDocumentWriter, linesInfo.Value[i].Key, 0, linesInfo.Value[i].Value, 1000);
+                        MarkSequencePoint(il, symbolDocumentWriter, linesInfo.Value[i].Key, 0, linesInfo.Value[i].Value, 1000);
                     foreach(var prefix in instruction.Prefixes ?? new List<KeyValuePair<OpCode, ILInstructionParameter>>())
                         Emit(prefix.Key, prefix.Value);
                     switch(instruction.Kind)
@@ -205,8 +207,8 @@ namespace GrEmit
             var local = il.DeclareLocal(localType, pinned);
             name = string.IsNullOrEmpty(name) ? "local" : name;
             var uniqueName = !appendUniquePrefix ? name : name + "_" + localId++;
-            if(symbolDocumentWriter != null)
-                local.SetLocalSymInfo(uniqueName);
+            if (symbolDocumentWriter != null)
+                Local.SetLocalSymInfo(local, uniqueName);
             return new Local(local, uniqueName);
         }
 
@@ -225,7 +227,7 @@ namespace GrEmit
             var local = il.DeclareLocal(localType, pinned);
             var name = "local_" + localId++;
             if(symbolDocumentWriter != null)
-                local.SetLocalSymInfo(name);
+                Local.SetLocalSymInfo(local, name);
             return new Local(local, name);
         }
 
@@ -294,7 +296,16 @@ namespace GrEmit
         /// <param name="endColumn">The column in the line where the sequence point ends.</param>
         public void MarkSequencePoint(ISymbolDocumentWriter document, int startLine, int startColumn, int endLine, int endColumn)
         {
+            MarkSequencePoint(il, document, startLine, startColumn, endLine, endColumn);
+        }
+
+        public static void MarkSequencePoint(ILGenerator il, ISymbolDocumentWriter document, int startLine, int startColumn, int endLine, int endColumn)
+        {
+#if NETSTANDARD20
+            throw new InvalidOperationException("Not supported.");
+#else
             il.MarkSequencePoint(document, startLine, startColumn, endLine, endColumn);
+#endif
         }
 
         /// <summary>
@@ -1961,6 +1972,7 @@ namespace GrEmit
                 il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes, optionalParameterTypes);
         }
 
+#if NET45
         /// <summary>
         ///     Calls the method indicated on the evaluation stack (as a pointer to an entry point) with arguments described by a calling convention.
         /// </summary>
@@ -1973,12 +1985,13 @@ namespace GrEmit
         {
             var parameter = new MethodByAddressILInstructionParameter(callingConvention, returnType, parameterTypes);
             var lineNumber = ilCode.Append(OpCodes.Calli, parameter, new EmptyILInstructionComment());
-            if(analyzeStack && stack != null)
+            if (analyzeStack && stack != null)
                 MutateStack(OpCodes.Calli, parameter);
             ilCode.SetComment(lineNumber, GetComment());
-            if(symbolDocumentWriter == null)
+            if (symbolDocumentWriter == null)
                 il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes);
         }
+#endif
 
         private void Emit(OpCode opCode, ILInstructionParameter parameter)
         {
@@ -2006,7 +2019,11 @@ namespace GrEmit
                 if(calliParameter.ManagedCallingConvention != null)
                     il.EmitCalli(opCode, calliParameter.ManagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes, null);
                 else
+#if NET45
                     il.EmitCalli(opCode, calliParameter.UnmanagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes);
+#else
+                    throw new ArgumentException("Unmanaged function call is not supported.");
+#endif
             }
             else
             {
@@ -2301,13 +2318,22 @@ namespace GrEmit
 
             public void SetLocalSymInfo(string name)
             {
-                localBuilder.SetLocalSymInfo(name);
+                SetLocalSymInfo(localBuilder, name);
             }
 
             public string Name { get; }
             public Type Type { get { return localBuilder.LocalType; } }
 
             private readonly LocalBuilder localBuilder;
+
+            public static void SetLocalSymInfo(LocalBuilder localBuilder, string name)
+            {
+#if NETSTANDARD20
+                throw new InvalidOperationException("Not supported");
+#else
+                localBuilder.SetLocalSymInfo(name);
+#endif
+            }
         }
     }
 

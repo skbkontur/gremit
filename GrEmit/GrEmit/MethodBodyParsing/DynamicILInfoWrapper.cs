@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace GrEmit.MethodBodyParsing
 {
@@ -8,18 +7,18 @@ namespace GrEmit.MethodBodyParsing
     {
         static DynamicILInfoWrapper()
         {
-            var m_methodSignatureField = typeof(DynamicILInfo).GetField("m_methodSignature", BindingFlags.Instance | BindingFlags.NonPublic);
+            var m_methodSignatureField = typeof(GrEmit.Utils.DynamicILInfo).GetField("m_methodSignature", BindingFlags.Instance | BindingFlags.NonPublic);
             if(m_methodSignatureField == null)
                 throw new InvalidOperationException("Field 'DynamicILInfo.m_methodSignature' is not found");
-            m_methodSignatureExtractor = FieldsExtractor.GetExtractor<DynamicILInfo, int>(m_methodSignatureField);
+            m_methodSignatureExtractor = FieldsExtractor.GetExtractor<GrEmit.Utils.DynamicILInfo, int>(m_methodSignatureField);
 
-            var m_scopeField = typeof(DynamicILInfo).GetField("m_scope", BindingFlags.Instance | BindingFlags.NonPublic);
+            var m_scopeField = typeof(GrEmit.Utils.DynamicILInfo).GetField("m_scope", BindingFlags.Instance | BindingFlags.NonPublic);
             if(m_scopeField == null)
                 throw new InvalidOperationException("Field 'DynamicILInfo.m_scope' is not found");
-            m_scopeExtractor = FieldsExtractor.GetExtractor<DynamicILInfo, object>(m_scopeField);
+            m_scopeExtractor = FieldsExtractor.GetExtractor<GrEmit.Utils.DynamicILInfo, object>(m_scopeField);
         }
 
-        public DynamicILInfoWrapper(DynamicILInfo inst)
+        public DynamicILInfoWrapper(GrEmit.Utils.DynamicILInfo inst)
         {
             this.inst = inst;
         }
@@ -62,9 +61,9 @@ namespace GrEmit.MethodBodyParsing
             return new MetadataToken((uint)inst.GetTokenFor(methodBase.MethodHandle));
         }
 
-        public DynamicILInfo inst;
+        public GrEmit.Utils.DynamicILInfo inst;
 
-        private static readonly Func<DynamicILInfo, int> m_methodSignatureExtractor;
-        private static readonly Func<DynamicILInfo, object> m_scopeExtractor;
+        private static readonly Func<GrEmit.Utils.DynamicILInfo, int> m_methodSignatureExtractor;
+        private static readonly Func<GrEmit.Utils.DynamicILInfo, object> m_scopeExtractor;
     }
 }
