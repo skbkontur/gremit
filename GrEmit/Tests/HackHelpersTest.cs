@@ -187,6 +187,8 @@ namespace Tests
             Assert.AreEqual(GetMethod(typeof(ClassWithMethods), "op_Addition", null),
                             HackHelpers.GetMethodDefinition<ClassWithMethods>(
                                 o => o + default(ClassWithMethods)));
+            Assert.AreEqual(GetMethod(typeof(ClassWithMethods), "get_P1", null),
+                HackHelpers.GetMethodDefinition<ClassWithMethods>(o => o.P1));
         }
 
         [Test]
