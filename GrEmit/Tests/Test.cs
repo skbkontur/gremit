@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+#if NET45
 using System.Diagnostics;
 using System.Linq;
+#endif
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -21,7 +23,7 @@ namespace Tests
             list.Add(1);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("For debugging")]
         public void TestZzz()
         {
             var method = HackHelpers.GetMethodDefinition<int>(x => Qzz());
@@ -266,6 +268,7 @@ namespace Tests
         {
         }
 
+#if NET45
         [Test]
         public void TestDifferentPathsGeneric()
         {
@@ -295,6 +298,7 @@ namespace Tests
                 Console.Write(il.GetILCode());
             }
         }
+#endif
 
         [Test]
         public void TestBrfalse()
@@ -352,6 +356,7 @@ namespace Tests
         {
         }
 
+#if NET45
         [Test]
         public void TestByRefGeneric()
         {
@@ -371,8 +376,10 @@ namespace Tests
                 Console.Write(il.GetILCode());
             }
         }
+#endif
 
-        [Test, Ignore]
+#if NET45
+        [Test, Ignore("For debugging")]
         public void TestEnumerable()
         {
             var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);
@@ -408,6 +415,7 @@ namespace Tests
             var instance = Activator.CreateInstance(type);
             type.GetMethod("Qzz", BindingFlags.Instance | BindingFlags.Public).MakeGenericMethod(typeof(int)).Invoke(instance, new object[] {null, null});
         }
+#endif
 
         public static string[] Create(string[] values)
         {
@@ -442,7 +450,8 @@ namespace Tests
             }
         }
 
-        [Test, Ignore]
+#if NET45
+        [Test, Ignore("For debugging")]
         public void TestPerformance_Ifs_vs_Switch()
         {
             var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);
@@ -508,6 +517,7 @@ namespace Tests
                 Console.WriteLine();
             }
         }
+#endif
 
         [Test]
         public void TestCallFormat()

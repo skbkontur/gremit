@@ -5,7 +5,9 @@ using System.Diagnostics.SymbolStore;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+#if !NETSTANDARD2_0
 using System.Runtime.InteropServices;
+#endif
 
 using GrEmit.InstructionComments;
 using GrEmit.InstructionParameters;
@@ -129,7 +131,7 @@ namespace GrEmit
         {
             if(!ReflectionExtensions.IsMono)
             {
-#if NET45
+#if !NETSTANDARD2_0
                 if(Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
                     return;
 #endif
@@ -301,8 +303,8 @@ namespace GrEmit
 
         public static void MarkSequencePoint(ILGenerator il, ISymbolDocumentWriter document, int startLine, int startColumn, int endLine, int endColumn)
         {
-#if NETSTANDARD20
-            throw new InvalidOperationException("Not supported.");
+#if NETSTANDARD2_0
+            throw new NotSupportedException("Not supported for netstandard2.0");
 #else
             il.MarkSequencePoint(document, startLine, startColumn, endLine, endColumn);
 #endif
@@ -1972,7 +1974,7 @@ namespace GrEmit
                 il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes, optionalParameterTypes);
         }
 
-#if NET45
+#if !NETSTANDARD2_0
         /// <summary>
         ///     Calls the method indicated on the evaluation stack (as a pointer to an entry point) with arguments described by a calling convention.
         /// </summary>
@@ -2019,10 +2021,10 @@ namespace GrEmit
                 if(calliParameter.ManagedCallingConvention != null)
                     il.EmitCalli(opCode, calliParameter.ManagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes, null);
                 else
-#if NET45
-                    il.EmitCalli(opCode, calliParameter.UnmanagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes);
+#if NETSTANDARD2_0
+                    throw new NotSupportedException("Unmanaged function call is not supported for netstandard2.0");
 #else
-                    throw new ArgumentException("Unmanaged function call is not supported.");
+                    il.EmitCalli(opCode, calliParameter.UnmanagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes);
 #endif
             }
             else
@@ -2328,8 +2330,8 @@ namespace GrEmit
 
             public static void SetLocalSymInfo(LocalBuilder localBuilder, string name)
             {
-#if NETSTANDARD20
-                throw new InvalidOperationException("Not supported");
+#if NETSTANDARD2_0
+                throw new NotSupportedException("Not supported for netstandard2.0");
 #else
                 localBuilder.SetLocalSymInfo(name);
 #endif
