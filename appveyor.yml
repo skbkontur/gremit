@@ -8,9 +8,11 @@ build_script:
   - cmd: dotnet build --configuration Release ./GrEmit.sln
 
 test_script:
-  - cmd: dotnet test --configuration Release ./GrEmit.Tests/GrEmit.Tests.csproj --logger "trx;LogFileName=gremit-tests.trx"
+  - cmd: dotnet test --no-build --configuration Release --framework net45 ./GrEmit.Tests/GrEmit.Tests.csproj --logger "trx;LogFileName=gremit-tests-net45.trx"
+  - cmd: dotnet test --no-build --configuration Release --framework netcoreapp2.0 ./GrEmit.Tests/GrEmit.Tests.csproj --logger "trx;LogFileName=gremit-tests-netcoreapp2.0.trx"
 
 after_test:
   - ps: |
       $wc = New-Object 'System.Net.WebClient'
-      $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", "./GrEmit.Tests/TestResults/gremit-tests.trx")
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", "$env:appveyor_build_folder/GrEmit.Tests/TestResults/gremit-tests-net45.trx")
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", "$env:appveyor_build_folder/GrEmit.Tests/TestResults/gremit-tests-netcoreapp2.0.trx")
