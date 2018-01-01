@@ -13,6 +13,10 @@ test_script:
 
 after_test:
   - ps: |
+      $jobId = $env:APPVEYOR_JOB_ID
+      Write-Host $jobId
+      $url = "https://ci.appveyor.com/api/testresults/mstest/$jobId";
+      Write-Host $url
       $wc = New-Object 'System.Net.WebClient'
-      $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", './GrEmit.Tests/TestResults/gremit-tests-net45.trx')
-      $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", './GrEmit.Tests/TestResults/gremit-tests-netcoreapp2.0.trx')
+      $wc.UploadFile($url, './GrEmit.Tests/TestResults/gremit-tests-net45.trx')
+      $wc.UploadFile($url, './GrEmit.Tests/TestResults/gremit-tests-netcoreapp2.0.trx')
