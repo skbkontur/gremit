@@ -1,5 +1,6 @@
 # GrEmit
 [![Build Status][build-status-travis]][travis]
+[![Build status](https://ci.appveyor.com/api/projects/status/p8pr8xhyhb9tjtq2?svg=true)](https://ci.appveyor.com/project/vostok/gremit)
 
 GrEmit is a library containing different helpers for generating code using Reflection.Emit with the main one being GroboIL - a smart wrapper over [ILGenerator](http://msdn.microsoft.com/en-us/library/system.reflection.emit.ilgenerator.aspx).
 
