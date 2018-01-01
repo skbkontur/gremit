@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>1701;1702;1705;1591</NoWarn>
+    <PackageId>GrEmit</PackageId>
+    <Version>2.2.0</Version>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <Authors>Igor Chevdar</Authors>
+    <Company>SKB Kontur</Company>
+    <Copyright>SKB Kontur 2012-2017</Copyright>
+    <Description>GrEmit is a library containing different helpers for generating code using Reflection.Emit with the main one being GroboIL - a smart wrapper over ILGenerator.</Description>
+    <PackageTags>.NET Reflection Emit ILGenerator</PackageTags>
+    <PackageProjectUrl>https://github.com/skbkontur/gremit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/skbkontur/gremit</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+  </ItemGroup>
+</Project>
