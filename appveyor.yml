@@ -8,4 +8,9 @@ build_script:
   - cmd: dotnet build --configuration Release ./GrEmit.sln
 
 test_script:
-  - cmd: dotnet test --configuration Release ./GrEmit.Tests/GrEmit.Tests.csproj
+  - cmd: dotnet test --configuration Release ./GrEmit.Tests/GrEmit.Tests.csproj --logger "trx;LogFileName=gremit-tests.trx"
+
+after_test:
+  - ps: |
+      $wc = New-Object 'System.Net.WebClient'
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:appveyor_job_id)", "./GrEmit.Tests/TestResults/gremit-tests.trx")
