@@ -23,7 +23,7 @@ namespace Tests
             list.Add(1);
         }
 
-        [Test]
+        [Test, Ignore("For debugging")]
         public void TestZzz()
         {
             var method = HackHelpers.GetMethodDefinition<int>(x => Qzz());
