@@ -8,4 +8,4 @@ build_script:
   - cmd: dotnet build --configuration Release ./GrEmit.sln
 
 test_script:
-  - cmd: dotnet test ./GrEmit.Tests/GrEmit.Tests.csproj
+  - cmd: dotnet test --configuration Release ./GrEmit.Tests/GrEmit.Tests.csproj
