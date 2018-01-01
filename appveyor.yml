@@ -1,6 +1,11 @@
 image: Visual Studio 2017
 
+before_build:
+  - cmd: dotnet --version
+  - cmd: dotnet restore ./GrEmit.sln --verbosity m
+
 build_script:
-  - dotnet restore GrEmit\GrEmit.sln
-  - dotnet build --configuration Release GrEmit\GrEmit.sln
-  - nunit-console GrEmit\Tests\bin\Release\net45\Tests.dll
+  - cmd: dotnet build --configuration Release ./GrEmit.sln
+
+test_script:
+  - cmd: dotnet test ./GrEmit.Tests/GrEmit.Tests.csproj
