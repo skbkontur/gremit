@@ -18,5 +18,7 @@ after_test:
       $url = "https://ci.appveyor.com/api/testresults/mstest/$jobId";
       Write-Host $url
       $wc = New-Object 'System.Net.WebClient'
-      $wc.UploadFile($url, './GrEmit.Tests/TestResults/gremit-tests-net45.trx')
-      $wc.UploadFile($url, './GrEmit.Tests/TestResults/gremit-tests-netcoreapp2.0.trx')
+      $resultsNet45 = (Resolve-Path './GrEmit.Tests/TestResults/gremit-tests-net45.trx')
+      Write-Host $resultsNet45
+      $wc.UploadFile($url, $resultsNet45)
+      $wc.UploadFile($url, (Resolve-Path './GrEmit.Tests/TestResults/gremit-tests-netcoreapp2.0.trx'))
