@@ -6,7 +6,8 @@ mono: none
 script:
   - dotnet --version
   - dotnet restore ./GrEmit.sln --verbosity m
-  - dotnet build --configuration Release ./GrEmit.sln
+  - dotnet build --configuration Release --framework netstandard2.0 ./GrEmit/GrEmit.csproj
+  - dotnet build --configuration Release --framework netcoreapp2.0 ./GrEmit.Tests/GrEmit.Tests.csproj
   - dotnet test --no-build --configuration Release ./GrEmit.Tests/GrEmit.Tests.csproj
 
 
