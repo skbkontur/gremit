@@ -1,7 +1,7 @@
 image: Visual Studio 2017
 
 before_build:
-  - cmd: dotnet --version
+  - cmd: dotnet --info
   - cmd: dotnet restore ./GrEmit.sln --verbosity m
 
 build_script:
