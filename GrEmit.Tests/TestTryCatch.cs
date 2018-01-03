@@ -1,11 +1,11 @@
 ﻿using System;
+#if NET45
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Threading;
+#endif
+using System.Reflection.Emit;
 
 using NUnit.Framework;
-#if NET45
-#endif
 
 namespace GrEmit.Tests
 {

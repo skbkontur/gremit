@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+#if NET45
 using System.Diagnostics;
 using System.Linq;
+#endif
 using System.Reflection;
 using System.Reflection.Emit;
 
 using GrEmit.Utils;
 
 using NUnit.Framework;
-#if NET45
-#endif
+
+
 
 namespace GrEmit.Tests
 {
@@ -22,7 +24,7 @@ namespace GrEmit.Tests
             list.Add(1);
         }
 
-        [Test, Ignore("For debugging")]
+        [Test, Ignore("Is used for debugging")]
         public void TestZzz()
         {
             var method = HackHelpers.GetMethodDefinition<int>(x => Qzz());
@@ -267,11 +269,10 @@ namespace GrEmit.Tests
         {
         }
 
-#if NET45
         [Test]
         public void TestDifferentPathsGeneric()
         {
-            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
+            var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
             var module = assembly.DefineDynamicModule(Guid.NewGuid().ToString());
             var type = module.DefineType("Zzz", TypeAttributes.Class | TypeAttributes.Public);
             var method = type.DefineMethod("Qzz", MethodAttributes.Public | MethodAttributes.Static);
@@ -297,7 +298,6 @@ namespace GrEmit.Tests
                 Console.Write(il.GetILCode());
             }
         }
-#endif
 
         [Test]
         public void TestBrfalse()
@@ -355,11 +355,10 @@ namespace GrEmit.Tests
         {
         }
 
-#if NET45
         [Test]
         public void TestByRefGeneric()
         {
-            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
+            var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
             var module = assembly.DefineDynamicModule(Guid.NewGuid().ToString());
             var type = module.DefineType("Zzz", TypeAttributes.Class | TypeAttributes.Public);
             var method = type.DefineMethod("Qzz", MethodAttributes.Public | MethodAttributes.Static);
@@ -375,10 +374,9 @@ namespace GrEmit.Tests
                 Console.Write(il.GetILCode());
             }
         }
-#endif
 
 #if NET45
-        [Test, Ignore("For debugging")]
+        [Test, Ignore("Is used for debugging")]
         public void TestEnumerable()
         {
             var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);
@@ -450,7 +448,7 @@ namespace GrEmit.Tests
         }
 
 #if NET45
-        [Test, Ignore("For debugging")]
+        [Test, Ignore("Is used for debugging")]
         public void TestPerformance_Ifs_vs_Switch()
         {
             var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);

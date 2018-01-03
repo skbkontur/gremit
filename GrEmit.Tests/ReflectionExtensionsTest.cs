@@ -15,11 +15,7 @@ namespace GrEmit.Tests
         [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
-#if NET45
-            var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
-#else
             var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
-#endif
             module = assembly.DefineDynamicModule(Guid.NewGuid().ToString());
         }
 
