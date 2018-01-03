@@ -8,10 +8,10 @@ build_script:
   - cmd: dotnet build --configuration Release ./GrEmit.sln
 
 test_script:
-  - cmd: dotnet test --no-build --configuration Release ./GrEmit.Tests/GrEmit.Tests.csproj --logger "trx;LogFileName=gremit-tests.trx"
+  - cmd: dotnet test --no-build --configuration Release ./GrEmit.Tests/GrEmit.Tests.csproj --logger "trx;LogFileName=test-results.trx"
 
 after_test:
   - ps: |
       $wc = New-Object 'System.Net.WebClient'
       $url = "https://ci.appveyor.com/api/testresults/mstest/$($env:APPVEYOR_JOB_ID)";
-      $wc.UploadFile($url, (Resolve-Path './GrEmit.Tests/TestResults/gremit-tests.trx'))
+      $wc.UploadFile($url, (Resolve-Path './GrEmit.Tests/TestResults/test-results.trx'))
