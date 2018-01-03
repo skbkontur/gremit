@@ -2,11 +2,9 @@
 using System.Linq;
 using System.Reflection.Emit;
 
-using GrEmit;
-
 using NUnit.Framework;
 
-namespace Tests.OpCodesTests
+namespace GrEmit.Tests.OpCodesTests
 {
     [TestFixture]
     public class Test_And

@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Reflection.Emit;
-using GrEmit;
+
 using GrEmit.Utils;
+
 using NUnit.Framework;
 
-namespace Tests.OpCodesTests
+namespace GrEmit.Tests.OpCodesTests
 {
     [TestFixture]
     public class TestCalls

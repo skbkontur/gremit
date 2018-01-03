@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Reflection;
 using System.Reflection.Emit;
-#if NET45
 using System.Threading;
-#endif
-
-using GrEmit;
 
 using NUnit.Framework;
+#if NET45
+#endif
 
-namespace Tests
+namespace GrEmit.Tests
 {
     [TestFixture]
     public class TestTryCatch

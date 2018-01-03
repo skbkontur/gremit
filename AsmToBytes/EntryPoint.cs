@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace GrEmit.AsmToBytes
+namespace AsmToBytes
 {
     public static class EntryPoint
     {

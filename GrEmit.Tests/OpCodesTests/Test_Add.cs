@@ -1,13 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection.Emit;
-
-using GrEmit;
 
 using NUnit.Framework;
 
-using System.Linq;
-
-namespace Tests.OpCodesTests
+namespace GrEmit.Tests.OpCodesTests
 {
     [TestFixture]
     public class Test_Add

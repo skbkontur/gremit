@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-#if NET45
 using System.Diagnostics;
 using System.Linq;
-#endif
 using System.Reflection;
 using System.Reflection.Emit;
 
-using GrEmit;
 using GrEmit.Utils;
 
 using NUnit.Framework;
+#if NET45
+#endif
 
-namespace Tests
+namespace GrEmit.Tests
 {
     [TestFixture]
     public class Test

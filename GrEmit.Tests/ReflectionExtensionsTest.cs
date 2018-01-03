@@ -7,7 +7,7 @@ using GrEmit.Utils;
 
 using NUnit.Framework;
 
-namespace Tests
+namespace GrEmit.Tests
 {
     [TestFixture]
     public class ReflectionExtensionsTest

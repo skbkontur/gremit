@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Reflection.Emit;
 
-using GrEmit;
-
 using NUnit.Framework;
 
-namespace Tests
+namespace GrEmit.Tests
 {
     [TestFixture]
     public class TestLabels
