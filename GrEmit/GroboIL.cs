@@ -5,9 +5,7 @@ using System.Diagnostics.SymbolStore;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-#if !NETSTANDARD2_0
 using System.Runtime.InteropServices;
-#endif
 
 using GrEmit.InstructionComments;
 using GrEmit.InstructionParameters;
@@ -132,9 +130,11 @@ namespace GrEmit
             if(!ReflectionExtensions.IsMono)
             {
 #if !NETSTANDARD2_0
-                if(Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0)
+                if(Marshal.GetExceptionPointers() != IntPtr.Zero)
                     return;
 #endif
+                if(Marshal.GetExceptionCode() != 0)
+                    return;
                 Seal();
             }
             if(symbolDocumentWriter != null)
