@@ -11,8 +11,6 @@ using GrEmit.Utils;
 
 using NUnit.Framework;
 
-
-
 namespace GrEmit.Tests
 {
     [TestFixture]
