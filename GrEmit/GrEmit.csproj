@@ -5,8 +5,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
     <PackageId>GrEmit</PackageId>
-    <Version>2.2.0</Version>
-    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <Version>2.2.1</Version>
+    <AssemblyVersion>2.2.1.0</AssemblyVersion>
     <Authors>Igor Chevdar</Authors>
     <Company>SKB Kontur</Company>
     <Copyright>SKB Kontur 2012-2017</Copyright>
