@@ -42,9 +42,8 @@ namespace GrEmit.Tests
 
         private static void AssertDateTimeOffsetFields(DateTime dateTime, short offsetMinutes)
         {
-            Console.Out.WriteLine($"{dateTime} {offsetMinutes}");
-            NUnit.Framework.Assert.That(dateTime, Is.EqualTo(new DateTime(2018, 01, 05, 21, 19, 56, DateTimeKind.Unspecified)));
-            NUnit.Framework.Assert.That(offsetMinutes, Is.EqualTo(15));
+            Assert.That(dateTime, Is.EqualTo(new DateTime(2018, 01, 05, 21, 19, 56, DateTimeKind.Unspecified)));
+            Assert.That(offsetMinutes, Is.EqualTo(15));
         }
 
         private readonly Type dateTimeOffsetType = typeof(DateTimeOffset);
