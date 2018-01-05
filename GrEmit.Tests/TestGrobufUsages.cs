@@ -9,9 +9,6 @@ namespace GrEmit.Tests
     public class TestGrobufUsages
     {
         [Test]
-#if NETCOREAPP2_0
-        [Ignore("Test is failing on dotnetcore: dateTimeOffsetType.GetField(\"m_dateTime\", ...) == null")]
-#endif
         public void DateTimeOffsetPrivateFieldsAccess()
         {
             var method = BuildAccessorMethod();
@@ -27,10 +24,10 @@ namespace GrEmit.Tests
             using(var il = new GroboIL(method))
             {
                 il.Ldarga(0); // stack: [obj]
-                il.Ldfld(dateTimeOffsetType.GetField("m_dateTime", BindingFlags.Instance | BindingFlags.NonPublic)); // stack: [obj.m_dateTime]
+                il.Ldfld(dateTimeOffsetType.GetField(SelectName("_dateTime", "m_dateTime"), BindingFlags.Instance | BindingFlags.NonPublic)); // stack: [obj.m_dateTime]
 
                 il.Ldarga(0); // stack: [obj]
-                il.Ldfld(dateTimeOffsetType.GetField("m_offsetMinutes", BindingFlags.Instance | BindingFlags.NonPublic)); // stack: [obj.m_offsetMinutes]
+                il.Ldfld(dateTimeOffsetType.GetField(SelectName("_offsetMinutes", "m_offsetMinutes"), BindingFlags.Instance | BindingFlags.NonPublic)); // stack: [obj.m_offsetMinutes]
 
                 il.Call(assertMethod); // stack: []
 
@@ -44,6 +41,15 @@ namespace GrEmit.Tests
         {
             Assert.That(dateTime, Is.EqualTo(new DateTime(2018, 01, 05, 21, 19, 56, DateTimeKind.Unspecified)));
             Assert.That(offsetMinutes, Is.EqualTo(15));
+        }
+
+        private static string SelectName(string netcoreName, string net45Name)
+        {
+#if NETCOREAPP2_0
+            return netcoreName;
+#else
+            return net45Name;
+#endif
         }
 
         private readonly Type dateTimeOffsetType = typeof(DateTimeOffset);
