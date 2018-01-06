@@ -1,11 +1,10 @@
 dist: trusty
 sudo: false
 language: csharp
-matrix:
-  include:
-    - dotnet: 2.0.0
-      mono: none
-      env: DOTNETCORE=1
-    - mono: latest
+dotnet: 2.0.0
+mono: latest
 script:
-  - ./test-by-travis.sh
+  - dotnet restore ./GrEmit.sln --verbosity m
+  - dotnet build --configuration Release ./GrEmit.sln
+  - dotnet test --no-build --configuration Release ./GrEmit.Tests/GrEmit.Tests.csproj
+
