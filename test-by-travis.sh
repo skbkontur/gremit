@@ -14,4 +14,3 @@ else
   msbuild /t:Build /p:Configuration=Release /p:TargetFramework=net45 ./GrEmit.sln
   mono ./testrunner/NUnit.ConsoleRunner.3.7.0/tools/nunit3-console.exe ./GrEmit.Tests/bin/Release/net45/GrEmit.Tests.dll
 fi
-
