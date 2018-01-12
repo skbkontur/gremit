@@ -1,5 +1,8 @@
 image: Visual Studio 2017
 
+init:
+  - cmd: git config --global core.autocrlf false
+
 before_build:
   - cmd: dotnet --info
   - cmd: dotnet restore ./GrEmit.sln --verbosity m

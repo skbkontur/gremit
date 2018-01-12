@@ -1,0 +1,12 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# The above will handle all files NOT found below
+*.cs          text diff=csharp
+*.csproj      text
+*.sln         text
+*.DotSettings text
+*.yml         text
+*.cmd         text
+*.sh          text
+*.md          text
