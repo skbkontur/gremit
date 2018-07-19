@@ -1671,6 +1671,28 @@ namespace GrEmit
         }
 
         /// <summary>
+        ///     Pushes a decimal constant on top of the evaluation stack.
+        /// </summary>
+        /// <param name="value">The value to push.</param>
+        public void LdDec(decimal value)
+        {
+            var bits = decimal.GetBits(value);
+
+            Ldc_I4(4);
+            Newarr(typeof(int));
+
+            for(var i = 0; i < 4; ++i)
+            {
+                Dup();
+                Ldc_I4(i);
+                Ldc_I4(bits[i]);
+                Stelem(typeof(int));
+            }
+
+            Newobj(typeof(decimal).GetConstructor(new[] { typeof(int[]) }));
+        }
+
+        /// <summary>
         ///     Converts the value on top of the evaluation stack to a specified numeric type.
         /// </summary>
         /// <typeparam name="T">

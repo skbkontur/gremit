@@ -354,6 +354,23 @@ namespace GrEmit.Tests
         }
 
         [Test]
+        public void TestLdDec()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(decimal), Type.EmptyTypes);
+            using (var il = new GroboIL(method))
+            {
+                il.LdDec(-12.3m);
+                il.LdDec(34.5m);
+                il.Call(typeof(decimal).GetMethod("Add", new []{typeof(decimal), typeof(decimal)}));
+                il.Ret();
+                Console.WriteLine(il.GetILCode());
+            }
+
+            var compiledMethod = (Func<decimal>)method.CreateDelegate(typeof(Func<decimal>));
+            Assert.That(compiledMethod(), Is.EqualTo(22.2m));
+        }
+
+        [Test]
         public void TestByRefGeneric()
         {
             var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
