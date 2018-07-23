@@ -1,4 +1,22 @@
-; 4-column space indentation
-[*.cs]
+# stop looking for other EditorConfig files upward in directory tree
+root = true
+
+[*]
 indent_style = space
+
+# code files
+[*.cs]
 indent_size = 4
+charset = utf-8
+
+# xml project files
+[*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
+indent_size = 2
+
+# xml config files
+[*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
+indent_size = 2
+
+# json files
+[*.json]
+indent_size = 2

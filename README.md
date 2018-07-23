@@ -1,4 +1,6 @@
 # GrEmit
+
+[![NuGet Status](https://img.shields.io/nuget/v/GrEmit.svg)](https://www.nuget.org/packages/GrEmit/)
 [![Build Status](https://travis-ci.org/skbkontur/gremit.svg?branch=master)](https://travis-ci.org/skbkontur/gremit)
 [![Build status](https://ci.appveyor.com/api/projects/status/p8pr8xhyhb9tjtq2?svg=true)](https://ci.appveyor.com/project/vostok/gremit)
 
@@ -56,7 +58,3 @@ notNull_0:                   // [{Object: IList, IList<T>, IReadOnlyList<T>}]
                              // [Int32]
         ret                  // []
 ```
-
-[build-status-travis]: https://travis-ci.org/skbkontur/gremit.svg?branch=master
-
-[travis]: https://travis-ci.org/skbkontur/gremit
