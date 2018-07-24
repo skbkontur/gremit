@@ -1,0 +1,15 @@
+<Project>
+
+  <!-- source line mappings are not supported in portable pdb format yet (https://github.com/dotnet/core/blob/master/Documentation/diagnostics/portable_pdb.md) -->
+  <PropertyGroup>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <EmbedAllSources>true</EmbedAllSources>
+  </PropertyGroup>
+
+  <!-- include pdbs into nuget package -->
+  <PropertyGroup>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+
+</Project>
