@@ -5,7 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
     <PackageId>GrEmit</PackageId>
-    <VersionPrefix>2.2.2</VersionPrefix>
+    <VersionPrefix>2.2.3</VersionPrefix>
     <Version>$(VersionPrefix)</Version>
     <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
     <Authors>Igor Chevdar</Authors>
