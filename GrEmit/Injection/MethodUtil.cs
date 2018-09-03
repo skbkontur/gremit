@@ -53,7 +53,7 @@ namespace GrEmit.Injection
 
             bool canMakeRelJmp;
             int dist = 0;
-            if(IntPtr.Size == 4)
+            if (IntPtr.Size == 4)
             {
                 canMakeRelJmp = true;
                 dist = destAddr.ToInt32() - victimAddr.ToInt32() - 5;
@@ -62,10 +62,10 @@ namespace GrEmit.Injection
             {
                 var dist64 = destAddr.ToInt64() - victimAddr.ToInt64() - 5;
                 canMakeRelJmp = dist64 >= int.MinValue && dist64 <= int.MaxValue;
-                if(canMakeRelJmp)
+                if (canMakeRelJmp)
                     dist = (int)dist64;
             }
-            if(canMakeRelJmp)
+            if (canMakeRelJmp)
             {
                 // Make relative jump
                 var bytes = BitConverter.GetBytes(dist);
@@ -79,7 +79,7 @@ namespace GrEmit.Injection
                 long x = BitConverter.ToInt64(hookCode, 0);
 
                 long oldCode;
-                if(!PlantRelJmpHook(victimAddr, x, out oldCode))
+                if (!PlantRelJmpHook(victimAddr, x, out oldCode))
                     return false;
 
                 unhook = () =>
@@ -93,11 +93,11 @@ namespace GrEmit.Injection
             else
             {
                 // todo: set unhook delegate
-                if(compareExchange2Words == null)
+                if (compareExchange2Words == null)
                     return false;
                 // Make absolute jump
                 UIntPtr lo, hi;
-                if(IntPtr.Size == 8)
+                if (IntPtr.Size == 8)
                 {
                     // x64
                     var bytes = BitConverter.GetBytes(destAddr.ToInt64());
@@ -129,7 +129,7 @@ namespace GrEmit.Injection
                 }
 
                 MEMORY_PROTECTION_CONSTANTS oldProtect;
-                if(!VirtualProtect(victimAddr, (uint)(IntPtr.Size * 2), MEMORY_PROTECTION_CONSTANTS.PAGE_EXECUTE_READWRITE, &oldProtect))
+                if (!VirtualProtect(victimAddr, (uint)(IntPtr.Size * 2), MEMORY_PROTECTION_CONSTANTS.PAGE_EXECUTE_READWRITE, &oldProtect))
                     return false;
 
                 compareExchange2Words(victimAddr, lo, hi);
@@ -143,7 +143,7 @@ namespace GrEmit.Injection
         private static unsafe bool PlantRelJmpHook(IntPtr victimAddr, long newCode, out long oldCode)
         {
             MEMORY_PROTECTION_CONSTANTS oldProtect;
-            if(!VirtualProtect(victimAddr, 8, MEMORY_PROTECTION_CONSTANTS.PAGE_EXECUTE_READWRITE, &oldProtect))
+            if (!VirtualProtect(victimAddr, 8, MEMORY_PROTECTION_CONSTANTS.PAGE_EXECUTE_READWRITE, &oldProtect))
             {
                 oldCode = 0;
                 return false;
@@ -158,7 +158,7 @@ namespace GrEmit.Injection
         private static Func<IntPtr, long, long> EmitRelJmpHooker()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(long), new[] {typeof(IntPtr), typeof(long)}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.VerificationKind = TypesAssignabilityVerificationKind.LowLevelOnly;
                 var cycleLabel = il.DefineLabel("cycle");
@@ -190,7 +190,7 @@ namespace GrEmit.Injection
         private static unsafe CompareExchange2WordsDelegate EmitCompareExchange2Words()
         {
             byte[] code;
-            if(IntPtr.Size == 4)
+            if (IntPtr.Size == 4)
             {
                 code = new byte[]
                     {
@@ -230,7 +230,7 @@ namespace GrEmit.Injection
             }
             var ptr = Marshal.AllocHGlobal(code.Length);
             MEMORY_PROTECTION_CONSTANTS oldProtect;
-            if(!VirtualProtect(ptr, (uint)code.Length, MEMORY_PROTECTION_CONSTANTS.PAGE_EXECUTE_READWRITE, &oldProtect))
+            if (!VirtualProtect(ptr, (uint)code.Length, MEMORY_PROTECTION_CONSTANTS.PAGE_EXECUTE_READWRITE, &oldProtect))
                 return null;
             Marshal.Copy(code, 0, ptr, code.Length);
             return (CompareExchange2WordsDelegate)Marshal.GetDelegateForFunctionPointer(ptr, typeof(CompareExchange2WordsDelegate));
@@ -243,9 +243,9 @@ namespace GrEmit.Injection
         /// <returns></returns>
         public static IntPtr GetMethodAddress(MethodBase method)
         {
-            if(method is DynamicMethod)
+            if (method is DynamicMethod)
                 return GetDynamicMethodAddress(method);
-            if(method.GetType() == rtDynamicMethodType)
+            if (method.GetType() == rtDynamicMethodType)
                 return GetDynamicMethodAddress(m_ownerExtractor(method));
 
             // Prepare the method so it gets jited
@@ -265,7 +265,7 @@ namespace GrEmit.Injection
         {
             RuntimeMethodHandle handle;
 
-            if(Environment.Version.Major == 4)
+            if (Environment.Version.Major == 4)
             {
                 var getMethodDescriptorInfo = typeof(DynamicMethod).GetMethod("GetMethodDescriptor",
                                                                               BindingFlags.NonPublic | BindingFlags.Instance);

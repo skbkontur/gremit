@@ -22,7 +22,7 @@ namespace GrEmit.StackMutators
             bool isStatic;
             bool isVirtual;
             Func<string> formattedMethodGetter;
-            if(parameter is MethodILInstructionParameter)
+            if (parameter is MethodILInstructionParameter)
             {
                 var method = ((MethodILInstructionParameter)parameter).Method;
                 declaringType = method.DeclaringType;
@@ -45,48 +45,48 @@ namespace GrEmit.StackMutators
                 isVirtual = false;
                 formattedMethodGetter = () => Formatter.Format(constructor);
             }
-            for(var i = parameterTypes.Length - 1; i >= 0; --i)
+            for (var i = parameterTypes.Length - 1; i >= 0; --i)
             {
                 CheckNotEmpty(il, stack, () => string.Format("Parameter #{0} for call to the method '{1}' is not loaded on the evaluation stack", i + 1, formattedMethodGetter()));
                 CheckCanBeAssigned(il, parameterTypes[i], stack.Pop());
             }
-            if(!isStatic)
+            if (!isStatic)
             {
                 CheckNotEmpty(il, stack, () => string.Format("An instance to call the method '{0}' is not loaded on the evaluation stack", formattedMethodGetter()));
                 var instance = stack.Pop();
                 var instanceBaseType = instance.ToType();
-                if(instanceBaseType != null)
+                if (instanceBaseType != null)
                 {
-                    if(instanceBaseType.IsValueType)
+                    if (instanceBaseType.IsValueType)
                         ThrowError(il, string.Format("In order to call the method '{0}' on a value type '{1}' load an instance by ref or box it", formattedMethodGetter(), instance));
-                    else if(!instanceBaseType.IsByRef)
+                    else if (!instanceBaseType.IsByRef)
                         CheckCanBeAssigned(il, declaringType, instance);
                     else
                     {
                         var elementType = instanceBaseType.GetElementType();
-                        if(!elementType.IsValueType)
+                        if (!elementType.IsValueType)
                             ThrowError(il, string.Format("Cannot call the method '{0}' on an instance of type '{1}'", formattedMethodGetter(), instance));
                         else
                         {
-                            if(declaringType.IsInterface)
+                            if (declaringType.IsInterface)
                             {
-                                if(ReflectionExtensions.GetInterfaces(elementType).All(type => type != declaringType))
+                                if (ReflectionExtensions.GetInterfaces(elementType).All(type => type != declaringType))
                                     ThrowError(il, string.Format("The type '{0}' does not implement interface '{1}'", Formatter.Format(elementType), Formatter.Format(declaringType)));
                             }
-                            else if(declaringType != typeof(object) && declaringType != elementType)
+                            else if (declaringType != typeof(object) && declaringType != elementType)
                                 ThrowError(il, string.Format("Cannot call the method '{0}' on an instance of type '{1}'", formattedMethodGetter(), elementType));
-                            if(isVirtual && callvirt)
+                            if (isVirtual && callvirt)
                             {
-                                if(constrained == null)
+                                if (constrained == null)
                                     ThrowError(il, string.Format("In order to call a virtual method '{0}' on a value type '{1}' specify 'constrained' parameter", formattedMethodGetter(), Formatter.Format(elementType)));
-                                if(constrained != elementType)
+                                if (constrained != elementType)
                                     ThrowError(il, string.Format("Invalid 'constrained' parameter to call a virtual method '{0}'. Expected '{1}' but was '{2}'", formattedMethodGetter(), Formatter.Format(constrained), Formatter.Format(elementType)));
                             }
                         }
                     }
                 }
             }
-            if(returnType != typeof(void))
+            if (returnType != typeof(void))
                 stack.Push(returnType);
         }
 

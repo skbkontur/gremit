@@ -21,9 +21,9 @@ namespace GrEmit.MethodBodyParsing
             this.body = body;
             this.tokenBuilder = (opCode, operand) =>
                 {
-                    if(operand is MetadataToken)
+                    if (operand is MetadataToken)
                         return (MetadataToken)operand;
-                    if(tokenBuilder == null)
+                    if (tokenBuilder == null)
                         throw new InvalidOperationException($"Operand {operand} is not resolved to metadata token");
                     return tokenBuilder(opCode, operand);
                 };
@@ -43,14 +43,14 @@ namespace GrEmit.MethodBodyParsing
             var ilCode = new ILCodeBaker(body.Instructions, tokenBuilder).BakeILCode();
             codeSize = ilCode.Length;
 
-            if(RequiresFatHeader())
+            if (RequiresFatHeader())
                 WriteFatHeader();
             else
                 WriteByte((byte)(0x2 | (codeSize << 2))); // tiny
 
             WriteBytes(ilCode);
 
-            if(body.HasExceptionHandlers)
+            if (body.HasExceptionHandlers)
             {
                 Align(4);
                 WriteBytes(new ExceptionsBaker(body.ExceptionHandlers, body.Instructions, tokenBuilder).BakeExceptions());
@@ -60,9 +60,9 @@ namespace GrEmit.MethodBodyParsing
         private void WriteFatHeader()
         {
             byte flags = 0x3; // fat
-            if(body.InitLocals)
+            if (body.InitLocals)
                 flags |= 0x10; // init locals
-            if(body.HasExceptionHandlers)
+            if (body.HasExceptionHandlers)
                 flags |= 0x8; // more sections
 
             WriteByte(flags);

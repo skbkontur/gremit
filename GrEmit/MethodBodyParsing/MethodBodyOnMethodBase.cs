@@ -36,7 +36,7 @@ namespace GrEmit.MethodBodyParsing
 
         private void ReadExceptions(IList<ExceptionHandlingClause> exceptionClauses)
         {
-            foreach(var exceptionClause in exceptionClauses)
+            foreach (var exceptionClause in exceptionClauses)
             {
                 var handler = new ExceptionHandler((ExceptionHandlerType)exceptionClause.Flags);
 
@@ -46,7 +46,7 @@ namespace GrEmit.MethodBodyParsing
                 handler.HandlerStart = GetInstruction(exceptionClause.HandlerOffset);
                 handler.HandlerEnd = GetInstruction(handler.HandlerStart.Offset + exceptionClause.HandlerLength);
 
-                switch(handler.HandlerType)
+                switch (handler.HandlerType)
                 {
                 case ExceptionHandlerType.Catch:
                     var token = new MetadataToken((uint)exceptionClause.CatchType.MetadataToken);

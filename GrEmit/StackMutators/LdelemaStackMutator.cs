@@ -14,7 +14,7 @@ namespace GrEmit.StackMutators
             CheckNotEmpty(il, stack, () => "In order to perform the 'ldelema' instruction an array must be put onto the evaluation stack");
             var esType = stack.Pop();
             var array = esType.ToType();
-            if(!array.IsArray && array != typeof(Array))
+            if (!array.IsArray && array != typeof(Array))
                 throw new InvalidOperationException(string.Format("An array expected to perform the 'ldelema' instruction but was '{0}'", esType));
             stack.Push(elementType.MakeByRefType());
         }

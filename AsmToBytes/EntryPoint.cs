@@ -10,7 +10,7 @@ namespace AsmToBytes
     {
         public static void Main(string[] args)
         {
-            if(args.Length != 4)
+            if (args.Length != 4)
             {
                 Console.WriteLine("Usage: AsmToBytes <x86|x64> <pathToFasm> <inputFile> <outputFile>");
                 return;
@@ -25,7 +25,7 @@ namespace AsmToBytes
             var marker = Guid.NewGuid().ToByteArray();
             var stringMarker = string.Join(Environment.NewLine, marker.Select(x => string.Format("db 0{0:x2}h", x)));
             string content;
-            if(architecture == "x86")
+            if (architecture == "x86")
                 content = string.Format(@"
 format PE GUI 4.0 DLL
 entry DllEntryPoint
@@ -52,7 +52,7 @@ section '.edata' export data readable
 export 'TEMP.DLL',\
 	 Main,'Main'
 ", Path.Combine(pathToFasm, "include", "win32a.inc"), stringMarker, File.ReadAllText(inputFile));
-            else if(architecture == "x64")
+            else if (architecture == "x64")
                 content = string.Format(@"
 format PE64 GUI 5.0 DLL
 entry DllEntryPoint
@@ -105,40 +105,40 @@ export 'TEMP.DLL',\
             process.BeginOutputReadLine();
             process.WaitForExit();
             process.CancelOutputRead();
-            if(!File.Exists(dllFile))
+            if (!File.Exists(dllFile))
             {
                 Console.WriteLine("ERROR: dll file has not been created");
                 return;
             }
             var dllContent = File.ReadAllBytes(dllFile);
-            for(var i = 0; i < dllContent.Length - marker.Length; ++i)
+            for (var i = 0; i < dllContent.Length - marker.Length; ++i)
             {
                 var ok = true;
-                for(var j = 0; j < marker.Length; ++j)
+                for (var j = 0; j < marker.Length; ++j)
                 {
-                    if(dllContent[i + j] != marker[j])
+                    if (dllContent[i + j] != marker[j])
                     {
                         ok = false;
                         break;
                     }
                 }
-                if(!ok) continue;
+                if (!ok) continue;
                 i += marker.Length;
-                for(var k = i; k < dllContent.Length - marker.Length; ++k)
+                for (var k = i; k < dllContent.Length - marker.Length; ++k)
                 {
                     ok = true;
-                    for(var j = 0; j < marker.Length; ++j)
+                    for (var j = 0; j < marker.Length; ++j)
                     {
-                        if(dllContent[k + j] != marker[j])
+                        if (dllContent[k + j] != marker[j])
                         {
                             ok = false;
                             break;
                         }
                     }
-                    if(ok)
+                    if (ok)
                     {
                         var result = new StringBuilder();
-                        for(var j = i; j < k; ++j)
+                        for (var j = i; j < k; ++j)
                             result.Append(string.Format("0x{0:x2},", dllContent[j]));
                         result.AppendLine();
                         result.AppendLine(Convert.ToBase64String(dllContent, i, k - i));

@@ -103,10 +103,10 @@ namespace GrEmit.MethodBodyParsing
         public uint ReadCompressedUInt32()
         {
             byte first = ReadByte();
-            if((first & 0x80) == 0)
+            if ((first & 0x80) == 0)
                 return first;
 
-            if((first & 0x40) == 0)
+            if ((first & 0x40) == 0)
             {
                 return ((uint)(first & ~0x80) << 8)
                        | ReadByte();
@@ -121,20 +121,20 @@ namespace GrEmit.MethodBodyParsing
         public int ReadCompressedInt32()
         {
             var value = (int)(ReadCompressedUInt32() >> 1);
-            if((value & 1) == 0)
+            if ((value & 1) == 0)
                 return value;
-            if(value < 0x40)
+            if (value < 0x40)
                 return value - 0x40;
-            if(value < 0x2000)
+            if (value < 0x2000)
                 return value - 0x2000;
-            if(value < 0x10000000)
+            if (value < 0x10000000)
                 return value - 0x10000000;
             return value - 0x20000000;
         }
 
         public float ReadSingle()
         {
-            if(!BitConverter.IsLittleEndian)
+            if (!BitConverter.IsLittleEndian)
             {
                 var bytes = ReadBytes(4);
                 Array.Reverse(bytes);
@@ -148,7 +148,7 @@ namespace GrEmit.MethodBodyParsing
 
         public double ReadDouble()
         {
-            if(!BitConverter.IsLittleEndian)
+            if (!BitConverter.IsLittleEndian)
             {
                 var bytes = ReadBytes(8);
                 Array.Reverse(bytes);
@@ -168,12 +168,12 @@ namespace GrEmit.MethodBodyParsing
 
         public void WriteByte(byte value)
         {
-            if(position == buffer.Length)
+            if (position == buffer.Length)
                 Grow(1);
 
             buffer[position++] = value;
 
-            if(position > length)
+            if (position > length)
                 length = position;
         }
 
@@ -184,13 +184,13 @@ namespace GrEmit.MethodBodyParsing
 
         public void WriteUInt16(ushort value)
         {
-            if(position + 2 > buffer.Length)
+            if (position + 2 > buffer.Length)
                 Grow(2);
 
             buffer[position++] = (byte)value;
             buffer[position++] = (byte)(value >> 8);
 
-            if(position > length)
+            if (position > length)
                 length = position;
         }
 
@@ -201,7 +201,7 @@ namespace GrEmit.MethodBodyParsing
 
         public void WriteUInt32(uint value)
         {
-            if(position + 4 > buffer.Length)
+            if (position + 4 > buffer.Length)
                 Grow(4);
 
             buffer[position++] = (byte)value;
@@ -209,7 +209,7 @@ namespace GrEmit.MethodBodyParsing
             buffer[position++] = (byte)(value >> 16);
             buffer[position++] = (byte)(value >> 24);
 
-            if(position > length)
+            if (position > length)
                 length = position;
         }
 
@@ -220,7 +220,7 @@ namespace GrEmit.MethodBodyParsing
 
         public void WriteUInt64(ulong value)
         {
-            if(position + 8 > buffer.Length)
+            if (position + 8 > buffer.Length)
                 Grow(8);
 
             buffer[position++] = (byte)value;
@@ -232,7 +232,7 @@ namespace GrEmit.MethodBodyParsing
             buffer[position++] = (byte)(value >> 48);
             buffer[position++] = (byte)(value >> 56);
 
-            if(position > length)
+            if (position > length)
                 length = position;
         }
 
@@ -243,9 +243,9 @@ namespace GrEmit.MethodBodyParsing
 
         public void WriteCompressedUInt32(uint value)
         {
-            if(value < 0x80)
+            if (value < 0x80)
                 WriteByte((byte)value);
-            else if(value < 0x4000)
+            else if (value < 0x4000)
             {
                 WriteByte((byte)(0x80 | (value >> 8)));
                 WriteByte((byte)(value & 0xff));
@@ -261,17 +261,17 @@ namespace GrEmit.MethodBodyParsing
 
         public void WriteCompressedInt32(int value)
         {
-            if(value >= 0)
+            if (value >= 0)
             {
                 WriteCompressedUInt32((uint)(value << 1));
                 return;
             }
 
-            if(value > -0x40)
+            if (value > -0x40)
                 value = 0x40 + value;
-            else if(value >= -0x2000)
+            else if (value >= -0x2000)
                 value = 0x2000 + value;
-            else if(value >= -0x20000000)
+            else if (value >= -0x20000000)
                 value = 0x20000000 + value;
 
             WriteCompressedUInt32((uint)((value << 1) | 1));
@@ -280,36 +280,36 @@ namespace GrEmit.MethodBodyParsing
         public void WriteBytes(byte[] bytes)
         {
             var length = bytes.Length;
-            if(position + length > buffer.Length)
+            if (position + length > buffer.Length)
                 Grow(length);
 
             Buffer.BlockCopy(bytes, 0, buffer, position, length);
             position += length;
 
-            if(position > this.length)
+            if (position > this.length)
                 this.length = position;
         }
 
         public void WriteBytes(int length)
         {
-            if(position + length > buffer.Length)
+            if (position + length > buffer.Length)
                 Grow(length);
 
             position += length;
 
-            if(position > this.length)
+            if (position > this.length)
                 this.length = position;
         }
 
         public void WriteBytes(ByteBuffer buffer)
         {
-            if(position + buffer.length > this.buffer.Length)
+            if (position + buffer.length > this.buffer.Length)
                 Grow(buffer.length);
 
             Buffer.BlockCopy(buffer.buffer, 0, this.buffer, position, buffer.length);
             position += buffer.length;
 
-            if(position > this.length)
+            if (position > this.length)
                 this.length = position;
         }
 
@@ -317,7 +317,7 @@ namespace GrEmit.MethodBodyParsing
         {
             var bytes = BitConverter.GetBytes(value);
 
-            if(!BitConverter.IsLittleEndian)
+            if (!BitConverter.IsLittleEndian)
                 Array.Reverse(bytes);
 
             WriteBytes(bytes);
@@ -327,7 +327,7 @@ namespace GrEmit.MethodBodyParsing
         {
             var bytes = BitConverter.GetBytes(value);
 
-            if(!BitConverter.IsLittleEndian)
+            if (!BitConverter.IsLittleEndian)
                 Array.Reverse(bytes);
 
             WriteBytes(bytes);

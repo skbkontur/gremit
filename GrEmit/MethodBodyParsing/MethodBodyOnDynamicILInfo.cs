@@ -8,7 +8,7 @@ namespace GrEmit.MethodBodyParsing
             : base(GetMethodSignature(dynamicILInfo), resolveTokens)
         {
             scope = new DynamicILInfoWrapper(dynamicILInfo).m_scope;
-            using(var dynamicResolver = new DynamicResolver(dynamicMethod, dynamicILInfo))
+            using (var dynamicResolver = new DynamicResolver(dynamicMethod, dynamicILInfo))
             {
                 int stackSize;
                 int initLocals;

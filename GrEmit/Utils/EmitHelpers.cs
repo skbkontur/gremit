@@ -11,7 +11,7 @@ namespace GrEmit.Utils
         {
             var @delegate = dm.CreateDelegate(typeof(T), target);
             var result = (@delegate as T);
-            if(result == null)
+            if (result == null)
                 throw new ArgumentException(String.Format("Type {0} is not a delegate", typeof(T)));
             return result;
         }
@@ -20,7 +20,7 @@ namespace GrEmit.Utils
         {
             var @delegate = dm.CreateDelegate(typeof(T));
             var result = (@delegate as T);
-            if(result == null)
+            if (result == null)
                 throw new ArgumentException(String.Format("Type {0} is not a delegate", typeof(T)));
             return result;
         }
@@ -30,11 +30,11 @@ namespace GrEmit.Utils
             var delegateType = typeof(T);
             //HACK
             var methodInfo = delegateType.GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
-            if(methodInfo == null)
+            if (methodInfo == null)
                 throw new ArgumentException(String.Format("Type {0} is not a Delegate", delegateType));
 
             var dynamicMethod = new DynamicMethod(name, methodInfo.ReturnType, ReflectionExtensions.GetParameterTypes(methodInfo), m, true);
-            using(var il = new GroboIL(dynamicMethod))
+            using (var il = new GroboIL(dynamicMethod))
                 emitCode(il);
             return CreateDelegate<T>(dynamicMethod);
         }
@@ -44,11 +44,11 @@ namespace GrEmit.Utils
             var delegateType = typeof(T);
             //HACK
             var methodInfo = delegateType.GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
-            if(methodInfo == null)
+            if (methodInfo == null)
                 throw new ArgumentException(String.Format("Type {0} is not a Delegate", delegateType));
 
             var dynamicMethod = new DynamicMethod(name, methodInfo.ReturnType, Concat(typeof(TTarget), ReflectionExtensions.GetParameterTypes(methodInfo)), m, true);
-            using(var il = new GroboIL(dynamicMethod))
+            using (var il = new GroboIL(dynamicMethod))
                 emitCode(il);
             return CreateDelegate<T>(dynamicMethod, target);
         }

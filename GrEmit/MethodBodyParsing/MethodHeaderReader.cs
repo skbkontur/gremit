@@ -15,7 +15,7 @@ namespace GrEmit.MethodBodyParsing
             var header = new MethodHeader();
 
             var flags = ReadByte();
-            switch(flags & 0x3)
+            switch (flags & 0x3)
             {
             case CorILMethod_TinyFormat:
                 header.CodeSize = flags >> 2;

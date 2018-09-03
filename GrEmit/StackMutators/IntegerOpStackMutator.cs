@@ -16,11 +16,11 @@ namespace GrEmit.StackMutators
 
         protected override Type GetResultType(Type left, Type right)
         {
-            if(left == null) return right; // zero op type = type
-            if(right == null) return left; // type op zero = type
-            if(left == typeof(int) && right == typeof(int)) // int op int = int
+            if (left == null) return right; // zero op type = type
+            if (right == null) return left; // type op zero = type
+            if (left == typeof(int) && right == typeof(int)) // int op int = int
                 return typeof(int);
-            if(left == typeof(long) && right == typeof(long)) // long op long = long
+            if (left == typeof(long) && right == typeof(long)) // long op long = long
                 return typeof(long);
             return typeof(IntPtr); // int op native int = native int op int = native int op native int = native int
         }

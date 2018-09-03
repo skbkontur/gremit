@@ -15,14 +15,14 @@ namespace GrEmit.StackMutators
         {
             CheckNotEmpty(il, stack, () => string.Format("In order to perform the instruction '{0}' an instance must be loaded onto the evaluation stack", opCode));
             var type = stack.Pop();
-            if(!Allowed(type))
+            if (!Allowed(type))
                 ThrowError(il, string.Format("Unable to perform the instruction '{0}' on type '{1}'", opCode, type));
             stack.Push(to);
         }
 
         protected void Allow(params CLIType[] types)
         {
-            foreach(var type in types)
+            foreach (var type in types)
                 allowed[(int)type] = true;
         }
 

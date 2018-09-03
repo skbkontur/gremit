@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Reflection.Emit;
+
+using NUnit.Framework;
 #if NET45
 using System.Reflection;
 using System.Threading;
 #endif
-using System.Reflection.Emit;
-
-using NUnit.Framework;
 
 namespace GrEmit.Tests
 {
@@ -16,16 +16,16 @@ namespace GrEmit.Tests
         public void Test1()
         {
             var overflow = typeof(OverflowException);
-            var exCtorInfo = overflow.GetConstructor(new[] { typeof(string) });
+            var exCtorInfo = overflow.GetConstructor(new[] {typeof(string)});
             var exToStrMI = overflow.GetMethod("ToString");
             var writeLineMI = typeof(Console).GetMethod("WriteLine",
-                                                               new[]
-                                                                   {
-                                                                       typeof(string),
-                                                                       typeof(object)
-                                                                   });
+                                                        new[]
+                                                            {
+                                                                typeof(string),
+                                                                typeof(object)
+                                                            });
 
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] { typeof(int), typeof(int) }, typeof(TestTryCatch));
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] {typeof(int), typeof(int)}, typeof(TestTryCatch));
 
             using (var il = new GroboIL(method))
             {

@@ -38,7 +38,7 @@ namespace GrEmit.Tests
         public void TestLabelHasNotBeenUsed()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), Type.EmptyTypes, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.DefineLabel("L");
                 il.Ret();

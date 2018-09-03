@@ -33,7 +33,7 @@ namespace GrEmit.MethodBodyParsing
 
         private void WriteInstructions()
         {
-            foreach(var instruction in instructions)
+            foreach (var instruction in instructions)
             {
                 WriteOpCode(instruction.OpCode);
                 WriteOperand(instruction);
@@ -42,7 +42,7 @@ namespace GrEmit.MethodBodyParsing
 
         private void WriteOpCode(OpCode opcode)
         {
-            if(opcode.Size == 1)
+            if (opcode.Size == 1)
                 WriteByte(opcode.Op2);
             else
             {
@@ -55,21 +55,21 @@ namespace GrEmit.MethodBodyParsing
         {
             var opcode = instruction.OpCode;
             var operandType = opcode.OperandType;
-            if(operandType == OperandType.InlineNone)
+            if (operandType == OperandType.InlineNone)
                 return;
 
             var operand = instruction.Operand;
-            if(operand == null)
+            if (operand == null)
                 throw new ArgumentException();
 
-            switch(operandType)
+            switch (operandType)
             {
             case OperandType.InlineSwitch:
                 {
                     var targets = (Instruction[])operand;
                     WriteInt32(targets.Length);
                     var diff = instruction.Offset + opcode.Size + (4 * (targets.Length + 1));
-                    foreach(var target in targets)
+                    foreach (var target in targets)
                         WriteInt32(GetTargetOffset(target) - diff);
                     break;
                 }
@@ -101,7 +101,7 @@ namespace GrEmit.MethodBodyParsing
                 WriteMetadataToken(tokenBuilder(opcode, operand));
                 break;
             case OperandType.ShortInlineI:
-                if(opcode == OpCodes.Ldc_I4_S)
+                if (opcode == OpCodes.Ldc_I4_S)
                     WriteSByte((sbyte)operand);
                 else
                     WriteByte((byte)operand);
@@ -134,7 +134,7 @@ namespace GrEmit.MethodBodyParsing
 
         private int GetTargetOffset(Instruction instruction)
         {
-            if(instruction == null)
+            if (instruction == null)
             {
                 var last = instructions[instructions.size - 1];
                 return last.Offset + last.GetSize();

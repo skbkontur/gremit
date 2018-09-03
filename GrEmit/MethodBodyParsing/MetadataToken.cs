@@ -61,7 +61,7 @@ namespace GrEmit.MethodBodyParsing
 
         public override bool Equals(object obj)
         {
-            if(obj is MetadataToken)
+            if (obj is MetadataToken)
             {
                 var other = (MetadataToken)obj;
                 return other.token == token;

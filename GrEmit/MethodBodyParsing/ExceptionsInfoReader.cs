@@ -24,9 +24,9 @@ namespace GrEmit.MethodBodyParsing
 
         public static void Read(byte[] buffer, Func<MetadataToken, object> tokenResolver, bool resolveTokens, MethodBody body)
         {
-            if(buffer != null && buffer.Length > 0)
+            if (buffer != null && buffer.Length > 0)
             {
-                fixed(byte* b = &buffer[0])
+                fixed (byte* b = &buffer[0])
                     new ExceptionsInfoReader(b, tokenResolver, resolveTokens).Read(body);
             }
         }
@@ -44,12 +44,12 @@ namespace GrEmit.MethodBodyParsing
             const byte more_sects = 0x80;
 
             var flags = ReadByte();
-            if((flags & fat_format) == 0)
+            if ((flags & fat_format) == 0)
                 ReadSmallSection();
             else
                 ReadFatSection();
 
-            if((flags & more_sects) != 0)
+            if ((flags & more_sects) != 0)
                 ReadSection();
         }
 
@@ -77,7 +77,7 @@ namespace GrEmit.MethodBodyParsing
 
         private void ReadExceptionHandlers(int count, Func<int> read_entry, Func<int> read_length)
         {
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 var handler = new ExceptionHandler(
                     (ExceptionHandlerType)(read_entry() & 0x7));
@@ -96,7 +96,7 @@ namespace GrEmit.MethodBodyParsing
 
         private void ReadExceptionHandlerSpecific(ExceptionHandler handler)
         {
-            switch(handler.HandlerType)
+            switch (handler.HandlerType)
             {
             case ExceptionHandlerType.Catch:
                 handler.CatchType = ReadToken();

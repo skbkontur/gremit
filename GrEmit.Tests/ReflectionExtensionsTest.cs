@@ -24,7 +24,7 @@ namespace GrEmit.Tests
         {
             var methodInfo = HackHelpers.GetMethodDefinition<NonGenericClass>(x => x.NonGenericMethod(0, null));
             var parameterTypes = ReflectionExtensions.GetParameterTypes(methodInfo);
-            CollectionAssert.AreEqual(new[] { typeof(int), typeof(string) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(int), typeof(string)}, parameterTypes);
             Assert.AreEqual(typeof(string), ReflectionExtensions.GetReturnType(methodInfo));
         }
 
@@ -33,7 +33,7 @@ namespace GrEmit.Tests
         {
             var methodInfo = HackHelpers.GetMethodDefinition<NonGenericClass>(x => x.GenericMethod<double, string>(0, 0, 0, null, 0, null, null));
             var parameterTypes = ReflectionExtensions.GetParameterTypes(methodInfo);
-            CollectionAssert.AreEqual(new[] { typeof(double), typeof(int), typeof(double), typeof(List<string>), typeof(int), typeof(double[]), typeof(string) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(double), typeof(int), typeof(double), typeof(List<string>), typeof(int), typeof(double[]), typeof(string)}, parameterTypes);
             Assert.AreEqual(typeof(List<string[]>), ReflectionExtensions.GetReturnType(methodInfo));
         }
 
@@ -42,7 +42,7 @@ namespace GrEmit.Tests
         {
             var methodInfo = HackHelpers.GetMethodDefinition<GenericClass<double, string>>(x => x.NonGenericMethod(0, 0, null, null, 0, null));
             var parameterTypes = ReflectionExtensions.GetParameterTypes(methodInfo);
-            CollectionAssert.AreEqual(new[] { typeof(double), typeof(int), typeof(List<string>), typeof(string), typeof(int), typeof(double[]) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(double), typeof(int), typeof(List<string>), typeof(string), typeof(int), typeof(double[])}, parameterTypes);
             Assert.AreEqual(typeof(List<string[]>), ReflectionExtensions.GetReturnType(methodInfo));
         }
 
@@ -51,7 +51,7 @@ namespace GrEmit.Tests
         {
             var methodInfo = HackHelpers.GetMethodDefinition<GenericClass<double, string>>(x => x.GenericMethod<short, long>(0, 0, 0, null, 0, null, null, 0, 0, null, 0));
             var parameterTypes = ReflectionExtensions.GetParameterTypes(methodInfo);
-            CollectionAssert.AreEqual(new[] { typeof(double), typeof(short), typeof(int), typeof(List<string>), typeof(short), typeof(string), typeof(List<long>), typeof(int), typeof(short), typeof(double[]), typeof(long) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(double), typeof(short), typeof(int), typeof(List<string>), typeof(short), typeof(string), typeof(List<long>), typeof(int), typeof(short), typeof(double[]), typeof(long)}, parameterTypes);
             Assert.AreEqual(typeof(List<Tuple<string[], long>>), ReflectionExtensions.GetReturnType(methodInfo));
         }
 
@@ -60,7 +60,7 @@ namespace GrEmit.Tests
         {
             var methodInfo = HackHelpers.GetObjectConstruction(() => new NonGenericClass(0, null));
             var parameterTypes = ReflectionExtensions.GetParameterTypes(methodInfo);
-            CollectionAssert.AreEqual(new[] { typeof(int), typeof(string) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(int), typeof(string)}, parameterTypes);
         }
 
         [Test]
@@ -68,16 +68,16 @@ namespace GrEmit.Tests
         {
             var methodInfo = HackHelpers.GetObjectConstruction(() => new GenericClass<double, string>(0, 0, null, null, 0, null));
             var parameterTypes = ReflectionExtensions.GetParameterTypes(methodInfo);
-            CollectionAssert.AreEqual(new[] { typeof(double), typeof(int), typeof(List<string>), typeof(string), typeof(int), typeof(double[]) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(double), typeof(int), typeof(List<string>), typeof(string), typeof(int), typeof(double[])}, parameterTypes);
         }
 
         [Test]
         public void TestMethodBuilder_NonGenericClassNonGenericMethod()
         {
             var typeBuilder = module.DefineType("NonGenericClass" + Guid.NewGuid(), TypeAttributes.Class | TypeAttributes.Public);
-            var methodBuilder = typeBuilder.DefineMethod("NonGenericMethod", MethodAttributes.Public, typeof(string), new[] { typeof(int), typeof(string) });
+            var methodBuilder = typeBuilder.DefineMethod("NonGenericMethod", MethodAttributes.Public, typeof(string), new[] {typeof(int), typeof(string)});
             var parameterTypes = ReflectionExtensions.GetParameterTypes(methodBuilder);
-            CollectionAssert.AreEqual(new[] { typeof(int), typeof(string) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(int), typeof(string)}, parameterTypes);
             Assert.AreEqual(typeof(string), ReflectionExtensions.GetReturnType(methodBuilder));
         }
 
@@ -94,7 +94,7 @@ namespace GrEmit.Tests
             methodBuilder.SetReturnType(typeof(List<>).MakeGenericType(genericParameters[1].MakeArrayType()));
             var instantiatedMethod = methodBuilder.MakeGenericMethod(typeof(double), typeof(string));
             var parameterTypes = ReflectionExtensions.GetParameterTypes(instantiatedMethod);
-            CollectionAssert.AreEqual(new[] { typeof(double), typeof(int), typeof(double), typeof(List<string>), typeof(int), typeof(double[]), typeof(string) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(double), typeof(int), typeof(double), typeof(List<string>), typeof(int), typeof(double[]), typeof(string)}, parameterTypes);
             Assert.AreEqual(typeof(List<string[]>), ReflectionExtensions.GetReturnType(instantiatedMethod));
         }
 
@@ -106,10 +106,10 @@ namespace GrEmit.Tests
             var t1 = genericParameters[0];
             var t2 = genericParameters[1];
             // T1 x, int y, List<T2> s, T2 t, int z, T1[] q
-            var methodBuilder = typeBuilder.DefineMethod("NonGenericMethod", MethodAttributes.Public, typeof(List<>).MakeGenericType(t2.MakeArrayType()), new[] { t1, typeof(int), typeof(List<>).MakeGenericType(t2), t2, typeof(int), t1.MakeArrayType() });
+            var methodBuilder = typeBuilder.DefineMethod("NonGenericMethod", MethodAttributes.Public, typeof(List<>).MakeGenericType(t2.MakeArrayType()), new[] {t1, typeof(int), typeof(List<>).MakeGenericType(t2), t2, typeof(int), t1.MakeArrayType()});
             var instantiatedMethod = TypeBuilder.GetMethod(typeBuilder.MakeGenericType(typeof(double), typeof(string)), methodBuilder);
             var parameterTypes = ReflectionExtensions.GetParameterTypes(instantiatedMethod);
-            CollectionAssert.AreEqual(new[] { typeof(double), typeof(int), typeof(List<string>), typeof(string), typeof(int), typeof(double[]) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(double), typeof(int), typeof(List<string>), typeof(string), typeof(int), typeof(double[])}, parameterTypes);
             Assert.AreEqual(typeof(List<string[]>), ReflectionExtensions.GetReturnType(instantiatedMethod));
         }
 
@@ -129,7 +129,7 @@ namespace GrEmit.Tests
             methodBuilder.SetReturnType(typeof(List<>).MakeGenericType(typeof(Tuple<,>).MakeGenericType(t2.MakeArrayType(), t4)));
             var instantiatedMethod = TypeBuilder.GetMethod(typeBuilder.MakeGenericType(typeof(double), typeof(string)), methodBuilder).MakeGenericMethod(typeof(short), typeof(long));
             var parameterTypes = ReflectionExtensions.GetParameterTypes(instantiatedMethod);
-            CollectionAssert.AreEqual(new[] { typeof(double), typeof(short), typeof(int), typeof(List<string>), typeof(short), typeof(string), typeof(List<long>), typeof(int), typeof(short), typeof(double[]), typeof(long) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(double), typeof(short), typeof(int), typeof(List<string>), typeof(short), typeof(string), typeof(List<long>), typeof(int), typeof(short), typeof(double[]), typeof(long)}, parameterTypes);
             Assert.AreEqual(typeof(List<Tuple<string[], long>>), ReflectionExtensions.GetReturnType(instantiatedMethod));
         }
 
@@ -137,9 +137,9 @@ namespace GrEmit.Tests
         public void TestConstructorBuilder_NonGenericClass()
         {
             var typeBuilder = module.DefineType("NonGenericClass" + Guid.NewGuid(), TypeAttributes.Class | TypeAttributes.Public);
-            var methodBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] { typeof(int), typeof(string) });
+            var methodBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] {typeof(int), typeof(string)});
             var parameterTypes = ReflectionExtensions.GetParameterTypes(methodBuilder);
-            CollectionAssert.AreEqual(new[] { typeof(int), typeof(string) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(int), typeof(string)}, parameterTypes);
         }
 
         [Test]
@@ -150,17 +150,17 @@ namespace GrEmit.Tests
             var t1 = genericParameters[0];
             var t2 = genericParameters[1];
             // T1 x, int y, List<T2> s, T2 t, int z, T1[] q
-            var methodBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] { t1, typeof(int), typeof(List<>).MakeGenericType(t2), t2, typeof(int), t1.MakeArrayType() });
+            var methodBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] {t1, typeof(int), typeof(List<>).MakeGenericType(t2), t2, typeof(int), t1.MakeArrayType()});
             var instantiatedMethod = TypeBuilder.GetConstructor(typeBuilder.MakeGenericType(typeof(double), typeof(string)), methodBuilder);
             var parameterTypes = ReflectionExtensions.GetParameterTypes(instantiatedMethod);
-            CollectionAssert.AreEqual(new[] { typeof(double), typeof(int), typeof(List<string>), typeof(string), typeof(int), typeof(double[]) }, parameterTypes);
+            CollectionAssert.AreEqual(new[] {typeof(double), typeof(int), typeof(List<string>), typeof(string), typeof(int), typeof(double[])}, parameterTypes);
         }
 
         [Test]
         public void TestRuntimeType()
         {
             Assert.AreEqual(typeof(C1<List<int>>), ReflectionExtensions.GetBaseType(typeof(C2<int, string>)));
-            CollectionAssert.AreEquivalent(new[] { typeof(I3<int, double, string>), typeof(I2<int, double[]>), typeof(I1<List<int>>), typeof(I1<List<int[]>>) }, ReflectionExtensions.GetInterfaces(typeof(C3<int, double, string>)));
+            CollectionAssert.AreEquivalent(new[] {typeof(I3<int, double, string>), typeof(I2<int, double[]>), typeof(I1<List<int>>), typeof(I1<List<int[]>>)}, ReflectionExtensions.GetInterfaces(typeof(C3<int, double, string>)));
         }
 
         [Test]
@@ -170,7 +170,7 @@ namespace GrEmit.Tests
             c2.SetParent(typeof(C3<int, double, string>));
             c2.AddInterfaceImplementation(typeof(IEnumerable<int>));
             Assert.AreEqual(typeof(C3<int, double, string>), ReflectionExtensions.GetBaseType(c2));
-            CollectionAssert.AreEquivalent(new[] { typeof(I3<int, double, string>), typeof(I2<int, double[]>), typeof(I1<List<int>>), typeof(I1<List<int[]>>), typeof(IEnumerable<int>) }, ReflectionExtensions.GetInterfaces(c2));
+            CollectionAssert.AreEquivalent(new[] {typeof(I3<int, double, string>), typeof(I2<int, double[]>), typeof(I1<List<int>>), typeof(I1<List<int[]>>), typeof(IEnumerable<int>)}, ReflectionExtensions.GetInterfaces(c2));
         }
 
         [Test]
@@ -187,8 +187,22 @@ namespace GrEmit.Tests
             Assert.IsTrue(ReflectionExtensions.IsAssignableFrom(instantiatedType, instantiatedType));
             Assert.IsTrue(ReflectionExtensions.IsAssignableFrom(c3, c3));
             Assert.IsTrue(ReflectionExtensions.IsAssignableFrom(c3.MakeArrayType(), c3.MakeArrayType()));
-            CollectionAssert.AreEquivalent(new[] { typeof(I3<int, List<double[]>, string>), typeof(I2<int, List<double[]>[]>), typeof(I1<List<int>>), typeof(I1<List<int[]>>) }, ReflectionExtensions.GetInterfaces(instantiatedType));
+            CollectionAssert.AreEquivalent(new[] {typeof(I3<int, List<double[]>, string>), typeof(I2<int, List<double[]>[]>), typeof(I1<List<int>>), typeof(I1<List<int[]>>)}, ReflectionExtensions.GetInterfaces(instantiatedType));
         }
+
+        public interface I1<T>
+        {
+        }
+
+        public interface I2<T1, T2> : I1<List<T1>>
+        {
+        }
+
+        public interface I3<T1, T2, T3> : I2<T1, T2[]>
+        {
+        }
+
+        private ModuleBuilder module;
 
         public class NonGenericClass
         {
@@ -224,18 +238,6 @@ namespace GrEmit.Tests
             }
         }
 
-        public interface I1<T>
-        {
-        }
-
-        public interface I2<T1, T2> : I1<List<T1>>
-        {
-        }
-
-        public interface I3<T1, T2, T3> : I2<T1, T2[]>
-        {
-        }
-
         public class C1<T> : I1<T>
         {
         }
@@ -247,7 +249,5 @@ namespace GrEmit.Tests
         public class C3<T1, T2, T3> : C2<T1[], T2>, I3<T1, T2, T3>
         {
         }
-
-        private ModuleBuilder module;
     }
 }

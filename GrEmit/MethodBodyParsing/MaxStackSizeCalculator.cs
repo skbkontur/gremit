@@ -29,10 +29,10 @@ namespace GrEmit.MethodBodyParsing
             var max_stack = 0;
             Dictionary<Instruction, int> stack_sizes = null;
 
-            if(body.HasExceptionHandlers)
+            if (body.HasExceptionHandlers)
                 ComputeExceptionHandlerStackSize(ref stack_sizes);
 
-            foreach(var instruction in body.Instructions)
+            foreach (var instruction in body.Instructions)
                 ComputeStackSize(instruction, ref stack_sizes, ref stack_size, ref max_stack);
 
             return max_stack;
@@ -40,9 +40,9 @@ namespace GrEmit.MethodBodyParsing
 
         private void ComputeExceptionHandlerStackSize(ref Dictionary<Instruction, int> stack_sizes)
         {
-            foreach(var handler in body.ExceptionHandlers)
+            foreach (var handler in body.ExceptionHandlers)
             {
-                switch(handler.HandlerType)
+                switch (handler.HandlerType)
                 {
                 case ExceptionHandlerType.Catch:
                     AddExceptionStackSize(handler.HandlerStart, ref stack_sizes);
@@ -57,10 +57,10 @@ namespace GrEmit.MethodBodyParsing
 
         private static void AddExceptionStackSize(Instruction handler_start, ref Dictionary<Instruction, int> stack_sizes)
         {
-            if(handler_start == null)
+            if (handler_start == null)
                 return;
 
-            if(stack_sizes == null)
+            if (stack_sizes == null)
                 stack_sizes = new Dictionary<Instruction, int>();
 
             stack_sizes[handler_start] = 1;
@@ -69,7 +69,7 @@ namespace GrEmit.MethodBodyParsing
         private void ComputeStackSize(Instruction instruction, ref Dictionary<Instruction, int> stack_sizes, ref int stack_size, ref int max_stack)
         {
             int computed_size;
-            if(stack_sizes != null && stack_sizes.TryGetValue(instruction, out computed_size))
+            if (stack_sizes != null && stack_sizes.TryGetValue(instruction, out computed_size))
                 stack_size = computed_size;
 
             max_stack = Math.Max(max_stack, stack_size);
@@ -82,10 +82,10 @@ namespace GrEmit.MethodBodyParsing
 
         private static void CopyBranchStackSize(Instruction instruction, ref Dictionary<Instruction, int> stack_sizes, int stack_size)
         {
-            if(stack_size == 0)
+            if (stack_size == 0)
                 return;
 
-            switch(instruction.OpCode.OperandType)
+            switch (instruction.OpCode.OperandType)
             {
             case OperandType.ShortInlineBrTarget:
             case OperandType.InlineBrTarget:
@@ -93,7 +93,7 @@ namespace GrEmit.MethodBodyParsing
                 break;
             case OperandType.InlineSwitch:
                 var targets = (Instruction[])instruction.Operand;
-                for(int i = 0; i < targets.Length; i++)
+                for (int i = 0; i < targets.Length; i++)
                     CopyBranchStackSize(ref stack_sizes, targets[i], stack_size);
                 break;
             }
@@ -101,13 +101,13 @@ namespace GrEmit.MethodBodyParsing
 
         private static void CopyBranchStackSize(ref Dictionary<Instruction, int> stack_sizes, Instruction target, int stack_size)
         {
-            if(stack_sizes == null)
+            if (stack_sizes == null)
                 stack_sizes = new Dictionary<Instruction, int>();
 
             int branch_stack_size = stack_size;
 
             int computed_size;
-            if(stack_sizes.TryGetValue(target, out computed_size))
+            if (stack_sizes.TryGetValue(target, out computed_size))
                 branch_stack_size = Math.Max(branch_stack_size, computed_size);
 
             stack_sizes[target] = branch_stack_size;
@@ -115,7 +115,7 @@ namespace GrEmit.MethodBodyParsing
 
         private static void ComputeStackSize(Instruction instruction, ref int stack_size)
         {
-            switch(instruction.OpCode.FlowControl)
+            switch (instruction.OpCode.FlowControl)
             {
             case FlowControl.Branch:
             case FlowControl.Break:
@@ -139,7 +139,7 @@ namespace GrEmit.MethodBodyParsing
 
         private MethodSignature GetMethodSignature(MetadataToken token, OpCode opCode)
         {
-            if(opCode.Code != Code.Calli)
+            if (opCode.Code != Code.Calli)
                 return GetMethodSignature((MethodBase)tokenResolver(token));
             var signature = (byte[])tokenResolver(token);
             var parsedSignature = new SignatureReader(signature).ReadAndParseMethodSignature();
@@ -153,29 +153,29 @@ namespace GrEmit.MethodBodyParsing
 
         private MethodSignature GetMethodSignature(Instruction instruction)
         {
-            if(instruction.Operand is MetadataToken)
+            if (instruction.Operand is MetadataToken)
                 return GetMethodSignature((MetadataToken)instruction.Operand, instruction.OpCode);
             return GetMethodSignature((MethodBase)instruction.Operand);
         }
 
         private void ComputeStackDelta(Instruction instruction, ref int stack_size)
         {
-            switch(instruction.OpCode.FlowControl)
+            switch (instruction.OpCode.FlowControl)
             {
             case FlowControl.Call:
                 {
                     var methodSignature = GetMethodSignature(instruction);
 
                     // pop 'this' argument
-                    if(methodSignature.hasThis && instruction.OpCode.Code != Code.Newobj)
+                    if (methodSignature.hasThis && instruction.OpCode.Code != Code.Newobj)
                         stack_size--;
                     // pop normal arguments
                     stack_size -= methodSignature.parametersCount;
                     // pop function pointer
-                    if(instruction.OpCode.Code == Code.Calli)
+                    if (instruction.OpCode.Code == Code.Calli)
                         stack_size--;
                     // push return value
-                    if(methodSignature.hasReturnType || instruction.OpCode.Code == Code.Newobj)
+                    if (methodSignature.hasReturnType || instruction.OpCode.Code == Code.Newobj)
                         stack_size++;
                     break;
                 }
@@ -188,7 +188,7 @@ namespace GrEmit.MethodBodyParsing
 
         private static void ComputePopDelta(StackBehaviour pop_behavior, ref int stack_size)
         {
-            switch(pop_behavior)
+            switch (pop_behavior)
             {
             case StackBehaviour.Popi:
             case StackBehaviour.Popref:
@@ -221,7 +221,7 @@ namespace GrEmit.MethodBodyParsing
 
         private static void ComputePushDelta(StackBehaviour push_behaviour, ref int stack_size)
         {
-            switch(push_behaviour)
+            switch (push_behaviour)
             {
             case StackBehaviour.Push1:
             case StackBehaviour.Pushi:

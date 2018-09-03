@@ -21,7 +21,7 @@ namespace GrEmit.Tests
             var assertMethod = typeof(TestGrobufUsages).GetMethod("AssertDateTimeOffsetFields", BindingFlags.Static | BindingFlags.NonPublic);
 
             var method = new DynamicMethod("Grobuf_Write_DateTimeOffset_" + Guid.NewGuid(), typeof(void), new[] {dateTimeOffsetType}, typeof(TestGrobufUsages), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Ldarga(0); // stack: [obj]
                 il.Ldfld(dateTimeOffsetType.GetField(SelectName("_dateTime", "m_dateTime"), BindingFlags.Instance | BindingFlags.NonPublic)); // stack: [obj.m_dateTime]

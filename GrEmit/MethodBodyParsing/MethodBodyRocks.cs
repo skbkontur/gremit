@@ -17,15 +17,15 @@ namespace GrEmit.MethodBodyParsing
     {
         public static void SimplifyMacros(this Collection<Instruction> instructions)
         {
-            if(instructions == null)
+            if (instructions == null)
                 throw new ArgumentNullException(nameof(instructions));
 
-            foreach(var instruction in instructions)
+            foreach (var instruction in instructions)
             {
-                if(instruction.OpCode.OpCodeType != OpCodeType.Macro)
+                if (instruction.OpCode.OpCodeType != OpCodeType.Macro)
                     continue;
 
-                switch(instruction.OpCode.Code)
+                switch (instruction.OpCode.Code)
                 {
                 case Code.Ldarg_0:
                     ExpandMacro(instruction, OpCodes.Ldarg, 0);
@@ -174,18 +174,18 @@ namespace GrEmit.MethodBodyParsing
 
         public static void OptimizeMacros(this Collection<Instruction> instructions)
         {
-            if(instructions == null)
+            if (instructions == null)
                 throw new ArgumentNullException(nameof(instructions));
 
-            foreach(var instruction in instructions)
+            foreach (var instruction in instructions)
             {
                 int index;
-                switch(instruction.OpCode.Code)
+                switch (instruction.OpCode.Code)
                 {
                 case Code.Ldarg:
                     index = (int)instruction.Operand;
 
-                    switch(index)
+                    switch (index)
                     {
                     case 0:
                         MakeMacro(instruction, OpCodes.Ldarg_0);
@@ -200,14 +200,14 @@ namespace GrEmit.MethodBodyParsing
                         MakeMacro(instruction, OpCodes.Ldarg_3);
                         break;
                     default:
-                        if(index < 256)
+                        if (index < 256)
                             ExpandMacro(instruction, OpCodes.Ldarg_S, instruction.Operand);
                         break;
                     }
                     break;
                 case Code.Ldloc:
                     index = (int)instruction.Operand;
-                    switch(index)
+                    switch (index)
                     {
                     case 0:
                         MakeMacro(instruction, OpCodes.Ldloc_0);
@@ -222,14 +222,14 @@ namespace GrEmit.MethodBodyParsing
                         MakeMacro(instruction, OpCodes.Ldloc_3);
                         break;
                     default:
-                        if(index < 256)
+                        if (index < 256)
                             ExpandMacro(instruction, OpCodes.Ldloc_S, instruction.Operand);
                         break;
                     }
                     break;
                 case Code.Stloc:
                     index = (int)instruction.Operand;
-                    switch(index)
+                    switch (index)
                     {
                     case 0:
                         MakeMacro(instruction, OpCodes.Stloc_0);
@@ -244,23 +244,23 @@ namespace GrEmit.MethodBodyParsing
                         MakeMacro(instruction, OpCodes.Stloc_3);
                         break;
                     default:
-                        if(index < 256)
+                        if (index < 256)
                             ExpandMacro(instruction, OpCodes.Stloc_S, instruction.Operand);
                         break;
                     }
                     break;
                 case Code.Ldarga:
                     index = (int)instruction.Operand;
-                    if(index < 256)
+                    if (index < 256)
                         ExpandMacro(instruction, OpCodes.Ldarga_S, instruction.Operand);
                     break;
                 case Code.Ldloca:
-                    if(((int)instruction.Operand) < 256)
+                    if (((int)instruction.Operand) < 256)
                         ExpandMacro(instruction, OpCodes.Ldloca_S, instruction.Operand);
                     break;
                 case Code.Ldc_I4:
                     int i = (int)instruction.Operand;
-                    switch(i)
+                    switch (i)
                     {
                     case -1:
                         MakeMacro(instruction, OpCodes.Ldc_I4_M1);
@@ -293,7 +293,7 @@ namespace GrEmit.MethodBodyParsing
                         MakeMacro(instruction, OpCodes.Ldc_I4_8);
                         break;
                     default:
-                        if(i >= -128 && i < 128)
+                        if (i >= -128 && i < 128)
                             ExpandMacro(instruction, OpCodes.Ldc_I4_S, (sbyte)i);
                         break;
                     }
@@ -308,12 +308,12 @@ namespace GrEmit.MethodBodyParsing
         {
             ComputeOffsets(instructions);
 
-            foreach(var instruction in instructions)
+            foreach (var instruction in instructions)
             {
-                if(instruction.OpCode.OperandType != OperandType.InlineBrTarget)
+                if (instruction.OpCode.OperandType != OperandType.InlineBrTarget)
                     continue;
 
-                if(OptimizeBranch(instruction))
+                if (OptimizeBranch(instruction))
                     ComputeOffsets(instructions);
             }
         }
@@ -321,10 +321,10 @@ namespace GrEmit.MethodBodyParsing
         private static bool OptimizeBranch(Instruction instruction)
         {
             var offset = ((Instruction)instruction.Operand).Offset - (instruction.Offset + instruction.OpCode.Size + 4);
-            if(!(offset >= -128 && offset <= 127))
+            if (!(offset >= -128 && offset <= 127))
                 return false;
 
-            switch(instruction.OpCode.Code)
+            switch (instruction.OpCode.Code)
             {
             case Code.Br:
                 instruction.OpCode = OpCodes.Br_S;
@@ -376,7 +376,7 @@ namespace GrEmit.MethodBodyParsing
         private static void ComputeOffsets(Collection<Instruction> instructions)
         {
             var offset = 0;
-            foreach(var instruction in instructions)
+            foreach (var instruction in instructions)
             {
                 instruction.Offset = offset;
                 offset += instruction.GetSize();

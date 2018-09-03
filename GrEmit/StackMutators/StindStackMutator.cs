@@ -13,18 +13,18 @@ namespace GrEmit.StackMutators
             var esType = stack.Pop();
             CheckIsAPointer(il, esType);
             var pointer = esType.ToType();
-            if(pointer.IsByRef || pointer.IsPointer)
+            if (pointer.IsByRef || pointer.IsPointer)
             {
                 var elementType = pointer.GetElementType();
-                if(elementType.IsValueType)
+                if (elementType.IsValueType)
                     CheckCanBeAssigned(il, pointer, type.MakeByRefType());
                 else
                     CheckCanBeAssigned(il, elementType, type);
             }
-            else if(pointer.IsPointer)
+            else if (pointer.IsPointer)
             {
                 var elementType = pointer.GetElementType();
-                if(elementType.IsValueType)
+                if (elementType.IsValueType)
                     CheckCanBeAssigned(il, pointer, type.MakePointerType());
                 else
                     CheckCanBeAssigned(il, elementType, type);

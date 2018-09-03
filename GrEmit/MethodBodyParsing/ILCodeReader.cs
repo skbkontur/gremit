@@ -25,7 +25,7 @@ namespace GrEmit.MethodBodyParsing
 
         public static void Read(byte[] buffer, Func<MetadataToken, object> tokenResolver, bool resolveTokens, MethodBody body)
         {
-            fixed(byte* b = &buffer[0])
+            fixed (byte* b = &buffer[0])
                 new ILCodeReader(b, buffer.Length, tokenResolver, resolveTokens).Read(body);
         }
 
@@ -41,13 +41,13 @@ namespace GrEmit.MethodBodyParsing
             var end = codeSize;
             var instructions = body.Instructions;
 
-            while(position < end)
+            while (position < end)
             {
                 var offset = position;
                 var opcode = ReadOpCode();
                 var current = new Instruction(offset, opcode);
 
-                if(opcode.OperandType != OperandType.InlineNone)
+                if (opcode.OperandType != OperandType.InlineNone)
                     current.Operand = ReadOperand(current);
 
                 instructions.Add(current);
@@ -66,13 +66,13 @@ namespace GrEmit.MethodBodyParsing
 
         private object ReadOperand(Instruction instruction)
         {
-            switch(instruction.OpCode.OperandType)
+            switch (instruction.OpCode.OperandType)
             {
             case OperandType.InlineSwitch:
                 var length = ReadInt32();
                 var base_offset = position + (4 * length);
                 var branches = new int[length];
-                for(int i = 0; i < length; i++)
+                for (int i = 0; i < length; i++)
                     branches[i] = base_offset + ReadInt32();
                 return branches;
             case OperandType.ShortInlineBrTarget:
@@ -80,7 +80,7 @@ namespace GrEmit.MethodBodyParsing
             case OperandType.InlineBrTarget:
                 return ReadInt32() + position;
             case OperandType.ShortInlineI:
-                if(instruction.OpCode == OpCodes.Ldc_I4_S)
+                if (instruction.OpCode == OpCodes.Ldc_I4_S)
                     return ReadSByte();
 
                 return ReadByte();
@@ -119,10 +119,10 @@ namespace GrEmit.MethodBodyParsing
             var items = instructions.items;
             var size = instructions.size;
 
-            for(int i = 0; i < size; i++)
+            for (int i = 0; i < size; i++)
             {
                 var instruction = items[i];
-                switch(instruction.OpCode.OperandType)
+                switch (instruction.OpCode.OperandType)
                 {
                 case OperandType.ShortInlineBrTarget:
                 case OperandType.InlineBrTarget:
@@ -131,7 +131,7 @@ namespace GrEmit.MethodBodyParsing
                 case OperandType.InlineSwitch:
                     var offsets = (int[])instruction.Operand;
                     var branches = new Instruction[offsets.Length];
-                    for(int j = 0; j < offsets.Length; j++)
+                    for (int j = 0; j < offsets.Length; j++)
                         branches[j] = GetInstruction(offsets[j]);
 
                     instruction.Operand = branches;

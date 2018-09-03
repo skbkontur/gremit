@@ -25,13 +25,13 @@ namespace GrEmit.MethodBodyParsing
         private static Func<object, int, object> BuildItemGetter()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(object), new[] {typeof(object), typeof(int)}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Ldarg(0); // stack: [scope]
                 il.Castclass(dynamicScopeType);
                 il.Ldarg(1); // stack: [scope, token]
                 var property = dynamicScopeType.GetProperty("Item", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(property == null)
+                if (property == null)
                     throw new MissingMethodException("DynamicScope", "get_Item");
                 var getter = property.GetGetMethod(true);
                 il.Call(getter); // stack: [scope[this]]
@@ -45,7 +45,7 @@ namespace GrEmit.MethodBodyParsing
         {
             var parameterTypes = new[] {typeof(object), typeof(MethodBase), typeof(SignatureHelper)};
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(uint), parameterTypes, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Ldarg(0); // stack: [scope]
                 il.Castclass(dynamicScopeType);
@@ -54,10 +54,10 @@ namespace GrEmit.MethodBodyParsing
                 il.Ldarg(2); // stack: [scope, (RuntimeMethodInfo)method, signature]
 
                 var constructor = varArgsMethodType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {runtimeMethodInfoType, typeof(SignatureHelper)}, null);
-                if(constructor == null)
+                if (constructor == null)
                     throw new MissingMethodException("VarArgsMethod", ".ctor");
                 var getTokenForMethod = dynamicScopeType.GetMethod("GetTokenFor", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {varArgsMethodType}, null);
-                if(getTokenForMethod == null)
+                if (getTokenForMethod == null)
                     throw new MissingMethodException("DynamicScope", "GetTokenFor");
 
                 il.Newobj(constructor); // stack: [scope, new VarArgsMethod((RuntimeMethodInfo)method, signature)]

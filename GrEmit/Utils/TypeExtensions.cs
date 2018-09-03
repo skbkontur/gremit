@@ -7,18 +7,18 @@ namespace GrEmit.Utils
     {
         public static void GetInterfacesCollectionStupid(this Type node, ICollection<Type> result)
         {
-            if(node == null)
+            if (node == null)
                 return;
             GetInterfacesCollectionStupid(ReflectionExtensions.GetBaseType(node), result);
-            if(node.IsInterface)
+            if (node.IsInterface)
                 result.Add(node);
-            foreach(var interfaCe in ReflectionExtensions.GetInterfaces(node))
+            foreach (var interfaCe in ReflectionExtensions.GetInterfaces(node))
                 result.Add(interfaCe);
         }
 
         public static Type[] GetTypesArray(this Type node)
         {
-            if(node == null)
+            if (node == null)
                 return Type.EmptyTypes;
             var baseArray = ReflectionExtensions.GetBaseType(node).GetTypesArray();
             var interfaces = ReflectionExtensions.GetInterfaces(node).Subtract(baseArray);
@@ -53,17 +53,17 @@ namespace GrEmit.Utils
 //
         public static Type FindBaseClassWith(this Type type1, Type type2)
         {
-            if(null == type1)
+            if (null == type1)
                 return type2;
 
-            if(null == type2)
+            if (null == type2)
                 return type1;
 
-            for(var currentType2 = type2; currentType2 != null; currentType2 = ReflectionExtensions.GetBaseType(currentType2))
+            for (var currentType2 = type2; currentType2 != null; currentType2 = ReflectionExtensions.GetBaseType(currentType2))
             {
-                for(var currentType1 = type1; currentType1 != null; currentType1 = ReflectionExtensions.GetBaseType(currentType1))
+                for (var currentType1 = type1; currentType1 != null; currentType1 = ReflectionExtensions.GetBaseType(currentType1))
                 {
-                    if(ReflectionExtensions.Equal(currentType2, currentType1))
+                    if (ReflectionExtensions.Equal(currentType2, currentType1))
                         return currentType2;
                 }
             }
@@ -113,7 +113,7 @@ namespace GrEmit.Utils
                         var ax = ReflectionExtensions.GetInterfaces(tx);
                         var overlapped = az.GetOverlappedCount(ax).CompareTo(az.GetOverlappedCount(ay));
 
-                        if(overlapped != 0)
+                        if (overlapped != 0)
                             return overlapped;
                         var occurrence = az.GetOccurrenceCount(tx).CompareTo(az.GetOccurrenceCount(ty));
 

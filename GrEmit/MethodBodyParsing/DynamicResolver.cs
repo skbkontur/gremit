@@ -19,17 +19,17 @@ namespace GrEmit.MethodBodyParsing
             BuildGetEHInfoDelegate();
 
             var m_methodField = dynamicResolverType.GetField("m_method", BindingFlags.Instance | BindingFlags.NonPublic);
-            if(m_methodField == null)
+            if (m_methodField == null)
                 throw new InvalidOperationException("Field 'DynamicResolver.m_methodField' is not found");
             m_methodSetter = FieldsExtractor.GetSetter(m_methodField);
 
             var m_resolverField = typeof(DynamicMethod).GetField("m_resolver", BindingFlags.Instance | BindingFlags.NonPublic);
-            if(m_resolverField == null)
+            if (m_resolverField == null)
                 throw new InvalidOperationException("Field 'DynamicResolver.m_resolver' is not found");
             m_resolverSetter = FieldsExtractor.GetSetter<DynamicMethod, object>(m_resolverField);
 
             var m_localSignatureField = dynamicResolverType.GetField("m_localSignature", BindingFlags.Instance | BindingFlags.NonPublic);
-            if(m_localSignatureField == null)
+            if (m_localSignatureField == null)
                 throw new InvalidOperationException("Field 'DynamicResolver.m_localSignature' is not found");
             m_localSignatureExtractor = FieldsExtractor.GetExtractor<object, byte[]>(m_localSignatureField);
         }
@@ -50,7 +50,7 @@ namespace GrEmit.MethodBodyParsing
         {
             var parameterTypes = new[] {typeof(object), typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(int).MakeByRefType()};
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(byte[]), parameterTypes, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Castclass(dynamicResolverType);
@@ -58,7 +58,7 @@ namespace GrEmit.MethodBodyParsing
                 il.Ldarg(2);
                 il.Ldarg(3);
                 var getCodeInfoMethod = dynamicResolverType.GetMethod("GetCodeInfo", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(getCodeInfoMethod == null)
+                if (getCodeInfoMethod == null)
                     throw new MissingMethodException("DynamicResolver", "GetCodeInfo");
                 il.Call(getCodeInfoMethod);
                 il.Ret();
@@ -71,14 +71,14 @@ namespace GrEmit.MethodBodyParsing
         {
             var parameterTypes = new[] {typeof(object), typeof(int), typeof(void*)};
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), parameterTypes, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Castclass(dynamicResolverType);
                 il.Ldarg(1);
                 il.Ldarg(2);
                 var getEHInfoMethod = dynamicResolverType.GetMethod("GetEHInfo", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(getEHInfoMethod == null)
+                if (getEHInfoMethod == null)
                     throw new MissingMethodException("DynamicResolver", "GetEHInfo");
                 il.Call(getEHInfoMethod);
                 il.Ret();
@@ -90,12 +90,12 @@ namespace GrEmit.MethodBodyParsing
         private static void BuildGetRawEHInfoDelegate()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(byte[]), new[] {typeof(object)}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Castclass(dynamicResolverType);
                 var getRawEHInfoMethod = dynamicResolverType.GetMethod("GetRawEHInfo", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(getRawEHInfoMethod == null)
+                if (getRawEHInfoMethod == null)
                     throw new MissingMethodException("DynamicResolver", "GetRawEHInfo");
                 il.Call(getRawEHInfoMethod);
                 il.Ret();
@@ -107,11 +107,11 @@ namespace GrEmit.MethodBodyParsing
         private static void BuildFactoryByDynamicILInfo()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(object), new[] {dynamicILInfoType}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 var constructor = dynamicResolverType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {dynamicILInfoType}, null);
-                if(constructor == null)
+                if (constructor == null)
                     throw new MissingMethodException("DynamicResolver", ".ctor");
                 il.Newobj(constructor);
                 il.Ret();
@@ -123,12 +123,12 @@ namespace GrEmit.MethodBodyParsing
         private static void BuildFactoryByDynamicILGenerator()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(object), new[] {typeof(ILGenerator)}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Castclass(dynamicILGeneratorType);
                 var constructor = dynamicResolverType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {dynamicILGeneratorType}, null);
-                if(constructor == null)
+                if (constructor == null)
                     throw new MissingMethodException("DynamicResolver", ".ctor");
                 il.Newobj(constructor);
                 il.Ret();

@@ -21,21 +21,21 @@ namespace GrEmit.MethodBodyParsing
 
         private static object ResolveRuntimeMethodHandle(object value)
         {
-            if(value is RuntimeMethodHandle)
+            if (value is RuntimeMethodHandle)
                 return MethodBase.GetMethodFromHandle((RuntimeMethodHandle)value);
             return null;
         }
 
         private static object ResolveRuntimeFieldHandle(object value)
         {
-            if(value is RuntimeFieldHandle)
+            if (value is RuntimeFieldHandle)
                 return FieldInfo.GetFieldFromHandle((RuntimeFieldHandle)value);
             return null;
         }
 
         private static object ResolveRuntimeTypeHandle(object value)
         {
-            if(value is RuntimeTypeHandle)
+            if (value is RuntimeTypeHandle)
                 return Type.GetTypeFromHandle((RuntimeTypeHandle)value);
             return null;
         }
@@ -43,10 +43,10 @@ namespace GrEmit.MethodBodyParsing
         private static Func<object, object> EmitResolveGenericMethodInfo()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(object), new[] {typeof(object)}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 var GenericMethodInfo_t = typeof(DynamicMethod).Assembly.GetType("System.Reflection.Emit.GenericMethodInfo");
-                if(GenericMethodInfo_t == null)
+                if (GenericMethodInfo_t == null)
                     throw new InvalidOperationException("Missing type 'System.Reflection.Emit.GenericMethodInfo'");
                 il.Ldarg(0); // stack: [value]
                 il.Isinst(GenericMethodInfo_t); // stack: [(GenericMethodInfo)value]
@@ -54,10 +54,10 @@ namespace GrEmit.MethodBodyParsing
                 il.Dup(); // stack: [(GenericMethodInfo)value, (GenericMethodInfo)value]
                 il.Brfalse(retLabel); // if(!(value is GenericMethodInfo)) goto ret; stack: [value as GenericMethodInfo]
                 var m_methodHandle_f = GenericMethodInfo_t.GetField("m_methodHandle", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(m_methodHandle_f == null)
+                if (m_methodHandle_f == null)
                     throw new InvalidOperationException("Missing field 'System.Reflection.Emit.GenericMethodInfo.m_methodHandle'");
                 var m_context_f = GenericMethodInfo_t.GetField("m_context", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(m_context_f == null)
+                if (m_context_f == null)
                     throw new InvalidOperationException("Missing field 'System.Reflection.Emit.GenericMethodInfo.m_context'");
                 var temp = il.DeclareLocal(GenericMethodInfo_t);
                 il.Dup();
@@ -76,10 +76,10 @@ namespace GrEmit.MethodBodyParsing
         private static Func<object, object> EmitResolveVarArgsMethod()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(object), new[] {typeof(object)}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 var VarArgMethod_t = typeof(DynamicMethod).Assembly.GetType("System.Reflection.Emit.VarArgMethod");
-                if(VarArgMethod_t == null)
+                if (VarArgMethod_t == null)
                     throw new InvalidOperationException("Missing type 'System.Reflection.Emit.VarArgMethod'");
                 il.Ldarg(0); // stack: [value]
                 il.Isinst(VarArgMethod_t); // stack: [(VarArgMethod)value]
@@ -87,10 +87,10 @@ namespace GrEmit.MethodBodyParsing
                 il.Dup(); // stack: [(VarArgMethod)value, (VarArgMethod)value]
                 il.Brfalse(retLabel); // if(!(value is VarArgMethod)) goto ret; stack: [value as VarArgMethod]
                 var m_method_f = VarArgMethod_t.GetField("m_method", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(m_method_f == null)
+                if (m_method_f == null)
                     throw new InvalidOperationException("Missing field 'System.Reflection.Emit.VarArgMethod.m_method'");
                 var m_dynamicMethod_f = VarArgMethod_t.GetField("m_dynamicMethod", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(m_dynamicMethod_f == null)
+                if (m_dynamicMethod_f == null)
                     throw new InvalidOperationException("Missing field 'System.Reflection.Emit.VarArgMethod.m_dynamicMethod'");
                 var temp = il.DeclareLocal(VarArgMethod_t);
                 il.Dup();
@@ -110,10 +110,10 @@ namespace GrEmit.MethodBodyParsing
         private static Func<object, object> EmitResolveGenericFieldInfo()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(object), new[] {typeof(object)}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 var GenericFieldInfo_t = typeof(DynamicMethod).Assembly.GetType("System.Reflection.Emit.GenericFieldInfo");
-                if(GenericFieldInfo_t == null)
+                if (GenericFieldInfo_t == null)
                     throw new InvalidOperationException("Missing type 'System.Reflection.Emit.GenericFieldInfo'");
                 il.Ldarg(0); // stack: [value]
                 il.Isinst(GenericFieldInfo_t); // stack: [(GenericFieldInfo)value]
@@ -121,10 +121,10 @@ namespace GrEmit.MethodBodyParsing
                 il.Dup(); // stack: [(GenericFieldInfo)value, (GenericFieldInfo)value]
                 il.Brfalse(retLabel); // if(!(value is GenericFieldInfo)) goto ret; stack: [value as GenericFieldInfo]
                 var m_fieldHandle_f = GenericFieldInfo_t.GetField("m_fieldHandle", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(m_fieldHandle_f == null)
+                if (m_fieldHandle_f == null)
                     throw new InvalidOperationException("Missing field 'System.Reflection.Emit.GenericFieldInfo.m_fieldHandle'");
                 var m_context_f = GenericFieldInfo_t.GetField("m_context", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(m_context_f == null)
+                if (m_context_f == null)
                     throw new InvalidOperationException("Missing field 'System.Reflection.Emit.GenericFieldInfo.m_context'");
                 var temp = il.DeclareLocal(GenericFieldInfo_t);
                 il.Dup();
@@ -153,7 +153,7 @@ namespace GrEmit.MethodBodyParsing
             : base(GetMethodSignature(ilGenerator), resolveTokens)
         {
             scope = new DynamicILGenerator(ilGenerator).m_scope;
-            using(var dynamicResolver = new DynamicResolver(dynamicMethod, ilGenerator))
+            using (var dynamicResolver = new DynamicResolver(dynamicMethod, ilGenerator))
             {
                 int stackSize;
                 int initLocals;
@@ -192,7 +192,7 @@ namespace GrEmit.MethodBodyParsing
             var buf = stackalloc CORINFO_EH_CLAUSE[1];
             var exceptionClause = &buf[0];
 
-            for(int i = 0; i < excCount; ++i)
+            for (int i = 0; i < excCount; ++i)
             {
                 dynamicResolver.GetEHInfo(i, exceptionClause);
 
@@ -204,7 +204,7 @@ namespace GrEmit.MethodBodyParsing
                 handler.HandlerStart = GetInstruction(exceptionClause->HandlerOffset);
                 handler.HandlerEnd = GetInstruction(handler.HandlerStart.Offset + exceptionClause->HandlerLength);
 
-                switch(handler.HandlerType)
+                switch (handler.HandlerType)
                 {
                 case ExceptionHandlerType.Catch:
                     var token = new MetadataToken((uint)exceptionClause->ClassTokenOrFilterOffset);

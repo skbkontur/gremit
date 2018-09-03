@@ -1,4 +1,5 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/GeneratedFilesAndFolders/=9D33C46B_002D7413_002D4568_002DB37E_002DF03CB2F49D37_002Fd_003AMethodBodyParsing_002Ff_003AOpCodes_002Ecs/@EntryIndexedValue">9D33C46B-7413-4568-B37E-F03CB2F49D37/d:MethodBodyParsing/f:OpCodes.cs</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=IL/@EntryIndexedValue">IL</s:String>
 	<s:Boolean x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=4592A3FB6844284CBDE4DE722C9B5808/@KeyIndexDefined">True</s:Boolean>
 	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=4592A3FB6844284CBDE4DE722C9B5808/AbsolutePath/@EntryValue">C:\projects\open-source\skbkontur\gremit\Common.DotSettings</s:String>

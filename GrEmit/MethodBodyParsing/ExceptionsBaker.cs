@@ -27,7 +27,7 @@ namespace GrEmit.MethodBodyParsing
 
         public byte[] BakeExceptions()
         {
-            if(handlers.IsNullOrEmpty())
+            if (handlers.IsNullOrEmpty())
                 return Empty<byte>.Array;
 
             WriteExceptions();
@@ -39,7 +39,7 @@ namespace GrEmit.MethodBodyParsing
 
         private void WriteExceptions()
         {
-            if(handlers.Count < 0x15 && !RequiresFatSection(handlers))
+            if (handlers.Count < 0x15 && !RequiresFatSection(handlers))
                 WriteSmallSection();
             else
                 WriteFatSection();
@@ -47,16 +47,16 @@ namespace GrEmit.MethodBodyParsing
 
         private static bool RequiresFatSection(Collection<ExceptionHandler> handlers)
         {
-            foreach(var handler in handlers)
+            foreach (var handler in handlers)
             {
-                if(IsFatRange(handler.TryStart, handler.TryEnd))
+                if (IsFatRange(handler.TryStart, handler.TryEnd))
                     return true;
 
-                if(IsFatRange(handler.HandlerStart, handler.HandlerEnd))
+                if (IsFatRange(handler.HandlerStart, handler.HandlerEnd))
                     return true;
 
-                if(handler.HandlerType == ExceptionHandlerType.Filter
-                   && IsFatRange(handler.FilterStart, handler.HandlerStart))
+                if (handler.HandlerType == ExceptionHandlerType.Filter
+                    && IsFatRange(handler.FilterStart, handler.HandlerStart))
                     return true;
             }
 
@@ -65,10 +65,10 @@ namespace GrEmit.MethodBodyParsing
 
         private static bool IsFatRange(Instruction start, Instruction end)
         {
-            if(start == null)
+            if (start == null)
                 throw new ArgumentException();
 
-            if(end == null)
+            if (end == null)
                 return true;
 
             return end.Offset - start.Offset > 255 || start.Offset > 65535;
@@ -104,7 +104,7 @@ namespace GrEmit.MethodBodyParsing
 
         private void WriteExceptionHandlers(Action<int> writeEntry, Action<int> writeLength)
         {
-            foreach(var handler in handlers)
+            foreach (var handler in handlers)
             {
                 writeEntry((int)handler.HandlerType);
 
@@ -120,7 +120,7 @@ namespace GrEmit.MethodBodyParsing
 
         private void WriteExceptionHandlerSpecific(ExceptionHandler handler)
         {
-            switch(handler.HandlerType)
+            switch (handler.HandlerType)
             {
             case ExceptionHandlerType.Catch:
                 WriteMetadataToken(tokenBuilder(default(OpCode), handler.CatchType));
@@ -136,7 +136,7 @@ namespace GrEmit.MethodBodyParsing
 
         private int GetTargetOffset(Instruction instruction)
         {
-            if(instruction == null)
+            if (instruction == null)
             {
                 var last = instructions[instructions.size - 1];
                 return last.Offset + last.GetSize();

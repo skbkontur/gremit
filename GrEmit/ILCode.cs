@@ -12,7 +12,7 @@ namespace GrEmit
     {
         public int MarkLabel(GroboIL.Label label, ILInstructionComment comment)
         {
-            if(labelLineNumbers.ContainsKey(label))
+            if (labelLineNumbers.ContainsKey(label))
                 throw new InvalidOperationException(string.Format("The label '{0}' has already been marked", label.Name));
             labelLineNumbers.Add(label, Count);
             instructions.Add(new ILInstruction(InstructionKind.Label, default(OpCode), new LabelILInstructionParameter(label), comment));
@@ -21,19 +21,19 @@ namespace GrEmit
 
         public void CheckLabels()
         {
-            foreach(var instruction in instructions.Cast<ILInstruction>())
+            foreach (var instruction in instructions.Cast<ILInstruction>())
             {
-                if(instruction.Parameter is LabelILInstructionParameter)
+                if (instruction.Parameter is LabelILInstructionParameter)
                 {
                     var label = (LabelILInstructionParameter)instruction.Parameter;
-                    if(!labelLineNumbers.ContainsKey(label.Label))
+                    if (!labelLineNumbers.ContainsKey(label.Label))
                         throw new InvalidOperationException(string.Format("The label '{0}' has not been marked", label.Label.Name));
                 }
-                if(instruction.Parameter is LabelsILInstructionParameter)
+                if (instruction.Parameter is LabelsILInstructionParameter)
                 {
-                    foreach(var label in ((LabelsILInstructionParameter)instruction.Parameter).Labels)
+                    foreach (var label in ((LabelsILInstructionParameter)instruction.Parameter).Labels)
                     {
-                        if(!labelLineNumbers.ContainsKey(label))
+                        if (!labelLineNumbers.ContainsKey(label))
                             throw new InvalidOperationException(string.Format("The label '{0}' has not been marked", label.Name));
                     }
                 }
@@ -43,7 +43,7 @@ namespace GrEmit
         public int Append(OpCode opCode, ILInstructionComment comment)
         {
             var lastInstructionPrefix = Count > 0 ? instructions[Count - 1] as ILInstructionPrefix : null;
-            if(lastInstructionPrefix == null)
+            if (lastInstructionPrefix == null)
             {
                 instructions.Add(new ILInstruction(InstructionKind.Instruction, opCode, null, comment));
                 return Count++;
@@ -55,7 +55,7 @@ namespace GrEmit
         public int Append(OpCode opCode, ILInstructionParameter parameter, ILInstructionComment comment)
         {
             var lastInstructionPrefix = Count > 0 ? instructions[Count - 1] as ILInstructionPrefix : null;
-            if(lastInstructionPrefix == null)
+            if (lastInstructionPrefix == null)
             {
                 instructions.Add(new ILInstruction(InstructionKind.Instruction, opCode, parameter, comment));
                 return Count++;
@@ -67,7 +67,7 @@ namespace GrEmit
         public int AppendPrefix(OpCode prefix, ILInstructionParameter parameter)
         {
             var lastInstructionPrefix = instructions[Count - 1] as ILInstructionPrefix;
-            if(lastInstructionPrefix != null)
+            if (lastInstructionPrefix != null)
             {
                 lastInstructionPrefix.Prefixes.Add(new KeyValuePair<OpCode, ILInstructionParameter>(prefix, parameter));
                 return Count - 1;
@@ -137,7 +137,7 @@ namespace GrEmit
 
         public void SetComment(int lineNumber, ILInstructionComment comment)
         {
-            if(lineNumber < instructions.Count)
+            if (lineNumber < instructions.Count)
                 instructions[lineNumber].Comment = comment;
         }
 
@@ -150,12 +150,12 @@ namespace GrEmit
         {
             var lines = new List<string>();
             var maxLen = 0;
-            foreach(var instruction in instructions)
+            foreach (var instruction in instructions)
             {
                 var ilInstruction = instruction as ILInstruction;
-                if(ilInstruction != null)
+                if (ilInstruction != null)
                 {
-                    switch(ilInstruction.Kind)
+                    switch (ilInstruction.Kind)
                     {
                     case InstructionKind.Instruction:
                         var prefixes = (ilInstruction.Prefixes ?? new List<KeyValuePair<OpCode, ILInstructionParameter>>()).Select(pair => pair.Key);
@@ -192,24 +192,24 @@ namespace GrEmit
                     var prefix = (ILInstructionPrefix)instruction;
                     lines.Add(margin + string.Join("", prefix.Prefixes.Select(opcode => opcode.ToString()).ToArray()) + ".");
                 }
-                if(maxLen < lines[lines.Count - 1].Length)
+                if (maxLen < lines[lines.Count - 1].Length)
                     maxLen = lines[lines.Count - 1].Length;
             }
-            if(maxLen > maxCommentStart)
+            if (maxLen > maxCommentStart)
                 maxLen = maxCommentStart;
             InitMargins(maxCommentStart + margin.Length);
             maxLen += margin.Length;
             var result = new StringBuilder();
             var linesInfo = new List<KeyValuePair<int, int>>();
             var currentLine = 1;
-            for(var i = 0; i < instructions.Count; ++i)
+            for (var i = 0; i < instructions.Count; ++i)
             {
                 var line = lines[i];
                 result.Append(line);
                 var comment = instructions[i].Comment;
-                if(comment != null)
+                if (comment != null)
                 {
-                    if(line.Length <= maxLen)
+                    if (line.Length <= maxLen)
                     {
                         result.Append(WhiteSpace(maxLen - line.Length));
                         result.Append("// ");
@@ -255,11 +255,11 @@ namespace GrEmit
 
         private static void InitMargins(int length)
         {
-            if(margins == null)
+            if (margins == null)
             {
                 margins = new string[length + 1];
                 margins[0] = "";
-                for(var i = 1; i <= length; ++i)
+                for (var i = 1; i <= length; ++i)
                     margins[i] = new string(' ', i);
             }
         }

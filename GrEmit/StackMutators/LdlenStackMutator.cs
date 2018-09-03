@@ -9,7 +9,7 @@ namespace GrEmit.StackMutators
             CheckNotEmpty(il, stack, () => "In order to perform the 'ldlen' instruction an array must be loaded onto the evaluation stack");
             var esType = stack.Pop();
             var array = esType.ToType();
-            if(!array.IsArray && array != typeof(Array))
+            if (!array.IsArray && array != typeof(Array))
                 ThrowError(il, string.Format("An array expected but was '{0}'", esType));
             stack.Push(typeof(int));
         }

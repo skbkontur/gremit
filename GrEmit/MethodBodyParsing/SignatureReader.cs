@@ -34,14 +34,14 @@ namespace GrEmit.MethodBodyParsing
         {
             const byte local_sig = 0x7;
 
-            if(ReadByte() != local_sig)
+            if (ReadByte() != local_sig)
                 throw new NotSupportedException();
 
             var localVariables = new LocalInfoCollection();
 
             var count = ReadCompressedUInt32();
 
-            for(int i = 0; i < count; ++i)
+            for (int i = 0; i < count; ++i)
                 localVariables.Add(new LocalInfo(ReadTypeSignature()));
 
             return localVariables;
@@ -56,13 +56,13 @@ namespace GrEmit.MethodBodyParsing
             const byte has_this = 0x20;
             const byte explicit_this = 0x40;
 
-            if((calling_convention & has_this) != 0)
+            if ((calling_convention & has_this) != 0)
             {
                 method.HasThis = true;
                 calling_convention = (byte)(calling_convention & ~has_this);
             }
 
-            if((calling_convention & explicit_this) != 0)
+            if ((calling_convention & explicit_this) != 0)
             {
                 method.ExplicitThis = true;
                 calling_convention = (byte)(calling_convention & ~explicit_this);
@@ -70,7 +70,7 @@ namespace GrEmit.MethodBodyParsing
 
             method.CallingConvention = calling_convention;
 
-            if((calling_convention & 0x10) != 0)
+            if ((calling_convention & 0x10) != 0)
             {
                 // arity
                 ReadCompressedUInt32();
@@ -79,8 +79,8 @@ namespace GrEmit.MethodBodyParsing
             var param_count = ReadCompressedUInt32();
             method.ParamCount = (int)param_count;
 
-            while(buffer[position] == (byte)ElementType.CModOpt
-                  || buffer[position] == (byte)ElementType.CModReqD)
+            while (buffer[position] == (byte)ElementType.CModOpt
+                   || buffer[position] == (byte)ElementType.CModReqD)
             {
                 ReadByte();
                 ReadTypeTokenSignature();
@@ -88,10 +88,10 @@ namespace GrEmit.MethodBodyParsing
 
             method.ReturnTypeSignature = ReadTypeSignature();
 
-            if(param_count == 0)
+            if (param_count == 0)
                 return method;
 
-            for(int i = 0; i < param_count; i++)
+            for (int i = 0; i < param_count; i++)
                 ReadTypeSignature();
 
             return method;
@@ -127,7 +127,7 @@ namespace GrEmit.MethodBodyParsing
             var calling_convention = ReadByte();
             writer.WriteByte(calling_convention);
 
-            if((calling_convention & 0x10) != 0)
+            if ((calling_convention & 0x10) != 0)
             {
                 // arity
                 writer.WriteCompressedUInt32(ReadCompressedUInt32());
@@ -139,13 +139,13 @@ namespace GrEmit.MethodBodyParsing
             // return type
             writer.WriteBytes(ReadTypeSignature());
 
-            if(param_count == 0)
+            if (param_count == 0)
             {
                 writer.position = 0;
                 return writer.ReadBytes(writer.length);
             }
 
-            for(int i = 0; i < param_count; i++)
+            for (int i = 0; i < param_count; i++)
                 writer.WriteBytes(ReadTypeSignature());
 
             writer.position = 0;
@@ -156,7 +156,7 @@ namespace GrEmit.MethodBodyParsing
         {
             var writer = new ByteBuffer();
 
-            switch(etype)
+            switch (etype)
             {
             case ElementType.ValueType:
                 writer.WriteBytes(ReadTypeTokenSignature());
@@ -205,7 +205,7 @@ namespace GrEmit.MethodBodyParsing
                     var readByte = ReadByte();
                     writer.WriteByte(readByte);
                     // element_type
-                    if((ElementType)readByte == ElementType.Internal)
+                    if ((ElementType)readByte == ElementType.Internal)
                         writer.WriteBytes(ReadBytes(IntPtr.Size));
                     else
                         writer.WriteBytes(ReadTypeTokenSignature());
@@ -231,7 +231,7 @@ namespace GrEmit.MethodBodyParsing
             var arity = ReadCompressedUInt32();
             writer.WriteCompressedUInt32(arity);
 
-            for(int i = 0; i < arity; i++)
+            for (int i = 0; i < arity; i++)
                 writer.WriteBytes(ReadTypeSignature());
 
             writer.position = 0;
@@ -251,13 +251,13 @@ namespace GrEmit.MethodBodyParsing
             var sizes = ReadCompressedUInt32();
             writer.WriteCompressedUInt32(sizes);
 
-            for(int i = 0; i < sizes; i++)
+            for (int i = 0; i < sizes; i++)
                 writer.WriteCompressedUInt32(ReadCompressedUInt32());
 
             var low_bounds = ReadCompressedUInt32();
             writer.WriteCompressedUInt32(low_bounds);
 
-            for(int i = 0; i < low_bounds; i++)
+            for (int i = 0; i < low_bounds; i++)
                 writer.WriteCompressedInt32(ReadCompressedInt32());
 
             writer.position = 0;

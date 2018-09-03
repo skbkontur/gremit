@@ -10,12 +10,12 @@ namespace GrEmit
         public static Func<object, object> GetExtractor(FieldInfo field)
         {
             var extractor = (Func<object, object>)extractors[field];
-            if(extractor == null)
+            if (extractor == null)
             {
-                lock(extractorsLock)
+                lock (extractorsLock)
                 {
                     extractor = (Func<object, object>)extractors[field];
-                    if(extractor == null)
+                    if (extractor == null)
                         extractors[field] = extractor = BuildExtractor(field);
                 }
             }
@@ -25,12 +25,12 @@ namespace GrEmit
         public static Action<object, object> GetSetter(FieldInfo field)
         {
             var foister = (Action<object, object>)foisters[field];
-            if(foister == null)
+            if (foister == null)
             {
-                lock(foistersLock)
+                lock (foistersLock)
                 {
                     foister = (Action<object, object>)foisters[field];
-                    if(foister == null)
+                    if (foister == null)
                         foisters[field] = foister = BuildFoister(field);
                 }
             }
@@ -66,19 +66,19 @@ namespace GrEmit
         private static Func<object, object> BuildExtractor(FieldInfo field)
         {
             var methodName = "FieldExtractor$";
-            if(field.IsStatic)
+            if (field.IsStatic)
                 methodName += field.DeclaringType + "$";
             methodName += field.Name + "$" + Guid.NewGuid();
             var dynamicMethod = new DynamicMethod(methodName, typeof(object), new[] {typeof(object)}, typeof(FieldsExtractor), true);
-            using(var il = new GroboIL(dynamicMethod))
+            using (var il = new GroboIL(dynamicMethod))
             {
-                if(!field.IsStatic)
+                if (!field.IsStatic)
                 {
                     il.Ldarg(0);
                     il.Castclass(field.DeclaringType);
                 }
                 il.Ldfld(field);
-                if(field.FieldType.IsValueType)
+                if (field.FieldType.IsValueType)
                     il.Box(field.FieldType);
                 il.Ret();
             }
@@ -88,19 +88,19 @@ namespace GrEmit
         private static Action<object, object> BuildFoister(FieldInfo field)
         {
             var methodName = "FieldFoister$";
-            if(field.IsStatic)
+            if (field.IsStatic)
                 methodName += field.DeclaringType + "$";
             methodName += field.Name + "$" + Guid.NewGuid();
             var dynamicMethod = new DynamicMethod(methodName, typeof(void), new[] {typeof(object), typeof(object)}, typeof(FieldsExtractor), true);
-            using(var il = new GroboIL(dynamicMethod))
+            using (var il = new GroboIL(dynamicMethod))
             {
-                if(!field.IsStatic)
+                if (!field.IsStatic)
                 {
                     il.Ldarg(0);
                     il.Castclass(field.DeclaringType);
                 }
                 il.Ldarg(1);
-                if(field.FieldType.IsValueType)
+                if (field.FieldType.IsValueType)
                     il.Unbox_Any(field.FieldType);
                 else
                     il.Castclass(field.FieldType);

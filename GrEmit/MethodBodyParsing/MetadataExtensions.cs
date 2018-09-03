@@ -9,7 +9,7 @@ namespace GrEmit.MethodBodyParsing
     {
         internal static object Resolve(this Module module, MetadataToken token)
         {
-            switch(token.TokenType)
+            switch (token.TokenType)
             {
             case TokenType.Method:
             case TokenType.MethodSpec:
@@ -33,14 +33,14 @@ namespace GrEmit.MethodBodyParsing
 
         public static MethodBase ResolveMethod(Module module, MetadataToken token)
         {
-            switch(token.TokenType)
+            switch (token.TokenType)
             {
             case TokenType.MethodSpec:
             case TokenType.Method:
                 return module.ResolveMethod(token.ToInt32(), universalArguments, universalArguments);
             case TokenType.MemberRef:
                 var member = module.ResolveMember(token.ToInt32(), universalArguments, universalArguments);
-                switch(member.MemberType)
+                switch (member.MemberType)
                 {
                 case MemberTypes.Constructor:
                 case MemberTypes.Method:
@@ -68,16 +68,16 @@ namespace GrEmit.MethodBodyParsing
             Type[] optionalParameterTypes)
         {
             var sig = SignatureHelper.GetMethodSigHelper(call, returnType);
-            if(parameterTypes != null)
+            if (parameterTypes != null)
             {
-                foreach(var parameterType in parameterTypes)
+                foreach (var parameterType in parameterTypes)
                     sig.AddArgument(parameterType);
             }
-            if(optionalParameterTypes != null && optionalParameterTypes.Length != 0)
+            if (optionalParameterTypes != null && optionalParameterTypes.Length != 0)
             {
                 // add the sentinel 
                 sig.AddSentinel();
-                foreach(var optionalParameterType in optionalParameterTypes)
+                foreach (var optionalParameterType in optionalParameterTypes)
                     sig.AddArgument(optionalParameterType);
             }
             return sig;
@@ -86,9 +86,9 @@ namespace GrEmit.MethodBodyParsing
         private static Type GetReturnType(MethodBase methodBase)
         {
             var methodInfo = methodBase as MethodInfo;
-            if(methodInfo != null)
+            if (methodInfo != null)
                 return methodInfo.ReturnType;
-            if(methodBase is ConstructorInfo)
+            if (methodBase is ConstructorInfo)
                 return typeof(void);
             throw new InvalidOperationException($"{methodBase.GetType()} is not supported");
         }

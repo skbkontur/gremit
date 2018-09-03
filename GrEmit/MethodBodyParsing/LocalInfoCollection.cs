@@ -20,7 +20,7 @@ namespace GrEmit.MethodBodyParsing
         {
             item.LocalIndex = index;
 
-            for(int i = index; i < size; i++)
+            for (int i = index; i < size; i++)
                 items[i].LocalIndex = i + 1;
         }
 
@@ -33,7 +33,7 @@ namespace GrEmit.MethodBodyParsing
         {
             item.LocalIndex = -1;
 
-            for(int i = index + 1; i < size; i++)
+            for (int i = index + 1; i < size; i++)
                 items[i].LocalIndex = i - 1;
         }
     }

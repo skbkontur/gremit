@@ -32,7 +32,7 @@ namespace GrEmit.Tests.OpCodesTests
         public void Test_StaticMethod_Void_NoParameters()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), Type.EmptyTypes, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Call(HackHelpers.GetMethodDefinition<int>(x => VoidStaticMethod_NoParameters()));
                 il.Ret();
@@ -43,7 +43,7 @@ namespace GrEmit.Tests.OpCodesTests
         public void Test_StaticMethod_Void_WithParameters()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(int), typeof(string)}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Ldarg(1);
@@ -56,7 +56,7 @@ namespace GrEmit.Tests.OpCodesTests
         public void Test_StaticMethod_NonVoid_NoParameters()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), Type.EmptyTypes, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Call(HackHelpers.GetMethodDefinition<int>(x => NonVoidStaticMethod_NoParameters()));
                 il.Ret();
@@ -67,7 +67,7 @@ namespace GrEmit.Tests.OpCodesTests
         public void Test_StaticMethod_NonVoid_WithParameters()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] {typeof(int), typeof(string)}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 il.Ldarg(0);
                 il.Ldarg(1);
@@ -79,19 +79,6 @@ namespace GrEmit.Tests.OpCodesTests
         public interface I1
         {
             void Zzz();
-        }
-
-        public class C1 : I1
-        {
-            public void Zzz()
-            {
-                
-            }
-        }
-
-        public class C2
-        {
-
         }
 
         [Test]
@@ -124,11 +111,21 @@ namespace GrEmit.Tests.OpCodesTests
         [Test]
         public void Test_ldvirtftn3()
         {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof (void), Type.EmptyTypes, typeof (string), true);
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), Type.EmptyTypes, typeof(string), true);
             var il = new GroboIL(method);
-            il.Newobj(typeof (C2).GetConstructor(Type.EmptyTypes));
-            Assert.Throws<InvalidOperationException>(() => il.Ldvirtftn(typeof (I1).GetMethod("Zzz")));
+            il.Newobj(typeof(C2).GetConstructor(Type.EmptyTypes));
+            Assert.Throws<InvalidOperationException>(() => il.Ldvirtftn(typeof(I1).GetMethod("Zzz")));
         }
 
+        public class C1 : I1
+        {
+            public void Zzz()
+            {
+            }
+        }
+
+        public class C2
+        {
+        }
     }
 }

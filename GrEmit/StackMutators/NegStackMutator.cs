@@ -7,7 +7,7 @@ namespace GrEmit.StackMutators
             CheckNotEmpty(il, stack, () => "In order to perform the 'neg' operation an instance must be put onto the evaluation stack");
             var esType = stack.Pop();
             var cliType = ToCLIType(esType);
-            if(cliType != CLIType.Int32 && cliType != CLIType.Int64 && cliType != CLIType.NativeInt && cliType != CLIType.Float && cliType != CLIType.Zero)
+            if (cliType != CLIType.Int32 && cliType != CLIType.Int64 && cliType != CLIType.NativeInt && cliType != CLIType.Float && cliType != CLIType.Zero)
                 ThrowError(il, string.Format("Unable to perform the 'neg' operation on type '{0}'", esType));
             stack.Push(Canonize(esType));
         }

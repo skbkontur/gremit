@@ -106,7 +106,7 @@ namespace GrEmit.MethodBodyParsing
             this.stack_behavior_pop = (byte)((y >> 16) & 0xff);
             this.stack_behavior_push = (byte)((y >> 24) & 0xff);
 
-            if(Op1 == 0xff)
+            if (Op1 == 0xff)
                 OpCodes.OneByteOpCode[Op2] = this;
             else
                 OpCodes.TwoBytesOpCode[Op2] = this;
@@ -137,7 +137,7 @@ namespace GrEmit.MethodBodyParsing
 
         public override bool Equals(object obj)
         {
-            if(!(obj is OpCode))
+            if (!(obj is OpCode))
                 return false;
 
             var opcode = (OpCode)obj;
@@ -405,11 +405,11 @@ namespace GrEmit.MethodBodyParsing
 
             names = new string[219];
 
-            for(int i = 0, p = 0; i < names.Length; i++)
+            for (int i = 0, p = 0; i < names.Length; i++)
             {
                 var buffer = new char[table[p++]];
 
-                for(int j = 0; j < buffer.Length; j++)
+                for (int j = 0; j < buffer.Length; j++)
                     buffer[j] = (char)table[p++];
 
                 names[i] = new string(buffer);

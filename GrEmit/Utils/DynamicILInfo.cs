@@ -1,36 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Reflection.Emit;
 
 namespace GrEmit.Utils
 {
     public class DynamicILInfo
     {
+        #region Constructor
+
+        internal DynamicILInfo(DynamicScope scope, DynamicMethod method, byte[] methodSignature)
+        {
+            m_method = method;
+            DynamicScope = scope;
+            m_methodSignature = DynamicScope.GetTokenFor(methodSignature);
+            m_exceptions = new byte[0];
+            m_code = new byte[0];
+            m_localSignature = new byte[0];
+        }
+
+        #endregion
+
         #region Private Data Members 
+
         private DynamicMethod m_method;
-        private DynamicScope m_scope;
         private byte[] m_exceptions;
         private byte[] m_code;
         private byte[] m_localSignature;
         private int m_maxStackSize;
         private int m_methodSignature;
-        #endregion
 
-        #region Constructor
-        internal DynamicILInfo(DynamicScope scope, DynamicMethod method, byte[] methodSignature)
-        {
-            m_method = method;
-            m_scope = scope;
-            m_methodSignature = m_scope.GetTokenFor(methodSignature);
-            m_exceptions = new byte[0];
-            m_code = new byte[0];
-            m_localSignature = new byte[0];
-        }
         #endregion
 
         #region Public ILGenerator Methods 
-        internal DynamicScope DynamicScope { get { return m_scope; } }
+
+        internal DynamicScope DynamicScope { get; }
 
         public void SetCode(byte[] code, int maxStackSize)
         {
@@ -56,55 +59,69 @@ namespace GrEmit.Utils
 
             m_localSignature = (byte[])localSignature.Clone();
         }
+
         #endregion
 
         #region Public Scope Methods
+
         public int GetTokenFor(RuntimeMethodHandle method)
         {
             return DynamicScope.GetTokenFor(method);
         }
+
         public int GetTokenFor(RuntimeMethodHandle method, RuntimeTypeHandle contextType)
         {
             return DynamicScope.GetTokenFor(method, contextType);
         }
+
         public int GetTokenFor(RuntimeFieldHandle field)
         {
             return DynamicScope.GetTokenFor(field);
         }
+
         public int GetTokenFor(RuntimeFieldHandle field, RuntimeTypeHandle contextType)
         {
             return DynamicScope.GetTokenFor(field, contextType);
         }
+
         public int GetTokenFor(RuntimeTypeHandle type)
         {
             return DynamicScope.GetTokenFor(type);
         }
+
         public int GetTokenFor(string literal)
         {
             return DynamicScope.GetTokenFor(literal);
         }
+
         public int GetTokenFor(byte[] signature)
         {
             return DynamicScope.GetTokenFor(signature);
         }
+
         #endregion
     }
 
     internal class DynamicScope
     {
-        #region Private Data Members
-        internal List<object> m_tokens;
-        #endregion
-
         #region Constructor
+
         internal DynamicScope()
         {
             m_tokens = new List<object>();
             m_tokens.Add(null);
         }
+
+        #endregion
+
+        #region Private Data Members
+
+        internal List<object> m_tokens;
+
         #endregion
 
         #region Public Methods
+
         public int GetTokenFor(RuntimeMethodHandle method)
         {
             //IRuntimeMethodInfo methodReal = method.GetMethodInfo();
@@ -126,59 +143,68 @@ namespace GrEmit.Utils
             m_tokens.Add(method);
             return m_tokens.Count - 1 | (int)MetadataTokenType.MethodDef;
         }
+
         public int GetTokenFor(RuntimeMethodHandle method, RuntimeTypeHandle typeContext)
         {
             m_tokens.Add(new GenericMethodInfo(method, typeContext));
             return m_tokens.Count - 1 | (int)MetadataTokenType.MethodDef;
         }
+
         public int GetTokenFor(RuntimeFieldHandle field)
         {
             m_tokens.Add(field);
             return m_tokens.Count - 1 | (int)MetadataTokenType.FieldDef;
         }
+
         public int GetTokenFor(RuntimeFieldHandle field, RuntimeTypeHandle typeContext)
         {
             m_tokens.Add(new GenericFieldInfo(field, typeContext));
             return m_tokens.Count - 1 | (int)MetadataTokenType.FieldDef;
         }
+
         public int GetTokenFor(RuntimeTypeHandle type)
         {
             m_tokens.Add(type);
             return m_tokens.Count - 1 | (int)MetadataTokenType.TypeDef;
         }
+
         public int GetTokenFor(string literal)
         {
             m_tokens.Add(literal);
             return m_tokens.Count - 1 | (int)MetadataTokenType.String;
         }
+
         public int GetTokenFor(byte[] signature)
         {
             m_tokens.Add(signature);
             return m_tokens.Count - 1 | (int)MetadataTokenType.Signature;
         }
+
         #endregion
     }
 
     internal sealed class GenericMethodInfo
     {
-        internal RuntimeMethodHandle m_methodHandle;
-        internal RuntimeTypeHandle m_context;
         internal GenericMethodInfo(RuntimeMethodHandle methodHandle, RuntimeTypeHandle context)
         {
             m_methodHandle = methodHandle;
             m_context = context;
         }
+
+        internal RuntimeMethodHandle m_methodHandle;
+        internal RuntimeTypeHandle m_context;
     }
 
     internal sealed class GenericFieldInfo
     {
-        internal RuntimeFieldHandle m_fieldHandle;
-        internal RuntimeTypeHandle m_context;
         internal GenericFieldInfo(RuntimeFieldHandle fieldHandle, RuntimeTypeHandle context)
         {
             m_fieldHandle = fieldHandle;
             m_context = context;
         }
+
+        internal RuntimeFieldHandle m_fieldHandle;
+        internal RuntimeTypeHandle m_context;
     }
 
     internal enum MetadataTokenType

@@ -35,7 +35,7 @@ namespace GrEmit.MethodBodyParsing
             writer.WriteByte(0x7);
             writer.WriteCompressedUInt32((uint)Count);
 
-            foreach(var localInfo in localVariables)
+            foreach (var localInfo in localVariables)
                 writer.WriteBytes(localInfo.Signature ?? BakeLocal(localInfo));
 
             writer.position = 0;
@@ -44,7 +44,7 @@ namespace GrEmit.MethodBodyParsing
 
         private static byte[] BakeLocal(LocalInfo localInfo)
         {
-            if(localInfo.LocalType == null)
+            if (localInfo.LocalType == null)
                 throw new ArgumentException();
 
             var sigHelper = SignatureHelper.GetLocalVarSigHelper();

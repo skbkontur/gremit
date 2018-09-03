@@ -14,9 +14,9 @@ namespace GrEmit.StackMutators
             CheckNotStruct(il, value);
 
             var newStack = stack.Reverse().ToArray();
-            for(var i = 0; i < newStack.Length; ++i)
+            for (var i = 0; i < newStack.Length; ++i)
             {
-                if(ReferenceEquals(newStack[i], value))
+                if (ReferenceEquals(newStack[i], value))
                     newStack[i] = ESType.Zero;
             }
 

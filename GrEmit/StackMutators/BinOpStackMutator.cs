@@ -16,10 +16,10 @@ namespace GrEmit.StackMutators
             var right = stack.Pop();
             CheckNotEmpty(il, stack, () => string.Format("Expected two arguments for the operation '{0}'", opCode));
             var left = stack.Pop();
-            if(!IsAllowed(ToCLIType(left), ToCLIType(right)))
+            if (!IsAllowed(ToCLIType(left), ToCLIType(right)))
                 ThrowError(il, string.Format("Cannot perform the instruction '{0}' on types '{1}' and '{2}'", opCode, left, right));
             var result = Canonize(GetResultType(Canonize(left), Canonize(right)));
-            if(result != typeof(void))
+            if (result != typeof(void))
                 stack.Push(result);
             PostAction(il, parameter, ref stack);
         }
@@ -29,7 +29,7 @@ namespace GrEmit.StackMutators
 
         protected void Allow(CLIType left, params CLIType[] right)
         {
-            foreach(var r in right)
+            foreach (var r in right)
                 allowedTypes[(int)left, (int)r] = true;
         }
 

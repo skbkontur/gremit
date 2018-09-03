@@ -11,7 +11,7 @@ namespace GrEmit.Tests.OpCodesTests
     {
         private void TestSuccess(Type type1, Type type2)
         {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] { type1, type2, }.Where(type => type != null).ToArray(), typeof(string), true);
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {type1, type2,}.Where(type => type != null).ToArray(), typeof(string), true);
             using (var il = new GroboIL(method))
             {
                 int index = 0;
@@ -37,7 +37,7 @@ namespace GrEmit.Tests.OpCodesTests
 
         private void TestFailure(Type type1, Type type2)
         {
-            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] { type1, type2, }.Where(type => type != null).ToArray(), typeof(string), true);
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {type1, type2,}.Where(type => type != null).ToArray(), typeof(string), true);
             var il = new GroboIL(method);
             int index = 0;
             if (type1 != null)

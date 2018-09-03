@@ -23,7 +23,7 @@ namespace GrEmit.MethodBodyParsing
 
         public Collection(int capacity)
         {
-            if(capacity < 0)
+            if (capacity < 0)
                 throw new ArgumentOutOfRangeException();
 
             items = new T[capacity];
@@ -31,7 +31,7 @@ namespace GrEmit.MethodBodyParsing
 
         public Collection(ICollection<T> items)
         {
-            if(items == null)
+            if (items == null)
                 throw new ArgumentNullException("items");
 
             this.items = new T[items.Count];
@@ -45,7 +45,7 @@ namespace GrEmit.MethodBodyParsing
         {
             get
             {
-                if(index >= size)
+                if (index >= size)
                     throw new ArgumentOutOfRangeException();
 
                 return items[index];
@@ -53,7 +53,7 @@ namespace GrEmit.MethodBodyParsing
             set
             {
                 CheckIndex(index);
-                if(index == size)
+                if (index == size)
                     throw new ArgumentOutOfRangeException();
 
                 OnSet(value, index);
@@ -67,7 +67,7 @@ namespace GrEmit.MethodBodyParsing
             get { return items.Length; }
             set
             {
-                if(value < 0 || value < size)
+                if (value < 0 || value < size)
                     throw new ArgumentOutOfRangeException();
 
                 Resize(value);
@@ -92,10 +92,10 @@ namespace GrEmit.MethodBodyParsing
                     this[index] = (T)value;
                     return;
                 }
-                catch(InvalidCastException)
+                catch (InvalidCastException)
                 {
                 }
-                catch(NullReferenceException)
+                catch (NullReferenceException)
                 {
                 }
 
@@ -111,7 +111,7 @@ namespace GrEmit.MethodBodyParsing
 
         public void Add(T item)
         {
-            if(size == items.Length)
+            if (size == items.Length)
                 Grow(1);
 
             OnAdd(item, size);
@@ -133,7 +133,7 @@ namespace GrEmit.MethodBodyParsing
         public void Insert(int index, T item)
         {
             CheckIndex(index);
-            if(size == items.Length)
+            if (size == items.Length)
                 Grow(1);
 
             OnInsert(item, index);
@@ -145,7 +145,7 @@ namespace GrEmit.MethodBodyParsing
 
         public void RemoveAt(int index)
         {
-            if(index < 0 || index >= size)
+            if (index < 0 || index >= size)
                 throw new ArgumentOutOfRangeException();
 
             var item = items[index];
@@ -159,7 +159,7 @@ namespace GrEmit.MethodBodyParsing
         public bool Remove(T item)
         {
             var index = IndexOf(item);
-            if(index == -1)
+            if (index == -1)
                 return false;
 
             OnRemove(item, index);
@@ -193,21 +193,21 @@ namespace GrEmit.MethodBodyParsing
 
         void CheckIndex(int index)
         {
-            if(index < 0 || index > size)
+            if (index < 0 || index > size)
                 throw new ArgumentOutOfRangeException();
         }
 
         void Shift(int start, int delta)
         {
-            if(delta < 0)
+            if (delta < 0)
                 start -= delta;
 
-            if(start < size)
+            if (start < size)
                 Array.Copy(items, start, items, start + delta, size - start);
 
             size += delta;
 
-            if(delta < 0)
+            if (delta < 0)
                 Array.Clear(items, size, -delta);
         }
 
@@ -234,7 +234,7 @@ namespace GrEmit.MethodBodyParsing
         internal virtual void Grow(int desired)
         {
             int new_size = size + desired;
-            if(new_size <= items.Length)
+            if (new_size <= items.Length)
                 return;
 
             const int default_capacity = 4;
@@ -248,9 +248,9 @@ namespace GrEmit.MethodBodyParsing
 
         protected void Resize(int new_size)
         {
-            if(new_size == size)
+            if (new_size == size)
                 return;
-            if(new_size < size)
+            if (new_size < size)
                 throw new ArgumentOutOfRangeException();
 
             items = items.Resize(new_size);
@@ -263,10 +263,10 @@ namespace GrEmit.MethodBodyParsing
                 Add((T)value);
                 return size - 1;
             }
-            catch(InvalidCastException)
+            catch (InvalidCastException)
             {
             }
-            catch(NullReferenceException)
+            catch (NullReferenceException)
             {
             }
 
@@ -289,10 +289,10 @@ namespace GrEmit.MethodBodyParsing
             {
                 return IndexOf((T)value);
             }
-            catch(InvalidCastException)
+            catch (InvalidCastException)
             {
             }
-            catch(NullReferenceException)
+            catch (NullReferenceException)
             {
             }
 
@@ -308,10 +308,10 @@ namespace GrEmit.MethodBodyParsing
                 Insert(index, (T)value);
                 return;
             }
-            catch(InvalidCastException)
+            catch (InvalidCastException)
             {
             }
-            catch(NullReferenceException)
+            catch (NullReferenceException)
             {
             }
 
@@ -324,10 +324,10 @@ namespace GrEmit.MethodBodyParsing
             {
                 Remove((T)value);
             }
-            catch(InvalidCastException)
+            catch (InvalidCastException)
             {
             }
-            catch(NullReferenceException)
+            catch (NullReferenceException)
             {
             }
         }
@@ -374,7 +374,7 @@ namespace GrEmit.MethodBodyParsing
                 {
                     CheckState();
 
-                    if(next <= 0)
+                    if (next <= 0)
                         throw new InvalidOperationException();
 
                     return Current;
@@ -385,10 +385,10 @@ namespace GrEmit.MethodBodyParsing
             {
                 CheckState();
 
-                if(next < 0)
+                if (next < 0)
                     return false;
 
-                if(next < collection.size)
+                if (next < collection.size)
                 {
                     Current = collection.items[next++];
                     return true;
@@ -407,10 +407,10 @@ namespace GrEmit.MethodBodyParsing
 
             void CheckState()
             {
-                if(collection == null)
+                if (collection == null)
                     throw new ObjectDisposedException(GetType().FullName);
 
-                if(version != collection.version)
+                if (version != collection.version)
                     throw new InvalidOperationException();
             }
 

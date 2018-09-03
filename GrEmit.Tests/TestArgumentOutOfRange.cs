@@ -25,7 +25,7 @@ namespace GrEmit.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() =>
                 {
                     var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(int), typeof(int)}, typeof(TestArgumentOutOfRange));
-                    using(var il = new GroboIL(method))
+                    using (var il = new GroboIL(method))
                     {
                         il.Ldarg(0);
                         il.Ldarg(1);

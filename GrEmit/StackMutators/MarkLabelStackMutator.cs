@@ -7,10 +7,10 @@ namespace GrEmit.StackMutators
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var label = ((LabelILInstructionParameter)parameter).Label;
-            if(stack != null)
+            if (stack != null)
                 SaveOrCheck(il, stack, label);
             ESType[] labelStack;
-            if(il.labelStacks.TryGetValue(label, out labelStack))
+            if (il.labelStacks.TryGetValue(label, out labelStack))
                 stack = new EvaluationStack(labelStack);
         }
     }

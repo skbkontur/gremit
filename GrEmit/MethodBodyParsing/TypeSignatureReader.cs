@@ -32,7 +32,7 @@ namespace GrEmit.MethodBodyParsing
         {
             var encodedToken = ReadCompressedUInt32();
             TokenType tokenType;
-            switch(encodedToken & 3)
+            switch (encodedToken & 3)
             {
             case 0:
                 tokenType = TokenType.TypeDef;
@@ -53,7 +53,7 @@ namespace GrEmit.MethodBodyParsing
 
         private Type ReadTypeSignature(ElementType etype)
         {
-            switch(etype)
+            switch (etype)
             {
             case ElementType.ValueType:
                 return ReadTypeTokenSignature();
@@ -85,7 +85,7 @@ namespace GrEmit.MethodBodyParsing
                     Type genericType;
                     var readByte = ReadByte();
                     // element_type
-                    if((ElementType)readByte == ElementType.Internal)
+                    if ((ElementType)readByte == ElementType.Internal)
                         genericType = ReadInternal();
                     else
                         genericType = ReadTypeTokenSignature();
@@ -138,7 +138,7 @@ namespace GrEmit.MethodBodyParsing
             var arity = ReadCompressedUInt32();
             var result = new Type[arity];
 
-            for(int i = 0; i < arity; i++)
+            for (int i = 0; i < arity; i++)
                 result[i] = ReadTypeSignature();
             return result;
         }
@@ -154,7 +154,7 @@ namespace GrEmit.MethodBodyParsing
         private static Func<IntPtr, RuntimeTypeHandle> EmitRuntimeTypeHandleCreator()
         {
             var dynamicMethod = new DynamicMethod(Guid.NewGuid().ToString(), typeof(RuntimeTypeHandle), new[] {typeof(IntPtr)}, typeof(string), true);
-            using(var il = new GroboIL(dynamicMethod))
+            using (var il = new GroboIL(dynamicMethod))
             {
                 var GetTypeFromHandleUnsafe_m = typeof(Type).GetMethod("GetTypeFromHandleUnsafe", BindingFlags.Static | BindingFlags.NonPublic);
                 il.Ldarg(0); // stack: [ptr]

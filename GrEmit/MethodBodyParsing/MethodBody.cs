@@ -37,10 +37,10 @@ namespace GrEmit.MethodBodyParsing
         {
             var wrapper = new DynamicMethodWrapper(dynamicMethod);
             var dynamicILInfo = wrapper.m_DynamicILInfo;
-            if(dynamicILInfo != null)
+            if (dynamicILInfo != null)
                 return new MethodBodyOnDynamicILInfo(dynamicMethod, dynamicILInfo, resolveTokens);
             var ilGenerator = wrapper.m_ilGenerator;
-            if(ilGenerator != null)
+            if (ilGenerator != null)
                 return new MethodBodyOnDynamicILGenerator(dynamicMethod, ilGenerator, resolveTokens);
             return new MethodBodyOnUnmanagedBuffer(null, null, MetadataToken.Zero, resolveTokens);
         }
@@ -63,9 +63,9 @@ namespace GrEmit.MethodBodyParsing
         protected void SetLocalSignature(byte[] localSignature)
         {
             localVarSigBuilder = new LocalVarSigBuilder(localSignature);
-            if(resolveTokens)
+            if (resolveTokens)
             {
-                for(int i = 0; i < localVarSigBuilder.Count; ++i)
+                for (int i = 0; i < localVarSigBuilder.Count; ++i)
                 {
                     var local = localVarSigBuilder[i];
                     var resolved = new TypeSignatureReader(local.Signature, ResolveToken).Resolve();
@@ -78,28 +78,28 @@ namespace GrEmit.MethodBodyParsing
 
         public LocalInfo AddLocalVariable(byte[] signature)
         {
-            if(localVarSigBuilder == null)
+            if (localVarSigBuilder == null)
                 localVarSigBuilder = new LocalVarSigBuilder();
             return localVarSigBuilder.AddLocalVariable(signature);
         }
 
         public LocalInfo AddLocalVariable(Type localType, bool isPinned = false)
         {
-            if(localVarSigBuilder == null)
+            if (localVarSigBuilder == null)
                 localVarSigBuilder = new LocalVarSigBuilder();
             return localVarSigBuilder.AddLocalVariable(localType, isPinned);
         }
 
         public byte[] GetLocalSignature()
         {
-            if(localVarSigBuilder == null)
+            if (localVarSigBuilder == null)
                 localVarSigBuilder = new LocalVarSigBuilder();
             return localVarSigBuilder.GetSignature();
         }
 
         public int LocalVariablesCount()
         {
-            if(localVarSigBuilder == null)
+            if (localVarSigBuilder == null)
                 localVarSigBuilder = new LocalVarSigBuilder();
             return localVarSigBuilder.Count;
         }
@@ -113,14 +113,14 @@ namespace GrEmit.MethodBodyParsing
             var code = new ILCodeBaker(Instructions, wrapper.GetTokenFor).BakeILCode();
             dynamicILInfo.SetCode(code, MaxStack);
             dynamicILInfo.SetLocalSignature(GetLocalSignature());
-            if(HasExceptionHandlers)
+            if (HasExceptionHandlers)
                 dynamicILInfo.SetExceptions(new ExceptionsBaker(ExceptionHandlers, Instructions, wrapper.GetTokenFor).BakeExceptions());
         }
 
         public Delegate CreateDelegate(Type delegateType, int? maxStack = null)
         {
             var invokeMethod = delegateType.GetMethod("Invoke");
-            if(invokeMethod == null)
+            if (invokeMethod == null)
                 throw new InvalidOperationException(string.Format("Type '{0}' is not a delegate", Formatter.Format(delegateType)));
             var parameterTypes = invokeMethod.GetParameters().Select(p => p.ParameterType).ToArray();
             var dynamicMethod = new DynamicMethod(Guid.NewGuid().ToString(), invokeMethod.ReturnType, parameterTypes, typeof(string), true);
@@ -141,7 +141,7 @@ namespace GrEmit.MethodBodyParsing
 
         private static Type GetDelegateType(Type returnType, Type[] parameterTypes)
         {
-            if(returnType == typeof(void) && parameterTypes.Length == 0)
+            if (returnType == typeof(void) && parameterTypes.Length == 0)
                 return typeof(Action);
             bool isFunc = returnType != typeof(void);
 
@@ -150,14 +150,14 @@ namespace GrEmit.MethodBodyParsing
                                : $"System.{"Action"}`{parameterTypes.Length}";
 
             var type = typeof(Action).Assembly.GetType(typeName) ?? typeof(Action<,,,,,,,,>).Assembly.GetType(typeName);
-            if(type == null)
+            if (type == null)
                 throw new NotSupportedException("Too many paramters");
             return type.MakeGenericType(isFunc ? parameterTypes.Concat(new[] {returnType}).ToArray() : parameterTypes);
         }
 
         public byte[] GetFullMethodBody(Func<byte[], MetadataToken> signatureTokenBuilder, int? maxStack)
         {
-            if(resolveTokens)
+            if (resolveTokens)
                 throw new InvalidOperationException("Token builder must be supplied");
             Seal();
             MaxStack = maxStack ?? new MaxStackSizeCalculator(this, ResolveToken).ComputeMaxStack();
@@ -191,13 +191,13 @@ namespace GrEmit.MethodBodyParsing
             var result = new StringBuilder();
 
             result.AppendLine("Instructions:");
-            foreach(var instruction in Instructions)
+            foreach (var instruction in Instructions)
                 result.AppendLine(instruction.ToString());
 
             result.AppendLine();
 
             result.AppendLine("Exception handlers:");
-            foreach(var exceptionHandler in ExceptionHandlers)
+            foreach (var exceptionHandler in ExceptionHandlers)
                 result.AppendLine(exceptionHandler.ToString());
 
             return result.ToString();
@@ -218,10 +218,10 @@ namespace GrEmit.MethodBodyParsing
         private static Func<MethodBase, DynamicMethod> EmitTryCastToDynamicMethod()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(DynamicMethod), new[] {typeof(MethodBase)}, typeof(string), true);
-            using(var il = new GroboIL(method))
+            using (var il = new GroboIL(method))
             {
                 var RTDynamicMethod_t = typeof(DynamicMethod).GetNestedType("RTDynamicMethod", BindingFlags.NonPublic);
-                if(RTDynamicMethod_t == null)
+                if (RTDynamicMethod_t == null)
                     throw new InvalidOperationException("Missing type 'System.Reflection.Emit.DynamicMethod.RTDynamicMethod'");
                 il.Ldarg(0); // stack: [method]
                 il.Isinst(RTDynamicMethod_t); // stack: [method as RTDynamicMethod]
@@ -229,7 +229,7 @@ namespace GrEmit.MethodBodyParsing
                 var retLabel = il.DefineLabel("ret");
                 il.Brfalse(retLabel); // if(!(method is RTDynamicMethod)] goto ret; stack: [method as RTDynamicMethod]
                 var m_owner_f = RTDynamicMethod_t.GetField("m_owner", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(m_owner_f == null)
+                if (m_owner_f == null)
                     throw new InvalidOperationException("Missing field 'System.Reflection.Emit.DynamicMethod.RTDynamicMethod.m_owner'");
                 il.Ldfld(m_owner_f); // stack: [((RTDynamicMethod)method).m_owner]
                 il.MarkLabel(retLabel);

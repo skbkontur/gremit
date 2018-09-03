@@ -81,12 +81,12 @@ namespace GrEmit.Tests
             Assert.AreEqual(GetProp(typeof(ClassWithMethods), "P1"), HackHelpers.GetProp<ClassWithMethods>(x => x.P1));
             Assert.AreEqual(GetProp(typeof(ClassWithMethods), "PS"), HackHelpers.GetProp<ClassWithMethods>(x => x.PS));
         }
-        
+
         [Test]
         public void TestGetPropGeneric()
         {
-            Assert.AreEqual(GetProp(typeof(CGeneric<long>), "Prop"), HackHelpers.GetProp<CGeneric<int>>(x => x.Prop, new[] { typeof(long) }));
-            Assert.AreEqual(GetProp(typeof(CGeneric<long>), "GProp"), HackHelpers.GetProp<CGeneric<int>>(x => x.GProp, new[] { typeof(long) }));
+            Assert.AreEqual(GetProp(typeof(CGeneric<long>), "Prop"), HackHelpers.GetProp<CGeneric<int>>(x => x.Prop, new[] {typeof(long)}));
+            Assert.AreEqual(GetProp(typeof(CGeneric<long>), "GProp"), HackHelpers.GetProp<CGeneric<int>>(x => x.GProp, new[] {typeof(long)}));
         }
 
         [Test]
@@ -118,11 +118,11 @@ namespace GrEmit.Tests
         {
             MethodInfo constructedMethod =
                 HackHelpers.ConstructGenericMethodDefinitionForGenericClass<IGenericChild<int>>(x => x.Meth<long>(),
-                                                                                           new[] {typeof(string)},
-                                                                                           new[] {typeof(object)});
+                                                                                                new[] {typeof(string)},
+                                                                                                new[] {typeof(object)});
 
             Assert.AreEqual(HackHelpers.GetMethodDefinition<IGeneric<string>>(generic => generic.Meth<object>()),
-                               constructedMethod);
+                            constructedMethod);
         }
 
         [Test]
@@ -201,7 +201,7 @@ namespace GrEmit.Tests
                 HackHelpers.GetObjectConstruction(() => new CStruct());
                 Assert.Fail("no crash");
             }
-            catch(NotSupportedException e)
+            catch (NotSupportedException e)
             {
                 Assert.AreEqual("Struct creation without arguments", e.Message);
             }
@@ -230,13 +230,13 @@ namespace GrEmit.Tests
         private static MethodInfo GetMethod(Type type, string name, Type[] genericArguments)
         {
             MethodInfo[] methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
-            foreach(MethodInfo info in methods)
+            foreach (MethodInfo info in methods)
             {
-                if(info.Name == name)
+                if (info.Name == name)
                 {
-                    if(genericArguments == null || genericArguments.Length == 0 && !info.IsGenericMethod)
+                    if (genericArguments == null || genericArguments.Length == 0 && !info.IsGenericMethod)
                         return info;
-                    if(info.IsGenericMethod)
+                    if (info.IsGenericMethod)
                         return info.MakeGenericMethod(genericArguments);
                 }
             }
@@ -246,9 +246,9 @@ namespace GrEmit.Tests
         private static FieldInfo GetField(Type type, string name)
         {
             FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
-            foreach(FieldInfo info in fields)
+            foreach (FieldInfo info in fields)
             {
-                if(info.Name == name)
+                if (info.Name == name)
                     return info;
             }
             throw new MissingMethodException(type.Name, name);
@@ -257,15 +257,13 @@ namespace GrEmit.Tests
         private static PropertyInfo GetProp(Type type, string name)
         {
             PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
-            foreach(PropertyInfo info in props)
+            foreach (PropertyInfo info in props)
             {
-                if(info.Name == name)
+                if (info.Name == name)
                     return info;
             }
             throw new MissingMethodException(type.Name, name);
-        }
-
-        // ReSharper disable ClassNeverInstantiated.Local
+        } // ReSharper disable ClassNeverInstantiated.Local
 
         private class A
         {

@@ -26,12 +26,12 @@ namespace GrEmit.Utils
             typeBuilderInstType = FindType(types, "TypeBuilderInstantiation");
 
             var runtimeMethodInfoType = FindType(types, IsMono ? "MonoMethod" : "RuntimeMethodInfo");
-            var runtimeGenericMethodInfoType = FindType(types,"RuntimeMethodInfo");
+            var runtimeGenericMethodInfoType = FindType(types, "RuntimeMethodInfo");
             var runtimeConstructorInfoType = FindType(types, IsMono ? "MonoCMethod" : "RuntimeConstructorInfo");
             var runtimeGenericConstructorInfoType = FindType(types, "RuntimeConstructorInfo");
             methodOnTypeBuilderInstType = FindType(types, IsMono ? "MethodOnTypeBuilderInst" : "MethodOnTypeBuilderInstantiation");
             constructorOnTypeBuilderInstType = FindType(types, IsMono ? "ConstructorOnTypeBuilderInst" : "ConstructorOnTypeBuilderInstantiation");
-            if(!IsMono)
+            if (!IsMono)
                 methodBuilderInstType = FindType(types, "MethodBuilderInstantiation");
 
             parameterTypesExtractors = new Hashtable();
@@ -75,11 +75,11 @@ namespace GrEmit.Utils
                   = typeComparers[arrayTypeType]
                     = (Func<Type, Type, bool>)((x, y) =>
                         {
-                            if(x.IsByRef && y.IsByRef)
+                            if (x.IsByRef && y.IsByRef)
                                 return Equal(x.GetElementType(), y.GetElementType());
-                            if(x.IsPointer && y.IsPointer)
+                            if (x.IsPointer && y.IsPointer)
                                 return Equal(x.GetElementType(), y.GetElementType());
-                            if(x.IsArray && y.IsArray)
+                            if (x.IsArray && y.IsArray)
                                 return x.GetArrayRank() == y.GetArrayRank() && Equal(x.GetElementType(), y.GetElementType());
                             return x == y;
                         });
@@ -89,32 +89,32 @@ namespace GrEmit.Utils
                     = hashCodeCalculators[typeof(GenericTypeParameterBuilder)]
                       = (Func<Type, int>)(type => type.GetHashCode());
             hashCodeCalculators[byRefTypeType]
-              = hashCodeCalculators[pointerTypeType]
-                = hashCodeCalculators[arrayTypeType]
-                  = (Func<Type, int>)(type =>
-                      {
-                          if (type.IsByRef)
-                              return CalcHashCode(type.GetElementType()) * 31 + 1;
-                          if (type.IsPointer)
-                              return CalcHashCode(type.GetElementType()) * 31 + 2;
-                          if (type.IsArray)
-                              return (CalcHashCode(type.GetElementType()) * 31 + type.GetArrayRank()) * 31 + 3;
-                          return type.GetHashCode();
-                      });
+                = hashCodeCalculators[pointerTypeType]
+                  = hashCodeCalculators[arrayTypeType]
+                    = (Func<Type, int>)(type =>
+                        {
+                            if (type.IsByRef)
+                                return CalcHashCode(type.GetElementType()) * 31 + 1;
+                            if (type.IsPointer)
+                                return CalcHashCode(type.GetElementType()) * 31 + 2;
+                            if (type.IsArray)
+                                return (CalcHashCode(type.GetElementType()) * 31 + type.GetArrayRank()) * 31 + 3;
+                            return type.GetHashCode();
+                        });
             assignabilityCheckers[runtimeTypeType]
                 = assignabilityCheckers[monoTypeType]
                   = (Func<Type, Type, bool>)((to, from) =>
                       {
-                          if(to.IsAssignableFrom(from)) return true;
-                          if(Equal(to, from)) return true;
-                          if(to.IsInterface)
+                          if (to.IsAssignableFrom(from)) return true;
+                          if (Equal(to, from)) return true;
+                          if (to.IsInterface)
                           {
                               var interfaces = GetInterfaces(from);
                               return interfaces.Any(interfaCe => Equal(interfaCe, to));
                           }
-                          while(from != null)
+                          while (from != null)
                           {
-                              if(Equal(to, from))
+                              if (Equal(to, from))
                                   return true;
                               from = GetBaseType(from);
                           }
@@ -128,7 +128,7 @@ namespace GrEmit.Utils
                 = (Func<MethodBase, Type[]>)(method => new ConstructorBuilderWrapper(method).ParameterTypes);
             parameterTypesExtractors[methodOnTypeBuilderInstType]
                 = (Func<MethodBase, Type[]>)(method => new MethodOnTypeBuilderInstWrapper(method).ParameterTypes);
-            if(!IsMono)
+            if (!IsMono)
             {
                 parameterTypesExtractors[methodBuilderInstType]
                     = (Func<MethodBase, Type[]>)(method => new MethodBuilderInstWrapper(method).ParameterTypes);
@@ -138,7 +138,7 @@ namespace GrEmit.Utils
 
             returnTypeExtractors[methodOnTypeBuilderInstType]
                 = (Func<MethodInfo, Type>)(method => new MethodOnTypeBuilderInstWrapper(method).ReturnType);
-            if(!IsMono)
+            if (!IsMono)
             {
                 returnTypeExtractors[methodBuilderInstType]
                     = (Func<MethodInfo, Type>)(method => new MethodBuilderInstWrapper(method).ReturnType);
@@ -154,9 +154,9 @@ namespace GrEmit.Utils
                   = interfacesOfTypeExtractors[arrayTypeType]
                     = (Func<Type, Type[]>)(type =>
                         {
-                            if(!type.IsArray)
+                            if (!type.IsArray)
                                 return new Type[0];
-                            if(type.GetArrayRank() > 1)
+                            if (type.GetArrayRank() > 1)
                                 return typeof(int[,]).GetInterfaces();
                             var elementType = type.GetElementType();
                             return typeof(int[]).GetInterfaces()
@@ -179,11 +179,11 @@ namespace GrEmit.Utils
                   = assignabilityCheckers[arrayTypeType]
                     = (Func<Type, Type, bool>)((to, from) =>
                         {
-                            if(to.IsByRef && from.IsByRef)
+                            if (to.IsByRef && from.IsByRef)
                                 return Equal(to.GetElementType(), from.GetElementType());
-                            if(to.IsPointer && from.IsPointer)
+                            if (to.IsPointer && from.IsPointer)
                                 return Equal(to.GetElementType(), from.GetElementType());
-                            if(to.IsArray && from.IsArray)
+                            if (to.IsArray && from.IsArray)
                                 return to.GetArrayRank() == from.GetArrayRank() && Equal(to.GetElementType(), from.GetElementType());
                             return to == from;
                         });
@@ -195,7 +195,7 @@ namespace GrEmit.Utils
         {
             var type = method.GetType();
             var extractor = (Func<MethodBase, Type[]>)parameterTypesExtractors[type];
-            if(extractor == null)
+            if (extractor == null)
                 throw new NotSupportedException($"Unable to extract parameter types of '{type}'");
             return extractor(method);
         }
@@ -204,7 +204,7 @@ namespace GrEmit.Utils
         {
             var type = method.GetType();
             var extractor = (Func<MethodInfo, Type>)returnTypeExtractors[type];
-            if(extractor == null)
+            if (extractor == null)
                 throw new NotSupportedException($"Unable to extract return type of '{type}'");
             return extractor(method);
         }
@@ -213,7 +213,7 @@ namespace GrEmit.Utils
         {
             var t = type.GetType();
             var extractor = (Func<Type, Type[]>)interfacesOfTypeExtractors[t];
-            if(extractor == null)
+            if (extractor == null)
                 throw new NotSupportedException($"Unable to extract interfaces of '{t}'");
             return extractor(type);
         }
@@ -222,31 +222,31 @@ namespace GrEmit.Utils
         {
             var t = type.GetType();
             var extractor = (Func<Type, Type>)baseTypeOfTypeExtractors[t];
-            if(extractor == null)
+            if (extractor == null)
                 throw new NotSupportedException($"Unable to extract base type of '{t}'");
             return extractor(type);
         }
 
         public static bool Equal(Type firstType, Type secondType)
         {
-            if(firstType == null || secondType == null)
+            if (firstType == null || secondType == null)
                 return firstType == null && secondType == null;
             var type = firstType.GetType();
-            if(secondType.GetType() != type)
+            if (secondType.GetType() != type)
                 return false;
             var comparer = (Func<Type, Type, bool>)typeComparers[type];
-            if(comparer == null)
+            if (comparer == null)
                 throw new NotSupportedException($"Unable to compare instances of '{type}'");
             return comparer(firstType, secondType);
         }
 
         public static bool Equal(Type[] first, Type[] second)
         {
-            if(first.Length != second.Length)
+            if (first.Length != second.Length)
                 return false;
-            for(var i = 0; i < first.Length; ++i)
+            for (var i = 0; i < first.Length; ++i)
             {
-                if(!Equal(first[i], second[i]))
+                if (!Equal(first[i], second[i]))
                     return false;
             }
             return true;
@@ -256,7 +256,7 @@ namespace GrEmit.Utils
         {
             var t = type.GetType();
             var calculator = (Func<Type, int>)hashCodeCalculators[t];
-            if(calculator == null)
+            if (calculator == null)
                 throw new NotSupportedException($"Unable to calc hash code of '{t}'");
             return calculator(type);
         }
@@ -264,10 +264,10 @@ namespace GrEmit.Utils
         public static bool IsAssignableFrom(Type to, Type from)
         {
             var type = to.GetType();
-            if(from == null || (from.GetType() != type && !runtimeTypeTypes.Contains(type)))
+            if (from == null || (from.GetType() != type && !runtimeTypeTypes.Contains(type)))
                 return false;
             var checker = (Func<Type, Type, bool>)assignabilityCheckers[type];
-            if(checker == null)
+            if (checker == null)
                 throw new NotSupportedException($"Unable to check asssignability of '{type}'");
             return checker(to, from);
         }
@@ -279,22 +279,22 @@ namespace GrEmit.Utils
 
         public static Type[] SubstituteGenericParameters(Type[] types, Type[] genericArguments, Type[] instantiation)
         {
-            if(genericArguments == null) return types;
+            if (genericArguments == null) return types;
             var dict = new Dictionary<Type, Type>();
-            for(var i = 0; i < genericArguments.Length; i++)
+            for (var i = 0; i < genericArguments.Length; i++)
             {
                 var type = genericArguments[i];
-                if(type.IsGenericParameter)
+                if (type.IsGenericParameter)
                 {
                     Type current;
-                    if(!dict.TryGetValue(type, out current))
+                    if (!dict.TryGetValue(type, out current))
                         dict.Add(type, instantiation[i]);
-                    else if(current != instantiation[i])
+                    else if (current != instantiation[i])
                         throw new InvalidOperationException($"The same generic argument '{type}' is instantiated with two different types: '{current}' and '{instantiation[i]}'");
                 }
             }
             var result = new Type[types.Length];
-            for(var i = 0; i < types.Length; ++i)
+            for (var i = 0; i < types.Length; ++i)
                 result[i] = SubstituteGenericParameters(types[i], dict);
             return result;
         }
@@ -307,7 +307,7 @@ namespace GrEmit.Utils
         private static Type FindType(IEnumerable<Type> types, string name)
         {
             var type = TryFindType(types, name);
-            if(type == null)
+            if (type == null)
                 throw new InvalidOperationException($"Type '{name}' is not found");
             return type;
         }
@@ -315,10 +315,10 @@ namespace GrEmit.Utils
         private static Func<ConstructorBuilder, Type[]> BuildConstructorBuilderParameterTypesExtractor()
         {
             var dynamicMethod = new DynamicMethod(Guid.NewGuid().ToString(), typeof(Type[]), new[] {typeof(ConstructorBuilder)}, typeof(Formatter).Module, true);
-            using(var il = new GroboIL(dynamicMethod))
+            using (var il = new GroboIL(dynamicMethod))
             {
                 var getParameterTypesMethod = typeof(ConstructorBuilder).GetMethod("GetParameterTypes", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(getParameterTypesMethod == null)
+                if (getParameterTypesMethod == null)
                     throw new MissingMethodException(typeof(ConstructorBuilder).Name, "GetParameterTypes");
                 il.Ldarg(0);
                 il.Call(getParameterTypesMethod);
@@ -329,23 +329,23 @@ namespace GrEmit.Utils
 
         private static Type SubstituteGenericParameters(Type type, Dictionary<Type, Type> instantiation)
         {
-            if(type == null) return null;
-            if(type.IsGenericParameter)
+            if (type == null) return null;
+            if (type.IsGenericParameter)
             {
                 Type substitute;
                 return instantiation.TryGetValue(type, out substitute) ? substitute : type;
             }
-            if(type.IsGenericType)
+            if (type.IsGenericType)
                 return type.GetGenericTypeDefinition().MakeGenericType(type.GetGenericArguments().Select(t => SubstituteGenericParameters(t, instantiation)).ToArray());
-            if(type.IsArray)
+            if (type.IsArray)
             {
                 var rank = type.GetArrayRank();
                 return rank == 1 ? SubstituteGenericParameters(type.GetElementType(), instantiation).MakeArrayType()
                            : SubstituteGenericParameters(type.GetElementType(), instantiation).MakeArrayType(rank);
             }
-            if(type.IsByRef)
+            if (type.IsByRef)
                 return SubstituteGenericParameters(type.GetElementType(), instantiation).MakeByRefType();
-            if(type.IsPointer)
+            if (type.IsPointer)
                 return SubstituteGenericParameters(type.GetElementType(), instantiation).MakePointerType();
             return type;
         }
@@ -385,7 +385,7 @@ namespace GrEmit.Utils
             {
                 string parameterTypesFieldName = IsMono ? "parameters" : "m_parameterTypes";
                 var parameterTypesField = typeof(MethodBuilder).GetField(parameterTypesFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-                if(parameterTypesField == null)
+                if (parameterTypesField == null)
                     throw new InvalidOperationException($"Field 'MethodBuilder.{parameterTypesFieldName}' is not found");
                 m_parameterTypesExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(parameterTypesField);
             }
@@ -405,10 +405,10 @@ namespace GrEmit.Utils
         {
             static ConstructorBuilderWrapper()
             {
-                if(!IsMono)
+                if (!IsMono)
                 {
                     var methodBuilderField = typeof(ConstructorBuilder).GetField("m_methodBuilder", BindingFlags.Instance | BindingFlags.NonPublic);
-                    if(methodBuilderField == null)
+                    if (methodBuilderField == null)
                         throw new InvalidOperationException("Field 'ConstructorBuilder.m_methodBuilder' is not found");
                     m_methodBuilderExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodBuilderField);
                 }
@@ -416,7 +416,7 @@ namespace GrEmit.Utils
                 {
                     string parameterTypesFieldName = "parameters";
                     var parameterTypesField = typeof(ConstructorBuilder).GetField(parameterTypesFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-                    if(parameterTypesField == null)
+                    if (parameterTypesField == null)
                         throw new InvalidOperationException($"Field 'ConstructorBuilder.{parameterTypesFieldName}' is not found");
                     m_parameterTypesExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(parameterTypesField);
                 }
@@ -431,7 +431,7 @@ namespace GrEmit.Utils
             {
                 get
                 {
-                    if(!IsMono)
+                    if (!IsMono)
                         return GetParameterTypes(m_methodBuilderExtractor(inst));
                     return m_parameterTypesExtractor(inst);
                 }
@@ -449,11 +449,11 @@ namespace GrEmit.Utils
                 string typeFieldName = IsMono ? "generic_type" : "m_type";
                 string instFieldName = IsMono ? "type_arguments" : "m_inst";
                 var typeField = typeBuilderInstType.GetField(typeFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-                if(typeField == null)
+                if (typeField == null)
                     throw new InvalidOperationException($"Field '{typeBuilderInstType.Name}.{typeFieldName}' is not found");
                 m_typeExtractor = FieldsExtractor.GetExtractor<Type, Type>(typeField);
                 var instField = typeBuilderInstType.GetField(instFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-                if(instField == null)
+                if (instField == null)
                     throw new InvalidOperationException($"Field '{typeBuilderInstType.Name}.{instFieldName}' is not found");
                 m_instExtractor = FieldsExtractor.GetExtractor<Type, Type[]>(instField);
             }
@@ -468,7 +468,7 @@ namespace GrEmit.Utils
             public override bool Equals(object obj)
             {
                 var other = obj as TypeBuilderInstWrapper;
-                if(other == null)
+                if (other == null)
                     return false;
                 return Equal(m_type, other.m_type) && Equal(m_inst, other.m_inst);
             }
@@ -476,7 +476,7 @@ namespace GrEmit.Utils
             public override int GetHashCode()
             {
                 var result = CalcHashCode(m_type);
-                foreach(var arg in m_inst)
+                foreach (var arg in m_inst)
                 {
                     unchecked
                     {
@@ -493,18 +493,18 @@ namespace GrEmit.Utils
 
             public bool IsAssignableFrom(TypeBuilderInstWrapper from)
             {
-                if(Equals(from)) return true;
-                if(m_type.IsInterface)
+                if (Equals(from)) return true;
+                if (m_type.IsInterface)
                 {
                     var interfaces = from.GetInterfaces();
                     return interfaces.Any(interfaCe => isATypeBuilderInst(interfaCe) && Equals(new TypeBuilderInstWrapper(interfaCe)));
                 }
-                while(from != null)
+                while (from != null)
                 {
-                    if(Equals(from))
+                    if (Equals(from))
                         return true;
                     var baseType = from.BaseType;
-                    if(isATypeBuilderInst(baseType))
+                    if (isATypeBuilderInst(baseType))
                         from = new TypeBuilderInstWrapper(baseType);
                     else break;
                 }
@@ -519,7 +519,7 @@ namespace GrEmit.Utils
             private static Func<Type, bool> BuildIsATypeBuilderInstChecker()
             {
                 var dynamicMethod = new DynamicMethod(Guid.NewGuid().ToString(), typeof(bool), new[] {typeof(Type)}, typeof(ReflectionExtensions), true);
-                using(var il = new GroboIL(dynamicMethod))
+                using (var il = new GroboIL(dynamicMethod))
                 {
                     il.Ldarg(0);
                     il.Isinst(typeBuilderInstType);
@@ -544,21 +544,21 @@ namespace GrEmit.Utils
                 string methodFieldName = IsMono ? "base_method" : "m_method";
                 string typeFieldName = IsMono ? "instantiation" : "m_type";
                 var methodField = methodOnTypeBuilderInstType.GetField(methodFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-                if(methodField == null)
+                if (methodField == null)
                     throw new InvalidOperationException($"Field '{methodOnTypeBuilderInstType.Name}.{methodFieldName}' is not found");
                 m_methodExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodField);
                 var typeField = methodOnTypeBuilderInstType.GetField(typeFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-                if(typeField == null)
+                if (typeField == null)
                     throw new InvalidOperationException($"Field '{methodOnTypeBuilderInstType.Name}.{typeFieldName}' is not found");
                 m_typeExtractor = FieldsExtractor.GetExtractor<MethodBase, Type>(typeField);
-                if(IsMono)
+                if (IsMono)
                 {
                     var genericMethodField = methodOnTypeBuilderInstType.GetField("generic_method_definition", BindingFlags.Instance | BindingFlags.NonPublic);
-                    if(genericMethodField == null)
+                    if (genericMethodField == null)
                         throw new InvalidOperationException($"Field '{methodOnTypeBuilderInstType.Name}.generic_method_definition' is not found");
                     m_genericMethodExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(genericMethodField);
                     var methodArgumentsField = methodOnTypeBuilderInstType.GetField("method_arguments", BindingFlags.Instance | BindingFlags.NonPublic);
-                    if(methodArgumentsField == null)
+                    if (methodArgumentsField == null)
                         throw new InvalidOperationException($"Field '{methodOnTypeBuilderInstType.Name}.method_arguments' is not found");
                     m_methodArgumentsExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(methodArgumentsField);
                 }
@@ -577,12 +577,12 @@ namespace GrEmit.Utils
                     var type = m_type;
                     var result = GetParameterTypes(method);
                     var typeInst = new TypeBuilderInstWrapper(type);
-                    if(typeInst.IsOk)
+                    if (typeInst.IsOk)
                         result = SubstituteGenericParameters(result, typeInst.m_type.GetGenericArguments(), typeInst.m_inst);
-                    if(IsMono)
+                    if (IsMono)
                     {
                         var methodArguments = m_methodArguments;
-                        if(methodArguments != null)
+                        if (methodArguments != null)
                             result = SubstituteGenericParameters(result, (m_genericMethod ?? m_method).GetGenericArguments(), methodArguments);
                     }
                     return result;
@@ -597,12 +597,12 @@ namespace GrEmit.Utils
                     var type = m_type;
                     var result = GetReturnType(method);
                     var typeInst = new TypeBuilderInstWrapper(type);
-                    if(typeInst.IsOk)
+                    if (typeInst.IsOk)
                         result = SubstituteGenericParameters(result, typeInst.m_type.GetGenericArguments(), typeInst.m_inst);
-                    if(IsMono)
+                    if (IsMono)
                     {
                         var methodArguments = m_methodArguments;
-                        if(methodArguments != null)
+                        if (methodArguments != null)
                             result = SubstituteGenericParameters(result, (m_genericMethod ?? m_method).GetGenericArguments(), methodArguments);
                     }
                     return result;
@@ -628,11 +628,11 @@ namespace GrEmit.Utils
                 string ctorFieldName = IsMono ? "cb" : "m_ctor";
                 string typeFieldName = IsMono ? "instantiation" : "m_type";
                 var ctorField = constructorOnTypeBuilderInstType.GetField(ctorFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-                if(ctorField == null)
+                if (ctorField == null)
                     throw new InvalidOperationException($"Field '{constructorOnTypeBuilderInstType.Name}.{ctorFieldName}' is not found");
                 m_ctorExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodBase>(ctorField);
                 var typeField = constructorOnTypeBuilderInstType.GetField(typeFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-                if(typeField == null)
+                if (typeField == null)
                     throw new InvalidOperationException($"Field '{constructorOnTypeBuilderInstType.Name}.{typeFieldName}' is not found");
                 m_typeExtractor = FieldsExtractor.GetExtractor<MethodBase, Type>(typeField);
             }
@@ -648,7 +648,7 @@ namespace GrEmit.Utils
                 {
                     var result = GetParameterTypes(m_ctor);
                     var typeInst = new TypeBuilderInstWrapper(m_type);
-                    if(typeInst.IsOk)
+                    if (typeInst.IsOk)
                         result = SubstituteGenericParameters(result, typeInst.m_type.GetGenericArguments(), typeInst.m_inst);
                     return result;
                 }
@@ -666,11 +666,11 @@ namespace GrEmit.Utils
             static MethodBuilderInstWrapper()
             {
                 var methodField = methodBuilderInstType.GetField("m_method", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(methodField == null)
+                if (methodField == null)
                     throw new InvalidOperationException($"Field '{methodBuilderInstType.Name}.m_method' is not found");
                 m_methodExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodField);
                 var instField = methodBuilderInstType.GetField("m_inst", BindingFlags.Instance | BindingFlags.NonPublic);
-                if(instField == null)
+                if (instField == null)
                     throw new InvalidOperationException($"Field '{methodBuilderInstType.Name}.m_inst' is not found");
                 m_instExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(instField);
             }

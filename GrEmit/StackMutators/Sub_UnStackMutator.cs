@@ -18,19 +18,19 @@ namespace GrEmit.StackMutators
 
         protected override Type GetResultType(Type left, Type right)
         {
-            if(left == null) return right; // zero - type = type
-            if(right == null) return left; // type - zero = type
-            if(left == typeof(int) && right == typeof(int)) // int - int = int
+            if (left == null) return right; // zero - type = type
+            if (right == null) return left; // type - zero = type
+            if (left == typeof(int) && right == typeof(int)) // int - int = int
                 return typeof(int);
-            if(left == typeof(long) && right == typeof(long)) // long - long = long
+            if (left == typeof(long) && right == typeof(long)) // long - long = long
                 return typeof(long);
-            if(left == typeof(float) && right == typeof(float)) // float - float = float
+            if (left == typeof(float) && right == typeof(float)) // float - float = float
                 return typeof(float);
-            if(left == typeof(double) || right == typeof(double)) // float - double = double - float = double - double = double
+            if (left == typeof(double) || right == typeof(double)) // float - double = double - float = double - double = double
                 return typeof(double);
             var leftCLIType = ToCLIType(left);
             var rightCLIType = ToCLIType(right);
-            if(leftCLIType == CLIType.Pointer && rightCLIType != CLIType.Pointer) // ref type - int = ref type - native int = ref type
+            if (leftCLIType == CLIType.Pointer && rightCLIType != CLIType.Pointer) // ref type - int = ref type - native int = ref type
                 return left;
             return typeof(IntPtr); // int - native int = native int - int = native int - native int = ref ltype - ref rtype = native int
         }

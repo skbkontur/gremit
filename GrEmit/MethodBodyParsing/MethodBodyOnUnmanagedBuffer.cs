@@ -8,7 +8,7 @@ namespace GrEmit.MethodBodyParsing
             : base(GetMethodSignature(module, methodSignatureToken), resolveTokens)
         {
             this.module = module;
-            if(rawMethodBody != null)
+            if (rawMethodBody != null)
                 Read(rawMethodBody);
         }
 
@@ -30,10 +30,10 @@ namespace GrEmit.MethodBodyParsing
             MaxStack = header.MaxStack;
             InitLocals = header.InitLocals;
             LocalVarToken = header.LocalVarToken;
-            if(LocalVarToken.RID != 0 && module != null)
+            if (LocalVarToken.RID != 0 && module != null)
                 SetLocalSignature(module.ResolveSignature(LocalVarToken.ToInt32()));
             new ILCodeReader(rawMethodBody + header.HeaderSize, header.CodeSize, ResolveToken, resolveTokens).Read(this);
-            if(header.HasExceptions)
+            if (header.HasExceptions)
                 new ExceptionsInfoReader(rawMethodBody + Align(header.HeaderSize + header.CodeSize, 4), ResolveToken, resolveTokens).Read(this);
         }
 
