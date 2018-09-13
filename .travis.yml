@@ -8,4 +8,5 @@ matrix:
       env: DOTNETCORE=1
     - mono: latest
 script:
+  - git fetch --unshallow # in order to make Nerdbank.GitVersioning.Tasks.GetBuildVersion work
   - ./test-by-travis.sh
