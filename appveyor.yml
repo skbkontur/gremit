@@ -1,7 +1,29 @@
+version: '{build}'
+
+skip_commits:
+  files:
+    - '**/*.md'
+
 image: Visual Studio 2017
 
 init:
   - cmd: git config --global core.autocrlf false
+  - ps: |
+      $ErrorActionPreference = "Stop"
+      $tagName = $env:APPVEYOR_REPO_TAG_NAME
+      if ($tagName -match '^v\d+\.\d+') # tag name starts with 'vX.Y'
+      {
+        $env:SHOULD_PUBLISH_NUGET_PACKAGE = "true"
+        Write-Host "Will publish nuget package for $tagName tag" -ForegroundColor "Green"
+        if ($tagName -match '^v\d+\.\d+-release$') # tag name matches 'vX.Y-release'
+        {
+          $env:SHOULD_CREATE_RELEASE = "true"
+          Write-Host "Will create release for $tagName tag" -ForegroundColor "Green"
+        }
+      }
+
+nuget:
+  disable_publish_on_pr: true
 
 before_build:
   - cmd: dotnet --info
@@ -9,6 +31,28 @@ before_build:
 
 build_script:
   - cmd: dotnet build --configuration Release ./GrEmit.sln
+  - cmd: dotnet pack --no-build --configuration Release ./GrEmit.sln
 
 test_script:
   - cmd: dotnet test --no-build --configuration Release ./GrEmit.Tests/GrEmit.Tests.csproj
+
+artifacts:
+  - path: './GrEmit/bin/Release/*.nupkg'
+
+deploy:
+  - provider: NuGet
+    server: https://nuget.org
+    api_key:
+      secure: dzTnT0xSlPrHnrG06cj354nTN4lXWhfh4ZCJ1910I3VnNdvbx0rQFLTyJ5l1+bgB
+    skip_symbols: true
+    on:
+      SHOULD_PUBLISH_NUGET_PACKAGE: true
+
+  - provider: GitHub
+    tag: $(APPVEYOR_REPO_TAG_NAME)
+    auth_token:
+      secure: y8dDOcAtq4U1MTDJFX8f23xsvyFU1u4bhwr9Lzbkf2revNWPPTifBkWghris9v8i
+    draft: false
+    prerelease: false
+    on:
+      SHOULD_CREATE_RELEASE: true

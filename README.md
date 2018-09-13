@@ -58,3 +58,7 @@ notNull_0:                   // [{Object: IList, IList<T>, IReadOnlyList<T>}]
                              // [Int32]
         ret                  // []
 ```
+
+## Release Notes
+
+See [CHANGELOG](CHANGELOG.md).
