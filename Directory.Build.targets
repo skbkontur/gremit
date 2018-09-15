@@ -12,7 +12,7 @@
       <PackageId>$(AssemblyName)</PackageId>
       <Authors>Igor Chevdar</Authors>
       <PackageTags>.NET Reflection Emit ILGenerator</PackageTags>
-      <Description>GrEmit is a library containing different helpers for generating code using Reflection.Emit with the main one being GroboIL - a smart wrapper over ILGenerator.</Description>
+      <PackageDescription>GrEmit is a library containing different helpers for generating code using Reflection.Emit with the main one being GroboIL - a smart wrapper over ILGenerator.</PackageDescription>
       <RepositoryType>git</RepositoryType>
       <RepositoryUrl>https://github.com/skbkontur/gremit</RepositoryUrl>
       <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
