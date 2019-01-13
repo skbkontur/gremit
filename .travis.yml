@@ -1,10 +1,10 @@
 dist: xenial
 sudo: false
 language: csharp
+dotnet: 2.2.100
 matrix:
   include:
-    - dotnet: 2.2.100
-      mono: none
+    - mono: none
       env: DOTNETCORE=1
     - mono: latest
 script:
