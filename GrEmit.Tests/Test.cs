@@ -581,7 +581,7 @@ namespace GrEmit.Tests
             foreach (var str in values)
             {
                 if (hashSet.Contains(str))
-                    throw new InvalidOperationException(string.Format("Duplicate value '{0}'", str));
+                    throw new InvalidOperationException($"Duplicate value '{str}'");
                 hashSet.Add(str);
             }
         }

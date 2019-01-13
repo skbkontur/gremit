@@ -23,7 +23,7 @@ namespace AsmToBytes
             var tempFile = Path.Combine(dirName, "temp.asm");
             var dllFile = Path.Combine(dirName, "temp.dll");
             var marker = Guid.NewGuid().ToByteArray();
-            var stringMarker = string.Join(Environment.NewLine, marker.Select(x => string.Format("db 0{0:x2}h", x)));
+            var stringMarker = string.Join(Environment.NewLine, marker.Select(x => $"db 0{x:x2}h"));
             string content;
             if (architecture == "x86")
                 content = string.Format(@"
@@ -92,7 +92,7 @@ export 'TEMP.DLL',\
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
                     UseShellExecute = false,
-                    Arguments = string.Format(@"""{0}"" ""{1}""", tempFile, dllFile),
+                    Arguments = $@"""{tempFile}"" ""{dllFile}""",
                     FileName = Path.Combine(pathToFasm, "fasm.exe")
                 };
             var process = new Process
@@ -139,7 +139,7 @@ export 'TEMP.DLL',\
                     {
                         var result = new StringBuilder();
                         for (var j = i; j < k; ++j)
-                            result.Append(string.Format("0x{0:x2},", dllContent[j]));
+                            result.Append($"0x{dllContent[j]:x2},");
                         result.AppendLine();
                         result.AppendLine(Convert.ToBase64String(dllContent, i, k - i));
                         File.WriteAllText(outputFile, result.ToString());

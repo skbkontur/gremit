@@ -15,7 +15,7 @@ namespace GrEmit.StackMutators
             var esType = stack.Pop();
             var array = esType.ToType();
             if (!array.IsArray && array != typeof(Array))
-                throw new InvalidOperationException(string.Format("An array expected to perform the 'ldelem' instruction but was '{0}'", esType));
+                throw new InvalidOperationException($"An array expected to perform the 'ldelem' instruction but was '{esType}'");
             CheckCanBeAssigned(il, elementType, array == typeof(Array) ? typeof(object) : array.GetElementType());
             stack.Push(elementType);
         }

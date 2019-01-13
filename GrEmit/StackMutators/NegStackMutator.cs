@@ -8,7 +8,7 @@ namespace GrEmit.StackMutators
             var esType = stack.Pop();
             var cliType = ToCLIType(esType);
             if (cliType != CLIType.Int32 && cliType != CLIType.Int64 && cliType != CLIType.NativeInt && cliType != CLIType.Float && cliType != CLIType.Zero)
-                ThrowError(il, string.Format("Unable to perform the 'neg' operation on type '{0}'", esType));
+                ThrowError(il, $"Unable to perform the 'neg' operation on type '{esType}'");
             stack.Push(Canonize(esType));
         }
     }

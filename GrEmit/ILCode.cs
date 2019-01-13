@@ -13,7 +13,7 @@ namespace GrEmit
         public int MarkLabel(GroboIL.Label label, ILInstructionComment comment)
         {
             if (labelLineNumbers.ContainsKey(label))
-                throw new InvalidOperationException(string.Format("The label '{0}' has already been marked", label.Name));
+                throw new InvalidOperationException($"The label '{label.Name}' has already been marked");
             labelLineNumbers.Add(label, Count);
             instructions.Add(new ILInstruction(InstructionKind.Label, default(OpCode), new LabelILInstructionParameter(label), comment));
             return Count++;
@@ -27,14 +27,14 @@ namespace GrEmit
                 {
                     var label = (LabelILInstructionParameter)instruction.Parameter;
                     if (!labelLineNumbers.ContainsKey(label.Label))
-                        throw new InvalidOperationException(string.Format("The label '{0}' has not been marked", label.Label.Name));
+                        throw new InvalidOperationException($"The label '{label.Label.Name}' has not been marked");
                 }
                 if (instruction.Parameter is LabelsILInstructionParameter)
                 {
                     foreach (var label in ((LabelsILInstructionParameter)instruction.Parameter).Labels)
                     {
                         if (!labelLineNumbers.ContainsKey(label))
-                            throw new InvalidOperationException(string.Format("The label '{0}' has not been marked", label.Name));
+                            throw new InvalidOperationException($"The label '{label.Name}' has not been marked");
                     }
                 }
             }

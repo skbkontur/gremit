@@ -29,7 +29,7 @@ namespace GrEmit.StackMutators
                     CheckCanBeAssigned(il, type, elementType);
             }
             else if (!type.IsPrimitive && type != typeof(object))
-                ThrowError(il, string.Format("Unable to load an instance of type '{0}' from a pointer of type '{1}' indirectly", Formatter.Format(type), Formatter.Format(pointer)));
+                ThrowError(il, $"Unable to load an instance of type '{Formatter.Format(type)}' from a pointer of type '{Formatter.Format(pointer)}' indirectly");
             stack.Push(type);
         }
     }

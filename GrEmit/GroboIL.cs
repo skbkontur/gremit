@@ -464,14 +464,14 @@ namespace GrEmit
             if (method == null)
                 throw new ArgumentNullException("method");
             if (method.ReturnType != methodReturnType)
-                throw new ArgumentException(string.Format("The return type must be of type '{0}'", methodReturnType), "method");
+                throw new ArgumentException($"The return type must be of type '{methodReturnType}'", "method");
             var parameterTypes = method.GetParameters().Select(info => info.ParameterType).ToArray();
             if (parameterTypes.Length != methodParameterTypes.Length)
-                throw new ArgumentException(string.Format("The number of arguments must be equal to {0}", methodParameterTypes.Length), "method");
+                throw new ArgumentException($"The number of arguments must be equal to {methodParameterTypes.Length}", "method");
             for (var i = 0; i < parameterTypes.Length; ++i)
             {
                 if (parameterTypes[i] != methodParameterTypes[i])
-                    throw new ArgumentException(string.Format("The argument #{0} must be of type '{1}'", i + 1, methodParameterTypes[i]), "method");
+                    throw new ArgumentException($"The argument #{i + 1} must be of type '{methodParameterTypes[i]}'", "method");
             }
             Emit(OpCodes.Jmp, method);
         }
@@ -1749,7 +1749,7 @@ namespace GrEmit
                     opCode = OpCodes.Conv_R8;
                     break;
                 default:
-                    throw new ArgumentException(string.Format("Expected numeric type but was '{0}'", type), "type");
+                    throw new ArgumentException($"Expected numeric type but was '{type}'", "type");
                 }
             }
             Emit(opCode);
@@ -1821,7 +1821,7 @@ namespace GrEmit
                         opCode = OpCodes.Conv_Ovf_U8;
                         break;
                     default:
-                        throw new ArgumentException(string.Format("Expected integer type but was '{0}'", type), "T");
+                        throw new ArgumentException($"Expected integer type but was '{type}'", "T");
                     }
                 }
             }
@@ -1860,7 +1860,7 @@ namespace GrEmit
                         opCode = OpCodes.Conv_Ovf_U8_Un;
                         break;
                     default:
-                        throw new ArgumentException(string.Format("Expected integer type but was '{0}'", type), "T");
+                        throw new ArgumentException($"Expected integer type but was '{type}'", "T");
                     }
                 }
             }
@@ -2077,7 +2077,7 @@ namespace GrEmit
                     il.Emit(opCode, (float)primitiveParameter.Value);
                     break;
                 default:
-                    throw new InvalidOperationException(string.Format("Type code '{0}' is not valid at this point", typeCode));
+                    throw new InvalidOperationException($"Type code '{typeCode}' is not valid at this point");
                 }
             }
         }

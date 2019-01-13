@@ -104,7 +104,7 @@ namespace GrEmit
         protected static void CheckNotStruct(GroboIL il, ESType type)
         {
             if (ToCLIType(type) == CLIType.Struct)
-                ThrowError(il, string.Format("Struct of type '{0}' is not valid at this point", type));
+                ThrowError(il, $"Struct of type '{type}' is not valid at this point");
         }
 
         protected static void CheckNotEmpty(GroboIL il, EvaluationStack stack, Func<string> message)
@@ -117,19 +117,19 @@ namespace GrEmit
         {
             var cliType = ToCLIType(type);
             if (cliType != CLIType.Pointer && cliType != CLIType.NativeInt)
-                ThrowError(il, string.Format("A pointer type expected but was '{0}'", type));
+                ThrowError(il, $"A pointer type expected but was '{type}'");
         }
 
         protected static void CheckCanBeAssigned(GroboIL il, Type to, ESType from)
         {
             if (!CanBeAssigned(to, from, il.VerificationKind))
-                ThrowError(il, string.Format("Unable to set a value of type '{0}' to an instance of type '{1}'", from, Formatter.Format(to)));
+                ThrowError(il, $"Unable to set a value of type '{@from}' to an instance of type '{Formatter.Format(to)}'");
         }
 
         protected static void CheckCanBeAssigned(GroboIL il, Type to, Type from)
         {
             if (!CanBeAssigned(to, from, il.VerificationKind))
-                ThrowError(il, string.Format("Unable to set a value of type '{0}' to an instance of type '{1}'", Formatter.Format(from), Formatter.Format(to)));
+                ThrowError(il, $"Unable to set a value of type '{Formatter.Format(@from)}' to an instance of type '{Formatter.Format(to)}'");
         }
 
         protected static bool CanBeAssigned(Type to, Type from, TypesAssignabilityVerificationKind verificationKind)
@@ -327,7 +327,7 @@ namespace GrEmit
             case CLIType.Zero:
                 return true;
             default:
-                throw new InvalidOperationException(string.Format("CLI type '{0}' is not valid at this point", cliTo));
+                throw new InvalidOperationException($"CLI type '{cliTo}' is not valid at this point");
             }
         }
 
@@ -509,7 +509,7 @@ namespace GrEmit
                     return new ComplexESType(baseType, intersected.ToArray());
                 }
             default:
-                throw new InvalidOperationException(string.Format("CLI type '{0}' is not valid at this point", cliType));
+                throw new InvalidOperationException($"CLI type '{cliType}' is not valid at this point");
             }
         }
 

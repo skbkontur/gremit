@@ -47,40 +47,40 @@ namespace GrEmit.StackMutators
             }
             for (var i = parameterTypes.Length - 1; i >= 0; --i)
             {
-                CheckNotEmpty(il, stack, () => string.Format("Parameter #{0} for call to the method '{1}' is not loaded on the evaluation stack", i + 1, formattedMethodGetter()));
+                CheckNotEmpty(il, stack, () => $"Parameter #{i + 1} for call to the method '{formattedMethodGetter()}' is not loaded on the evaluation stack");
                 CheckCanBeAssigned(il, parameterTypes[i], stack.Pop());
             }
             if (!isStatic)
             {
-                CheckNotEmpty(il, stack, () => string.Format("An instance to call the method '{0}' is not loaded on the evaluation stack", formattedMethodGetter()));
+                CheckNotEmpty(il, stack, () => $"An instance to call the method '{formattedMethodGetter()}' is not loaded on the evaluation stack");
                 var instance = stack.Pop();
                 var instanceBaseType = instance.ToType();
                 if (instanceBaseType != null)
                 {
                     if (instanceBaseType.IsValueType)
-                        ThrowError(il, string.Format("In order to call the method '{0}' on a value type '{1}' load an instance by ref or box it", formattedMethodGetter(), instance));
+                        ThrowError(il, $"In order to call the method '{formattedMethodGetter()}' on a value type '{instance}' load an instance by ref or box it");
                     else if (!instanceBaseType.IsByRef)
                         CheckCanBeAssigned(il, declaringType, instance);
                     else
                     {
                         var elementType = instanceBaseType.GetElementType();
                         if (!elementType.IsValueType)
-                            ThrowError(il, string.Format("Cannot call the method '{0}' on an instance of type '{1}'", formattedMethodGetter(), instance));
+                            ThrowError(il, $"Cannot call the method '{formattedMethodGetter()}' on an instance of type '{instance}'");
                         else
                         {
                             if (declaringType.IsInterface)
                             {
                                 if (ReflectionExtensions.GetInterfaces(elementType).All(type => type != declaringType))
-                                    ThrowError(il, string.Format("The type '{0}' does not implement interface '{1}'", Formatter.Format(elementType), Formatter.Format(declaringType)));
+                                    ThrowError(il, $"The type '{Formatter.Format(elementType)}' does not implement interface '{Formatter.Format(declaringType)}'");
                             }
                             else if (declaringType != typeof(object) && declaringType != elementType)
-                                ThrowError(il, string.Format("Cannot call the method '{0}' on an instance of type '{1}'", formattedMethodGetter(), elementType));
+                                ThrowError(il, $"Cannot call the method '{formattedMethodGetter()}' on an instance of type '{elementType}'");
                             if (isVirtual && callvirt)
                             {
                                 if (constrained == null)
-                                    ThrowError(il, string.Format("In order to call a virtual method '{0}' on a value type '{1}' specify 'constrained' parameter", formattedMethodGetter(), Formatter.Format(elementType)));
+                                    ThrowError(il, $"In order to call a virtual method '{formattedMethodGetter()}' on a value type '{Formatter.Format(elementType)}' specify 'constrained' parameter");
                                 if (constrained != elementType)
-                                    ThrowError(il, string.Format("Invalid 'constrained' parameter to call a virtual method '{0}'. Expected '{1}' but was '{2}'", formattedMethodGetter(), Formatter.Format(constrained), Formatter.Format(elementType)));
+                                    ThrowError(il, $"Invalid 'constrained' parameter to call a virtual method '{formattedMethodGetter()}'. Expected '{Formatter.Format(constrained)}' but was '{Formatter.Format(elementType)}'");
                             }
                         }
                     }

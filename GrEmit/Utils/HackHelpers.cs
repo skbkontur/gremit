@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -92,7 +92,7 @@ namespace GrEmit.Utils
             var memberInfo = ((MemberExpression)expression).Member;
             var propertyInfo = memberInfo as PropertyInfo;
             if (propertyInfo == null)
-                throw new ArgumentException(string.Format("Bad expression. {0} is not a PropertyInfo", memberInfo));
+                throw new ArgumentException($"Bad expression. {memberInfo} is not a PropertyInfo");
             return propertyInfo;
         }
 
@@ -102,7 +102,7 @@ namespace GrEmit.Utils
             var memberInfo = ((MemberExpression)expression).Member;
             var fi = memberInfo as FieldInfo;
             if (fi == null)
-                throw new ArgumentException(string.Format("Bad expression. {0} is not a FieldInfo", memberInfo));
+                throw new ArgumentException($"Bad expression. {memberInfo} is not a FieldInfo");
             return fi;
         }
 
@@ -112,7 +112,7 @@ namespace GrEmit.Utils
             var memberInfo = ((MemberExpression)expression).Member;
             var propertyInfo = memberInfo as PropertyInfo;
             if (propertyInfo == null)
-                throw new ArgumentException(string.Format("Bad expression. {0} is not a PropertyInfo", memberInfo));
+                throw new ArgumentException($"Bad expression. {memberInfo} is not a PropertyInfo");
             if (classGenericArgs.Length == 0)
                 return propertyInfo;
             var mt = propertyInfo.MetadataToken;
@@ -134,7 +134,7 @@ namespace GrEmit.Utils
             var memberInfo = ((MemberExpression)expression).Member;
             var propertyInfo = memberInfo as FieldInfo;
             if (propertyInfo == null)
-                throw new ArgumentException(string.Format("Bad expression. {0} is not a FieldInfo", memberInfo));
+                throw new ArgumentException($"Bad expression. {memberInfo} is not a FieldInfo");
             return propertyInfo;
         }
 
