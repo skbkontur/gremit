@@ -10,7 +10,7 @@ namespace GrEmit.StackMutators
             var esType = stack.Pop();
             var cliType = ToCLIType(esType);
             if (cliType != CLIType.Int32 && cliType != CLIType.Int64 && cliType != CLIType.NativeInt && cliType != CLIType.Zero)
-                ThrowError(il, string.Format("Unable to perform the 'not' operation on type '{0}'", esType));
+                ThrowError(il, $"Unable to perform the 'not' operation on type '{esType}'");
             // !zero = -1 -> native int
             stack.Push(cliType == CLIType.Zero ? typeof(IntPtr) : Canonize(esType));
         }

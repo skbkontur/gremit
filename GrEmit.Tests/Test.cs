@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -7,7 +7,6 @@ using GrEmit.Utils;
 
 using NUnit.Framework;
 
-using MethodBody = GrEmit.MethodBodyParsing.MethodBody;
 #if NET45
 using System.Diagnostics;
 using System.Linq;
@@ -18,24 +17,6 @@ namespace GrEmit.Tests
     [TestFixture]
     public class Test
     {
-        public static void Qzz()
-        {
-            var list = new List<int>();
-            list.Add(1);
-        }
-
-        [Test, Ignore("Is used for debugging")]
-        public void TestZzz()
-        {
-            var method = HackHelpers.GetMethodDefinition<int>(x => Qzz());
-            var body = MethodBody.Read(method, true);
-            var z = body.CreateDelegate<Action>();
-            z();
-            var body2 = MethodBody.Read(z.Method, true);
-            var z2 = body2.CreateDelegate<Action>();
-            z2();
-        }
-
         [Test]
         public void TestDifferentStructs()
         {
@@ -480,7 +461,7 @@ namespace GrEmit.Tests
 
                 var ifs = BuildIfs(module, keys);
                 var switCh = BuildSwitch(module, keys);
-                const int iterations = 1000000000;
+                const int iterations = 100_000_000;
 
                 Console.WriteLine("Worst case:");
 
@@ -600,7 +581,7 @@ namespace GrEmit.Tests
             foreach (var str in values)
             {
                 if (hashSet.Contains(str))
-                    throw new InvalidOperationException(string.Format("Duplicate value '{0}'", str));
+                    throw new InvalidOperationException($"Duplicate value '{str}'");
                 hashSet.Add(str);
             }
         }

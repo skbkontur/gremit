@@ -10,7 +10,7 @@ namespace GrEmit.StackMutators
             var esType = stack.Pop();
             var array = esType.ToType();
             if (!array.IsArray && array != typeof(Array))
-                ThrowError(il, string.Format("An array expected but was '{0}'", esType));
+                ThrowError(il, $"An array expected but was '{esType}'");
             stack.Push(typeof(int));
         }
     }

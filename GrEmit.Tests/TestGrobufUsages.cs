@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -45,10 +45,10 @@ namespace GrEmit.Tests
 
         private static string SelectName(string netcoreName, string net45Name)
         {
-#if NETCOREAPP2_0
-            return netcoreName;
-#else
+#if NET45
             return net45Name;
+#else
+            return netcoreName;
 #endif
         }
 

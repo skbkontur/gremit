@@ -14,7 +14,7 @@
 
   <!-- Nerdbank.GitVersioning does not work on Ubuntu+Mono (see https://github.com/AArnott/Nerdbank.GitVersioning/issues/224) -->
   <ItemGroup Condition="'$(OS)' != 'Unix'">
-    <PackageReference Include="Nerdbank.GitVersioning" Version="2.2.13" PrivateAssets="All" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="2.3.38" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

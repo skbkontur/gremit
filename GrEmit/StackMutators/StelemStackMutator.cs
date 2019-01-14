@@ -17,7 +17,7 @@ namespace GrEmit.StackMutators
             var esType = stack.Pop();
             var array = esType.ToType();
             if (!array.IsArray && array != typeof(Array))
-                ThrowError(il, string.Format("An array expected to perform the 'stelem' instruction but was '{0}'", esType));
+                ThrowError(il, $"An array expected to perform the 'stelem' instruction but was '{esType}'");
         }
     }
 }

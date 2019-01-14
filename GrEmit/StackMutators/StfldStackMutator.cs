@@ -8,18 +8,18 @@ namespace GrEmit.StackMutators
         public override void Mutate(GroboIL il, ILInstructionParameter parameter, ref EvaluationStack stack)
         {
             var field = ((FieldILInstructionParameter)parameter).Field;
-            CheckNotEmpty(il, stack, () => string.Format("In order to store the field '{0}' a value must be put onto the evaluation stack", Formatter.Format(field)));
+            CheckNotEmpty(il, stack, () => $"In order to store the field '{Formatter.Format(field)}' a value must be put onto the evaluation stack");
             CheckCanBeAssigned(il, field.FieldType, stack.Pop());
             if (!field.IsStatic)
             {
                 var declaringType = field.DeclaringType;
-                CheckNotEmpty(il, stack, () => string.Format("In order to store the field '{0}' an instance must be put onto the evaluation stack", Formatter.Format(field)));
+                CheckNotEmpty(il, stack, () => $"In order to store the field '{Formatter.Format(field)}' an instance must be put onto the evaluation stack");
 
                 var instance = stack.Pop().ToType();
                 if (instance != null)
                 {
                     if (instance.IsValueType)
-                        ThrowError(il, string.Format("In order to store the field '{0}' of a value type '{1}' load an instance by ref", Formatter.Format(field), Formatter.Format(instance)));
+                        ThrowError(il, $"In order to store the field '{Formatter.Format(field)}' of a value type '{Formatter.Format(instance)}' load an instance by ref");
                     else if (!instance.IsByRef)
                         CheckCanBeAssigned(il, declaringType, instance);
                     else
@@ -28,10 +28,10 @@ namespace GrEmit.StackMutators
                         if (elementType.IsValueType)
                         {
                             if (declaringType != elementType)
-                                ThrowError(il, string.Format("Cannot store the field '{0}' to an instance of type '{1}'", Formatter.Format(field), Formatter.Format(elementType)));
+                                ThrowError(il, $"Cannot store the field '{Formatter.Format(field)}' to an instance of type '{Formatter.Format(elementType)}'");
                         }
                         else
-                            ThrowError(il, string.Format("Cannot store the field '{0}' to an instance of type '{1}'", Formatter.Format(field), Formatter.Format(instance)));
+                            ThrowError(il, $"Cannot store the field '{Formatter.Format(field)}' to an instance of type '{Formatter.Format(instance)}'");
                     }
                 }
             }

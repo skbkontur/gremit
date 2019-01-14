@@ -5,4 +5,5 @@
 	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=4592A3FB6844284CBDE4DE722C9B5808/AbsolutePath/@EntryValue">C:\projects\open-source\skbkontur\gremit\Common.DotSettings</s:String>
 	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=4592A3FB6844284CBDE4DE722C9B5808/RelativePath/@EntryValue">..\Common.DotSettings</s:String>
 	<s:Boolean x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File4592A3FB6844284CBDE4DE722C9B5808/@KeyIndexDefined">True</s:Boolean>
-	<s:Double x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File4592A3FB6844284CBDE4DE722C9B5808/RelativePriority/@EntryValue">1</s:Double></wpf:ResourceDictionary>
+	<s:Double x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File4592A3FB6844284CBDE4DE722C9B5808/RelativePriority/@EntryValue">1</s:Double>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=grobo/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
