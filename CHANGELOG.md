@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0 - 2019.01.14
+- Remove IL modification related functionality (`MethodBodyParsing` namespace) entirely since it had been broken 
+  after adding .NET Core support.
+- Switch tests to run on .NET Core 2.2.
+
 ## v2.3 - 2018.09.13
 - Use [Nerdbank.GitVersioning](https://github.com/AArnott/Nerdbank.GitVersioning) to automate generation of assembly 
   and nuget package versions.
