@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
@@ -129,7 +129,7 @@ namespace GrEmit
         {
             if (!ReflectionExtensions.IsMono)
             {
-#if !NETSTANDARD2_0
+#if NET45
                 if(Marshal.GetExceptionPointers() != IntPtr.Zero)
                     return;
 #endif
@@ -303,8 +303,8 @@ namespace GrEmit
 
         public static void MarkSequencePoint(ILGenerator il, ISymbolDocumentWriter document, int startLine, int startColumn, int endLine, int endColumn)
         {
-#if NETSTANDARD2_0
-            throw new NotSupportedException("Not supported for netstandard2.0");
+#if NETSTANDARD2_0 || NETCOREAPP2_2
+            throw new NotSupportedException("Not supported for netstandard2.0 and/or netcoreapp2.2");
 #else
             il.MarkSequencePoint(document, startLine, startColumn, endLine, endColumn);
 #endif
@@ -2350,8 +2350,8 @@ namespace GrEmit
 
             public static void SetLocalSymInfo(LocalBuilder localBuilder, string name)
             {
-#if NETSTANDARD2_0
-                throw new NotSupportedException("Not supported for netstandard2.0");
+#if NETSTANDARD2_0 || NETCOREAPP2_2
+                throw new NotSupportedException("Not supported for netstandard2.0 and/or netcoreapp2.2");
 #else
                 localBuilder.SetLocalSymInfo(name);
 #endif
