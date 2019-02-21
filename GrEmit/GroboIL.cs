@@ -25,7 +25,7 @@ namespace GrEmit
 
         /// <summary>
         ///     Makes no difference between CLI pointer types (objects, managed pointers, unmanaged pointers).
-        ///     Still performs all verifications between these low level types (u can't store int64 to int32 for intance).
+        ///     Still performs all verifications between these low level types (u can't store int64 to int32 for instance).
         /// </summary>
         LowLevelOnly,
 
@@ -129,12 +129,16 @@ namespace GrEmit
         {
             if (!ReflectionExtensions.IsMono)
             {
-#if NET45
+#if NET45 // see https://apisof.net/catalog/System.Runtime.InteropServices.Marshal.GetExceptionPointers()
                 if(Marshal.GetExceptionPointers() != IntPtr.Zero)
                     return;
 #endif
+
+#pragma warning disable 618
                 if (Marshal.GetExceptionCode() != 0)
                     return;
+#pragma warning restore 618
+
                 Seal();
             }
             if (symbolDocumentWriter != null)
@@ -303,10 +307,10 @@ namespace GrEmit
 
         public static void MarkSequencePoint(ILGenerator il, ISymbolDocumentWriter document, int startLine, int startColumn, int endLine, int endColumn)
         {
-#if NETSTANDARD2_0 || NETCOREAPP2_2
-            throw new NotSupportedException("Not supported for netstandard2.0 and/or netcoreapp2.2");
-#else
+#if NET45 // see https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.MarkSequencePoint(ISymbolDocumentWriter,Int32,Int32,Int32,Int32)
             il.MarkSequencePoint(document, startLine, startColumn, endLine, endColumn);
+#else
+            throw new NotSupportedException("ILGenerator.MarkSequencePoint() is supported for net45 target only. See https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.MarkSequencePoint(ISymbolDocumentWriter,Int32,Int32,Int32,Int32)");
 #endif
         }
 
@@ -1996,15 +2000,15 @@ namespace GrEmit
                 il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes, optionalParameterTypes);
         }
 
-#if !NETSTANDARD2_0
-    /// <summary>
-    ///     Calls the method indicated on the evaluation stack (as a pointer to an entry point) with arguments described by a calling convention.
-    /// </summary>
-    /// <param name="callingConvention">The unmanaged calling convention to be used.</param>
-    /// <param name="returnType">
-    ///     The <see cref="Type">Type</see> of the result.
-    /// </param>
-    /// <param name="parameterTypes">The types of the required arguments to the instruction.</param>
+#if !NETSTANDARD2_0 // see https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())
+        /// <summary>
+        ///     Calls the method indicated on the evaluation stack (as a pointer to an entry point) with arguments described by a calling convention.
+        /// </summary>
+        /// <param name="callingConvention">The unmanaged calling convention to be used.</param>
+        /// <param name="returnType">
+        ///     The <see cref="Type">Type</see> of the result.
+        /// </param>
+        /// <param name="parameterTypes">The types of the required arguments to the instruction.</param>
         public void Calli(CallingConvention callingConvention, Type returnType, Type[] parameterTypes)
         {
             var parameter = new MethodByAddressILInstructionParameter(callingConvention, returnType, parameterTypes);
@@ -2043,11 +2047,13 @@ namespace GrEmit
                 if (calliParameter.ManagedCallingConvention != null)
                     il.EmitCalli(opCode, calliParameter.ManagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes, null);
                 else
-#if NETSTANDARD2_0
-                    throw new NotSupportedException("Unmanaged function call is not supported for netstandard2.0");
-#else
+                {
+#if !NETSTANDARD2_0 // see https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())
                     il.EmitCalli(opCode, calliParameter.UnmanagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes);
+#else
+                    throw new NotSupportedException("Unmanaged function call is not supported for netstandard2.0 target. See https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())");
 #endif
+                }
             }
             else
             {
@@ -2350,10 +2356,10 @@ namespace GrEmit
 
             public static void SetLocalSymInfo(LocalBuilder localBuilder, string name)
             {
-#if NETSTANDARD2_0 || NETCOREAPP2_2
-                throw new NotSupportedException("Not supported for netstandard2.0 and/or netcoreapp2.2");
-#else
+#if NET45 // see https://apisof.net/catalog/System.Reflection.Emit.LocalBuilder.SetLocalSymInfo(String)
                 localBuilder.SetLocalSymInfo(name);
+#else
+                throw new NotSupportedException("LocalBuilder.SetLocalSymInfo() is supported for net45 target only. See https://apisof.net/catalog/System.Reflection.Emit.LocalBuilder.SetLocalSymInfo(String)");
 #endif
             }
 

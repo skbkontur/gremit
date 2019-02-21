@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45;netcoreapp2.2</TargetFrameworks>
+    <!-- todo (andrew, 21.02.2019): switch netcoreapp2.x targets to netstandard2.1 target when it will be released (see https://devblogs.microsoft.com/dotnet/announcing-net-standard-2-1/) -->
+    <TargetFrameworks>net45;netstandard2.0;netcoreapp2.1;netcoreapp2.2</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
