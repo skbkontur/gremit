@@ -2000,7 +2000,6 @@ namespace GrEmit
                 il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes, optionalParameterTypes);
         }
 
-#if !NETSTANDARD2_0 // see https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())
         /// <summary>
         ///     Calls the method indicated on the evaluation stack (as a pointer to an entry point) with arguments described by a calling convention.
         /// </summary>
@@ -2011,6 +2010,7 @@ namespace GrEmit
         /// <param name="parameterTypes">The types of the required arguments to the instruction.</param>
         public void Calli(CallingConvention callingConvention, Type returnType, Type[] parameterTypes)
         {
+#if !NETSTANDARD2_0 // see https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())
             var parameter = new MethodByAddressILInstructionParameter(callingConvention, returnType, parameterTypes);
             var lineNumber = ilCode.Append(OpCodes.Calli, parameter, new EmptyILInstructionComment());
             if (analyzeStack && stack != null)
@@ -2018,8 +2018,10 @@ namespace GrEmit
             ilCode.SetComment(lineNumber, GetComment());
             if (symbolDocumentWriter == null)
                 il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes);
-        }
+#else
+            throw new NotSupportedException("Unmanaged function call is not supported for netstandard2.0 target. See https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())");
 #endif
+        }
 
         private void Emit(OpCode opCode, ILInstructionParameter parameter)
         {
