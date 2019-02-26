@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 
 using GrEmit.Utils;
 
@@ -371,6 +372,43 @@ namespace GrEmit.Tests
                 il.Ret();
                 Console.Write(il.GetILCode());
             }
+        }
+
+        [Test]
+        public void TestCalliWithNativeCallingConvention()
+        {
+            var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
+            var module = assembly.DefineDynamicModule(Guid.NewGuid().ToString());
+            var typeBuilder = module.DefineType("TestType", TypeAttributes.Class | TypeAttributes.Public);
+            const string methodName = "TestMethod";
+            var methodBuilder = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Static, typeof(int), new Type[] {typeof(IntPtr)});
+#if NETCOREAPP2_0
+            Assert.Throws<NotSupportedException>(() => BuildIlWithNativeCallingConvention(methodBuilder));
+#else
+            BuildIlWithNativeCallingConvention(methodBuilder);
+            var type = typeBuilder.CreateType();
+            var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
+            var invocationResult = method.Invoke(null, new object[] {Marshal.GetFunctionPointerForDelegate(new FooDelegate(Foo))});
+            Assert.That(invocationResult, Is.EqualTo(15));
+#endif
+        }
+
+        private static void BuildIlWithNativeCallingConvention(MethodBuilder methodBuilder)
+        {
+            using (var il = new GroboIL(methodBuilder))
+            {
+                il.Ldc_I4(10);
+                il.Ldarg(0);
+                il.Calli(CallingConvention.StdCall, typeof(int), new[] {typeof(int)});
+                il.Ret();
+            }
+        }
+
+        private delegate int FooDelegate(int x);
+
+        private static int Foo(int x)
+        {
+            return x + 5;
         }
 
 #if NET45
