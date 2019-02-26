@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.1 - 2019.02.26
+- Target .NET Core 2.1 and 2.2 versions
+- EmitCalli method with native calling convention is now accessible for clients targeting .NET Core 2.1 or later
+- Switch tests to run on .NET Core 2.0, 2.1 and 2.2.
+
 ## v3.0 - 2019.01.14
 - Remove IL modification related functionality (`MethodBodyParsing` namespace) entirely since it had been broken 
   after adding .NET Core support.
