@@ -383,7 +383,7 @@ namespace GrEmit.Tests
             const string methodName = "TestMethod";
             var methodBuilder = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Static, typeof(int), new Type[] {typeof(IntPtr)});
 #if NETCOREAPP2_0
-            Assert.Throws<NotSupportedException>(() => BuildIlWithNativeCallingConvention(methodBuilder));
+            Assert.Throws<PlatformNotSupportedException>(() => BuildIlWithNativeCallingConvention(methodBuilder));
 #else
             BuildIlWithNativeCallingConvention(methodBuilder);
             var type = typeBuilder.CreateType();

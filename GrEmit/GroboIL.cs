@@ -310,7 +310,7 @@ namespace GrEmit
 #if NET45 // see https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.MarkSequencePoint(ISymbolDocumentWriter,Int32,Int32,Int32,Int32)
             il.MarkSequencePoint(document, startLine, startColumn, endLine, endColumn);
 #else
-            throw new NotSupportedException("ILGenerator.MarkSequencePoint() is supported for net45 target only. See https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.MarkSequencePoint(ISymbolDocumentWriter,Int32,Int32,Int32,Int32)");
+            throw new PlatformNotSupportedException("ILGenerator.MarkSequencePoint() is supported for net45 target only. See https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.MarkSequencePoint(ISymbolDocumentWriter,Int32,Int32,Int32,Int32)");
 #endif
         }
 
@@ -2019,7 +2019,7 @@ namespace GrEmit
             if (symbolDocumentWriter == null)
                 il.EmitCalli(OpCodes.Calli, callingConvention, returnType, parameterTypes);
 #else
-            throw new NotSupportedException("Unmanaged function call is not supported for netstandard2.0 target. See https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())");
+            throw new PlatformNotSupportedException("Unmanaged function call is not supported for netstandard2.0 target. See https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())");
 #endif
         }
 
@@ -2053,7 +2053,7 @@ namespace GrEmit
 #if !NETSTANDARD2_0 // see https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())
                     il.EmitCalli(opCode, calliParameter.UnmanagedCallingConvention.Value, calliParameter.ReturnType, calliParameter.ParameterTypes);
 #else
-                    throw new NotSupportedException("Unmanaged function call is not supported for netstandard2.0 target. See https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())");
+                    throw new PlatformNotSupportedException("Unmanaged function call is not supported for netstandard2.0 target. See https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())");
 #endif
                 }
             }
@@ -2361,7 +2361,7 @@ namespace GrEmit
 #if NET45 // see https://apisof.net/catalog/System.Reflection.Emit.LocalBuilder.SetLocalSymInfo(String)
                 localBuilder.SetLocalSymInfo(name);
 #else
-                throw new NotSupportedException("LocalBuilder.SetLocalSymInfo() is supported for net45 target only. See https://apisof.net/catalog/System.Reflection.Emit.LocalBuilder.SetLocalSymInfo(String)");
+                throw new PlatformNotSupportedException("LocalBuilder.SetLocalSymInfo() is supported for net45 target only. See https://apisof.net/catalog/System.Reflection.Emit.LocalBuilder.SetLocalSymInfo(String)");
 #endif
             }
 
