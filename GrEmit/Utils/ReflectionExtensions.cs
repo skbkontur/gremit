@@ -25,9 +25,16 @@ namespace GrEmit.Utils
 
             typeBuilderInstType = FindType(types, "TypeBuilderInstantiation");
 
-            var runtimeMethodInfoType = FindType(types, IsMono ? "MonoMethod" : "RuntimeMethodInfo");
+            // Starting from mono 6 MonoMethod is renamed to RuntimeMethodInfo (as in microsoft .net implementation)
+            var runtimeMethodInfoType = IsMono 
+                                            ? TryFindType(types, "MonoMethod") ?? FindType(types, "RuntimeMethodInfo")
+                                            : FindType(types, "RuntimeMethodInfo");
             var runtimeGenericMethodInfoType = FindType(types, "RuntimeMethodInfo");
-            var runtimeConstructorInfoType = FindType(types, IsMono ? "MonoCMethod" : "RuntimeConstructorInfo");
+
+            // Starting from mono 6 MonoCMethod is renamed to RuntimeConstructorInfo (as in microsoft .net implementation)
+            var runtimeConstructorInfoType = IsMono 
+                                                 ? TryFindType(types, "MonoCMethod") ?? FindType(types, "RuntimeConstructorInfo")
+                                                 : FindType(types, IsMono ? "MonoCMethod" : "RuntimeConstructorInfo");
             var runtimeGenericConstructorInfoType = FindType(types, "RuntimeConstructorInfo");
             methodOnTypeBuilderInstType = FindType(types, IsMono ? "MethodOnTypeBuilderInst" : "MethodOnTypeBuilderInstantiation");
             constructorOnTypeBuilderInstType = FindType(types, IsMono ? "ConstructorOnTypeBuilderInst" : "ConstructorOnTypeBuilderInstantiation");

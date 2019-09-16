@@ -24,10 +24,10 @@ namespace GrEmit.Tests
             using (var il = new GroboIL(method))
             {
                 il.Ldarga(0); // stack: [obj]
-                il.Ldfld(dateTimeOffsetType.GetField(SelectName("_dateTime", "m_dateTime"), BindingFlags.Instance | BindingFlags.NonPublic)); // stack: [obj.m_dateTime]
+                il.Ldfld(GetDateTimeOffsetField("_dateTime", "m_dateTime")); // stack: [obj.m_dateTime]
 
                 il.Ldarga(0); // stack: [obj]
-                il.Ldfld(dateTimeOffsetType.GetField(SelectName("_offsetMinutes", "m_offsetMinutes"), BindingFlags.Instance | BindingFlags.NonPublic)); // stack: [obj.m_offsetMinutes]
+                il.Ldfld(GetDateTimeOffsetField("_offsetMinutes", "m_offsetMinutes")); // stack: [obj.m_offsetMinutes]
 
                 il.Call(assertMethod); // stack: []
 
@@ -43,16 +43,14 @@ namespace GrEmit.Tests
             Assert.That(offsetMinutes, Is.EqualTo(15));
         }
 
-        private static string SelectName(string netcoreName, string net45Name)
+        // DateTimeOffset field names depend on framework (Netcore vs Net45) AND mono version (mono 6 vs earlier)
+        private FieldInfo GetDateTimeOffsetField(string firstName, string secondName)
         {
-#if NET45
-            return net45Name;
-#else
-            return netcoreName;
-#endif
+            return dateTimeOffsetType.GetField(firstName, BindingFlags.Instance | BindingFlags.NonPublic)
+                   ?? dateTimeOffsetType.GetField(secondName, BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
-        private readonly Type dateTimeOffsetType = typeof(DateTimeOffset);
+        private static readonly Type dateTimeOffsetType = typeof(DateTimeOffset);
         private static readonly DateTimeOffset dateTimeOffset = new DateTimeOffset(new DateTime(2018, 01, 05, 21, 34, 56, DateTimeKind.Unspecified), TimeSpan.FromMinutes(15));
     }
 }
