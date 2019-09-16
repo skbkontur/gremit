@@ -1,5 +1,8 @@
 # Changelog
 
+## v3.2 - 2019.09.16
+- Support for Mono 6.0
+
 ## v3.1 - 2019.02.26
 - Target .NET Core 2.1 and 2.2 versions.
 - `EmitCalli` method with native calling convention is now accessible for clients targeting .NET Core 2.1 or later.
