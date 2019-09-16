@@ -37,6 +37,12 @@ namespace GrEmit.Tests
             return method;
         }
 
+        private static void AssertDateTimeOffsetFields(DateTime dateTime, short offsetMinutes)
+        {
+            Assert.That(dateTime, Is.EqualTo(new DateTime(2018, 01, 05, 21, 19, 56, DateTimeKind.Unspecified)));
+            Assert.That(offsetMinutes, Is.EqualTo(15));
+        }
+
         // DateTimeOffset field names depend on framework (Netcore vs Net45) AND mono version (mono 6 vs earlier)
         private FieldInfo GetDateTimeOffsetField(string firstName, string secondName)
         {
