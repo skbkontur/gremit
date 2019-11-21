@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.2.x - 2019.11.21
+## v3.2.2 - 2019.11.21
 - Use [SourceLink](https://github.com/dotnet/sourcelink) to help ReSharper decompiler show actual code.
 
 ## v3.2.1 - 2019.09.16
