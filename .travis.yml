@@ -1,7 +1,7 @@
 dist: xenial
 sudo: false
 language: csharp
-dotnet: 2.2.100
+dotnet: 2.2.402
 matrix:
   include:
     - mono: none
