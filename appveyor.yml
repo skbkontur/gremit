@@ -4,7 +4,7 @@ skip_commits:
   files:
     - '**/*.md'
 
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 init:
   - cmd: git config --global core.autocrlf false
@@ -15,7 +15,7 @@ init:
       {
         $env:SHOULD_PUBLISH_NUGET_PACKAGE = "true"
         Write-Host "Will publish nuget package for $tagName tag" -ForegroundColor "Green"
-        if ($tagName -match '^v\d+\.\d+-release$') # tag name matches 'vX.Y-release'
+        if ($tagName -match '^v\d+\.\d+-release') # tag name starts with 'vX.Y-release' (e.g. use 'v4.2-release.1' tag for the first patch for release v4.2)
         {
           $env:SHOULD_CREATE_RELEASE = "true"
           Write-Host "Will create release for $tagName tag" -ForegroundColor "Green"

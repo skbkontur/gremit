@@ -4,16 +4,17 @@
   <PropertyGroup>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <EmbedAllSources>true</EmbedAllSources>
   </PropertyGroup>
 
   <!-- include pdbs into nuget package -->
   <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <!-- Nerdbank.GitVersioning does not work on Ubuntu+Mono (see https://github.com/AArnott/Nerdbank.GitVersioning/issues/224) -->
   <ItemGroup Condition="'$(OS)' != 'Unix'">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19554-01" PrivateAssets="All" />
     <PackageReference Include="Nerdbank.GitVersioning" Version="2.3.138" PrivateAssets="All" />
   </ItemGroup>
 
