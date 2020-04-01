@@ -1,5 +1,8 @@
 # Changelog
 
+## v3.3.X - 2020.04.01
+- Sign GrEmit assembly with strong name
+
 ## v3.2.2 - 2019.11.21
 - Use [SourceLink](https://github.com/dotnet/sourcelink) to help ReSharper decompiler show actual code.
 
