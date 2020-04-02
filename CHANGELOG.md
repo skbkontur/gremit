@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.3.X - 2020.04.01
+## v3.3.1 - 2020.04.01
 - Sign GrEmit assembly with strong name
 
 ## v3.2.2 - 2019.11.21
