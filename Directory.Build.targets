@@ -9,7 +9,6 @@
 
   <Target Name="SetNuSpecProperties" BeforeTargets="GenerateNuspec" DependsOnTargets="GetBuildVersion">
     <PropertyGroup>
-      <PackageId>$(AssemblyName)</PackageId>
       <Authors>Igor Chevdar</Authors>
       <PackageTags>.NET Reflection Emit ILGenerator</PackageTags>
       <PackageDescription>GrEmit is a library containing different helpers for generating code using Reflection.Emit with the main one being GroboIL - a smart wrapper over ILGenerator.</PackageDescription>

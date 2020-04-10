@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
-    <TargetFrameworks>netcoreapp2.2;net45</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net45</TargetFrameworks>
   </PropertyGroup>
 
 </Project>
