@@ -6,8 +6,8 @@ if [ ${DOTNETCORE} -eq 1 ]
 then
   dotnet restore ./GrEmit.sln --verbosity m
   dotnet build --configuration Release --framework netstandard2.0 ./GrEmit/GrEmit.csproj
-  dotnet build --configuration Release --framework netcoreapp2.2 ./GrEmit.Tests/GrEmit.Tests.csproj
-  dotnet test --no-build --configuration Release --framework netcoreapp2.2 ./GrEmit.Tests/GrEmit.Tests.csproj
+  dotnet build --configuration Release --framework netcoreapp3.1 ./GrEmit.Tests/GrEmit.Tests.csproj
+  dotnet test --no-build --configuration Release --framework netcoreapp3.1 ./GrEmit.Tests/GrEmit.Tests.csproj
 else
   nuget install NUnit.ConsoleRunner -Version 3.9.0 -OutputDirectory testrunner
   msbuild /t:Restore ./GrEmit.sln
