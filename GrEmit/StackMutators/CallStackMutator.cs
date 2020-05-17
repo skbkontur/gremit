@@ -57,9 +57,7 @@ namespace GrEmit.StackMutators
                 var instanceBaseType = instance.ToType();
                 if (instanceBaseType != null)
                 {
-                    if (instanceBaseType.IsValueType)
-                        ThrowError(il, $"In order to call the method '{formattedMethodGetter()}' on a value type '{instance}' load an instance by ref or box it");
-                    else if (!instanceBaseType.IsByRef)
+                    if (!instanceBaseType.IsByRef)
                         CheckCanBeAssigned(il, declaringType, instance);
                     else
                     {
