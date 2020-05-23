@@ -19,6 +19,91 @@ namespace GrEmit.Tests
     public class Test
     {
         [Test]
+        public void TestLocalloc()
+        {
+            // private static unsafe int GetSum(byte length)
+            // {
+            //     byte* bytes = stackalloc byte[length];
+            //     for (byte i = 0; i < length; ++i)
+            //     {
+            //         bytes[i] = i;
+            //     }
+            //     int sum = 0;
+            //     for (byte i = 0; i < length; ++i)
+            //     {
+            //         sum += bytes[i];
+            //     }
+            //     return sum;
+            // }
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), new[] {typeof(byte)}, typeof(Test));
+            using (var il = new GroboIL(method))
+            {
+                il.Ldarg(0); // stack: [length]
+                il.Conv<UIntPtr>();
+                il.Localloc(); // stack: [*pointer]
+                var pointer = il.DeclareLocal(typeof(UIntPtr));
+                il.Stloc(pointer); // pointer = value; stack: []
+
+                il.Ldc_I4(0); // stack: [0]
+                var i = il.DeclareLocal(typeof(byte));
+                il.Stloc(i); // i = 0; stack: []
+                var loop1Start = il.DefineLabel("loop1_start");
+                var loop1End = il.DefineLabel("loop1_end");
+                il.MarkLabel(loop1Start);
+                {
+                    il.Ldloc(i); // stack: [i]
+                    il.Ldarg(0); // stack: [i, length]
+                    il.Bge(loop1End, unsigned : true); // if (i >= length) goto end; stack: []
+                    il.Ldloc(pointer); //stack: [pointer]
+                    il.Ldloc(i); // stack: [pointer, i]
+                    il.Add(); // stack: [pointer + i]
+                    il.Ldloc(i); // stack: [pointer + i, i]
+                    il.Stind(typeof(byte)); // *(pointer + i) = i; stack: []
+                    il.Ldloc(i); // stack: [i]
+                    il.Ldc_I4(1); // stack: [i, 1]
+                    il.Add(); // stack: [i + 1]
+                    il.Conv<byte>(); 
+                    il.Stloc(i); // i = i + 1; stack: []
+                    il.Br(loop1Start);
+                }
+                il.MarkLabel(loop1End);
+
+                il.Ldc_I4(0); // stack: [0]
+                il.Dup(); // stack: [0, 0]
+                var sum = il.DeclareLocal(typeof(int));
+                il.Stloc(sum); // sum = 0; stack: [0]
+                il.Stloc(i); // i = 0; stack: []
+                var loop2Start = il.DefineLabel("loop2_start");
+                var loop2End = il.DefineLabel("loop2_end");
+                il.MarkLabel(loop2Start);
+                {
+                    il.Ldloc(i); // stack: [i]
+                    il.Ldarg(0); // stack: [i, length]
+                    il.Bge(loop2End, unsigned : true); // if i >= length goto end; stack:[]
+                    il.Ldloc(pointer); // stack: [pointer]
+                    il.Ldloc(i); // stack: [pointer, i]
+                    il.Add(); // stack: [pointer + i]
+                    il.Ldind(typeof(byte)); // stack: [*(pointer + i)]
+                    il.Ldloc(sum); // stack: [*(pointer + i), sum]
+                    il.Add(); // stack: [*(pointer + i) + sum]
+                    il.Stloc(sum); // sum = *(pointer + i) + sum; stack: []
+                    il.Ldloc(i); // stack: [i]
+                    il.Ldc_I4(1);  // stack: [i, 1]
+                    il.Add(); // stack: [i + 1]
+                    il.Conv<byte>();
+                    il.Stloc(i); // i = (i + 1); // stack: []
+                    il.Br(loop2Start);
+                }
+                il.MarkLabel(loop2End);
+                
+                il.Ldloc(sum); // stack: [sum]
+                il.Ret();
+            }
+            var func = (Func<byte, int>)method.CreateDelegate(typeof(Func<byte, int>));
+            Assert.That(func(6), Is.EqualTo(15));
+        }
+
+        [Test]
         public void TestDifferentStructs()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(void), new[] {typeof(int)}, typeof(Test));

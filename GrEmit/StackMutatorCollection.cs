@@ -210,6 +210,7 @@ namespace GrEmit
                 {OpCodes.Stelem_R8, new StelemStackMutator()},
                 {OpCodes.Stelem_Ref, new StelemStackMutator()},
                 {OpCodes.Ckfinite, new CkfiniteStackMutator()},
+                {OpCodes.Localloc, new LocallocStackMutator()},
             };
 
         private static readonly MarkLabelStackMutator markLabelStackMutator = new MarkLabelStackMutator();

@@ -925,6 +925,11 @@ namespace GrEmit
             Conv<IntPtr>();
         }
 
+        public void Localloc()
+        {
+            Emit(OpCodes.Localloc);
+        }
+
         /// <summary>
         ///     Clears the specified pinned local by setting it to null
         /// </summary>
