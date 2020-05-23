@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.3.X - 2020.05.23
+## v3.3.7 - 2020.05.23
 - Support `Localloc` operation
 
 ## v3.3.1 - 2020.04.01
