@@ -5,6 +5,7 @@ set -ev
 if [ ${DOTNETCORE} -eq 1 ]
 then
   dotnet restore ./GrEmit.sln --verbosity m
+  dotnet tool restore
   dotnet build --configuration Release --framework netstandard2.0 ./GrEmit/GrEmit.csproj
   dotnet build --configuration Release --framework netcoreapp3.1 ./GrEmit.Tests/GrEmit.Tests.csproj
   dotnet jb cleanupcode GrEmit.sln --profile=CatalogueCleanup --verbosity=WARN
