@@ -120,7 +120,7 @@ namespace GrEmit
                 return;
             var lastInstruction = ilCode.Count == 0 ? null : ilCode.GetInstruction(ilCode.Count - 1) as ILCode.ILInstruction;
             if (lastInstruction == null || (lastInstruction.OpCode != OpCodes.Ret && lastInstruction.OpCode != OpCodes.Br
-                                            && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw && lastInstruction.OpCode != OpCodes.Jmp))
+                                                                                  && lastInstruction.OpCode != OpCodes.Br_S && lastInstruction.OpCode != OpCodes.Throw && lastInstruction.OpCode != OpCodes.Jmp))
                 throw new InvalidOperationException("An IL program must end with one of the following instructions: 'ret', 'br', 'br.s', 'throw', 'jmp'");
             ilCode.CheckLabels();
         }
@@ -130,7 +130,7 @@ namespace GrEmit
             if (!ReflectionExtensions.IsMono)
             {
 #if NET45 // see https://apisof.net/catalog/System.Runtime.InteropServices.Marshal.GetExceptionPointers()
-                if(Marshal.GetExceptionPointers() != IntPtr.Zero)
+                if (Marshal.GetExceptionPointers() != IntPtr.Zero)
                     return;
 #endif
 

@@ -26,13 +26,13 @@ namespace GrEmit.Utils
             typeBuilderInstType = FindType(types, "TypeBuilderInstantiation");
 
             // Starting from mono 6 MonoMethod is renamed to RuntimeMethodInfo (as in microsoft .net implementation)
-            var runtimeMethodInfoType = IsMono 
+            var runtimeMethodInfoType = IsMono
                                             ? TryFindType(types, "MonoMethod") ?? FindType(types, "RuntimeMethodInfo")
                                             : FindType(types, "RuntimeMethodInfo");
             var runtimeGenericMethodInfoType = FindType(types, "RuntimeMethodInfo");
 
             // Starting from mono 6 MonoCMethod is renamed to RuntimeConstructorInfo (as in microsoft .net implementation)
-            var runtimeConstructorInfoType = IsMono 
+            var runtimeConstructorInfoType = IsMono
                                                  ? TryFindType(types, "MonoCMethod") ?? FindType(types, "RuntimeConstructorInfo")
                                                  : FindType(types, IsMono ? "MonoCMethod" : "RuntimeConstructorInfo");
             var runtimeGenericConstructorInfoType = FindType(types, "RuntimeConstructorInfo");
@@ -50,83 +50,83 @@ namespace GrEmit.Utils
             assignabilityCheckers = new Hashtable();
             parameterTypesExtractors[runtimeMethodInfoType]
                 = parameterTypesExtractors[runtimeGenericMethodInfoType]
-                  = parameterTypesExtractors[typeof(DynamicMethod)]
-                    = parameterTypesExtractors[runtimeConstructorInfoType]
-                      = parameterTypesExtractors[runtimeGenericConstructorInfoType]
-                        = (Func<MethodBase, Type[]>)(method => method.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
+                      = parameterTypesExtractors[typeof(DynamicMethod)]
+                            = parameterTypesExtractors[runtimeConstructorInfoType]
+                                  = parameterTypesExtractors[runtimeGenericConstructorInfoType]
+                                        = (Func<MethodBase, Type[]>)(method => method.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
             returnTypeExtractors[runtimeMethodInfoType]
                 = returnTypeExtractors[runtimeGenericMethodInfoType]
-                  = returnTypeExtractors[typeof(DynamicMethod)]
-                    = returnTypeExtractors[typeof(MethodBuilder)]
-                      = (Func<MethodInfo, Type>)(method => method.ReturnType);
+                      = returnTypeExtractors[typeof(DynamicMethod)]
+                            = returnTypeExtractors[typeof(MethodBuilder)]
+                                  = (Func<MethodInfo, Type>)(method => method.ReturnType);
             baseTypeOfTypeExtractors[runtimeTypeType]
                 = baseTypeOfTypeExtractors[monoTypeType]
-                  = baseTypeOfTypeExtractors[typeof(TypeBuilder)]
-                    = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)]
-                      = baseTypeOfTypeExtractors[byRefTypeType]
-                        = baseTypeOfTypeExtractors[pointerTypeType]
-                          = baseTypeOfTypeExtractors[arrayTypeType]
-                            = (Func<Type, Type>)(type => type == typeof(object) ? type.BaseType : (type.BaseType ?? typeof(object)));
+                      = baseTypeOfTypeExtractors[typeof(TypeBuilder)]
+                            = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)]
+                                  = baseTypeOfTypeExtractors[byRefTypeType]
+                                        = baseTypeOfTypeExtractors[pointerTypeType]
+                                              = baseTypeOfTypeExtractors[arrayTypeType]
+                                                    = (Func<Type, Type>)(type => type == typeof(object) ? type.BaseType : (type.BaseType ?? typeof(object)));
             interfacesOfTypeExtractors[runtimeTypeType]
                 = interfacesOfTypeExtractors[monoTypeType]
-                  = (Func<Type, Type[]>)(type => type.GetInterfaces());
+                      = (Func<Type, Type[]>)(type => type.GetInterfaces());
             interfacesOfTypeExtractors[typeof(TypeBuilder)]
                 = (Func<Type, Type[]>)(type => GetInterfaces(GetBaseType(type)).Concat(type.GetInterfaces()).Distinct().ToArray());
             interfacesOfTypeExtractors[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type[]>)(type => type.GetGenericParameterConstraints());
             typeComparers[runtimeTypeType]
                 = typeComparers[monoTypeType]
-                  = typeComparers[typeof(TypeBuilder)]
-                    = typeComparers[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type, bool>)((x, y) => x == y);
+                      = typeComparers[typeof(TypeBuilder)]
+                            = typeComparers[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type, bool>)((x, y) => x == y);
             typeComparers[byRefTypeType]
                 = typeComparers[pointerTypeType]
-                  = typeComparers[arrayTypeType]
-                    = (Func<Type, Type, bool>)((x, y) =>
-                        {
-                            if (x.IsByRef && y.IsByRef)
-                                return Equal(x.GetElementType(), y.GetElementType());
-                            if (x.IsPointer && y.IsPointer)
-                                return Equal(x.GetElementType(), y.GetElementType());
-                            if (x.IsArray && y.IsArray)
-                                return x.GetArrayRank() == y.GetArrayRank() && Equal(x.GetElementType(), y.GetElementType());
-                            return x == y;
-                        });
+                      = typeComparers[arrayTypeType]
+                            = (Func<Type, Type, bool>)((x, y) =>
+                                                              {
+                                                                  if (x.IsByRef && y.IsByRef)
+                                                                      return Equal(x.GetElementType(), y.GetElementType());
+                                                                  if (x.IsPointer && y.IsPointer)
+                                                                      return Equal(x.GetElementType(), y.GetElementType());
+                                                                  if (x.IsArray && y.IsArray)
+                                                                      return x.GetArrayRank() == y.GetArrayRank() && Equal(x.GetElementType(), y.GetElementType());
+                                                                  return x == y;
+                                                              });
             hashCodeCalculators[runtimeTypeType]
                 = hashCodeCalculators[monoTypeType]
-                  = hashCodeCalculators[typeof(TypeBuilder)]
-                    = hashCodeCalculators[typeof(GenericTypeParameterBuilder)]
-                      = (Func<Type, int>)(type => type.GetHashCode());
+                      = hashCodeCalculators[typeof(TypeBuilder)]
+                            = hashCodeCalculators[typeof(GenericTypeParameterBuilder)]
+                                  = (Func<Type, int>)(type => type.GetHashCode());
             hashCodeCalculators[byRefTypeType]
                 = hashCodeCalculators[pointerTypeType]
-                  = hashCodeCalculators[arrayTypeType]
-                    = (Func<Type, int>)(type =>
-                        {
-                            if (type.IsByRef)
-                                return CalcHashCode(type.GetElementType()) * 31 + 1;
-                            if (type.IsPointer)
-                                return CalcHashCode(type.GetElementType()) * 31 + 2;
-                            if (type.IsArray)
-                                return (CalcHashCode(type.GetElementType()) * 31 + type.GetArrayRank()) * 31 + 3;
-                            return type.GetHashCode();
-                        });
+                      = hashCodeCalculators[arrayTypeType]
+                            = (Func<Type, int>)(type =>
+                                                       {
+                                                           if (type.IsByRef)
+                                                               return CalcHashCode(type.GetElementType()) * 31 + 1;
+                                                           if (type.IsPointer)
+                                                               return CalcHashCode(type.GetElementType()) * 31 + 2;
+                                                           if (type.IsArray)
+                                                               return (CalcHashCode(type.GetElementType()) * 31 + type.GetArrayRank()) * 31 + 3;
+                                                           return type.GetHashCode();
+                                                       });
             assignabilityCheckers[runtimeTypeType]
                 = assignabilityCheckers[monoTypeType]
-                  = (Func<Type, Type, bool>)((to, from) =>
-                      {
-                          if (to.IsAssignableFrom(from)) return true;
-                          if (Equal(to, from)) return true;
-                          if (to.IsInterface)
-                          {
-                              var interfaces = GetInterfaces(from);
-                              return interfaces.Any(interfaCe => Equal(interfaCe, to));
-                          }
-                          while (from != null)
-                          {
-                              if (Equal(to, from))
-                                  return true;
-                              from = GetBaseType(from);
-                          }
-                          return false;
-                      });
+                      = (Func<Type, Type, bool>)((to, from) =>
+                                                        {
+                                                            if (to.IsAssignableFrom(from)) return true;
+                                                            if (Equal(to, from)) return true;
+                                                            if (to.IsInterface)
+                                                            {
+                                                                var interfaces = GetInterfaces(from);
+                                                                return interfaces.Any(interfaCe => Equal(interfaCe, to));
+                                                            }
+                                                            while (from != null)
+                                                            {
+                                                                if (Equal(to, from))
+                                                                    return true;
+                                                                from = GetBaseType(from);
+                                                            }
+                                                            return false;
+                                                        });
             assignabilityCheckers[typeof(TypeBuilder)] = (Func<Type, Type, bool>)((to, from) => to.IsAssignableFrom(from));
 
             parameterTypesExtractors[typeof(MethodBuilder)]
@@ -158,19 +158,19 @@ namespace GrEmit.Utils
                 = (Func<Type, Type[]>)(type => new TypeBuilderInstWrapper(type).GetInterfaces());
             interfacesOfTypeExtractors[byRefTypeType]
                 = interfacesOfTypeExtractors[pointerTypeType]
-                  = interfacesOfTypeExtractors[arrayTypeType]
-                    = (Func<Type, Type[]>)(type =>
-                        {
-                            if (!type.IsArray)
-                                return new Type[0];
-                            if (type.GetArrayRank() > 1)
-                                return typeof(int[,]).GetInterfaces();
-                            var elementType = type.GetElementType();
-                            return typeof(int[]).GetInterfaces()
-                                                .Select(interfaCe => interfaCe.IsGenericType
-                                                                         ? interfaCe.GetGenericTypeDefinition().MakeGenericType(elementType)
-                                                                         : interfaCe).ToArray();
-                        });
+                      = interfacesOfTypeExtractors[arrayTypeType]
+                            = (Func<Type, Type[]>)(type =>
+                                                          {
+                                                              if (!type.IsArray)
+                                                                  return new Type[0];
+                                                              if (type.GetArrayRank() > 1)
+                                                                  return typeof(int[,]).GetInterfaces();
+                                                              var elementType = type.GetElementType();
+                                                              return typeof(int[]).GetInterfaces()
+                                                                                  .Select(interfaCe => interfaCe.IsGenericType
+                                                                                                           ? interfaCe.GetGenericTypeDefinition().MakeGenericType(elementType)
+                                                                                                           : interfaCe).ToArray();
+                                                          });
 
             typeComparers[typeBuilderInstType]
                 = (Func<Type, Type, bool>)((x, y) => new TypeBuilderInstWrapper(x).Equals(new TypeBuilderInstWrapper(y)));
@@ -183,17 +183,17 @@ namespace GrEmit.Utils
                 = (Func<Type, Type, bool>)((to, from) => new TypeBuilderInstWrapper(to).IsAssignableFrom(new TypeBuilderInstWrapper(from)));
             assignabilityCheckers[byRefTypeType]
                 = assignabilityCheckers[pointerTypeType]
-                  = assignabilityCheckers[arrayTypeType]
-                    = (Func<Type, Type, bool>)((to, from) =>
-                        {
-                            if (to.IsByRef && from.IsByRef)
-                                return Equal(to.GetElementType(), from.GetElementType());
-                            if (to.IsPointer && from.IsPointer)
-                                return Equal(to.GetElementType(), from.GetElementType());
-                            if (to.IsArray && from.IsArray)
-                                return to.GetArrayRank() == from.GetArrayRank() && Equal(to.GetElementType(), from.GetElementType());
-                            return to == from;
-                        });
+                      = assignabilityCheckers[arrayTypeType]
+                            = (Func<Type, Type, bool>)((to, from) =>
+                                                              {
+                                                                  if (to.IsByRef && from.IsByRef)
+                                                                      return Equal(to.GetElementType(), from.GetElementType());
+                                                                  if (to.IsPointer && from.IsPointer)
+                                                                      return Equal(to.GetElementType(), from.GetElementType());
+                                                                  if (to.IsArray && from.IsArray)
+                                                                      return to.GetArrayRank() == from.GetArrayRank() && Equal(to.GetElementType(), from.GetElementType());
+                                                                  return to == from;
+                                                              });
         }
 
         internal static bool IsMono { get; }

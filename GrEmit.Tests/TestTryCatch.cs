@@ -2,9 +2,11 @@
 using System.Reflection.Emit;
 
 using NUnit.Framework;
+
 #if NET45
 using System.Reflection;
 using System.Threading;
+
 #endif
 
 namespace GrEmit.Tests
@@ -150,18 +152,17 @@ namespace GrEmit.Tests
             var symbolDocumentWriter = myModuleBuilder.GetSymWriter().DefineDocument("AdderException.cil", Guid.Empty, Guid.Empty, Guid.Empty);
 
             TypeBuilder myTypeBuilder = myModuleBuilder.DefineType("Adder");
-            Type[] adderParams = { typeof(int), typeof(int) };
+            Type[] adderParams = {typeof(int), typeof(int)};
 
-            ConstructorInfo myConstructorInfo = typeof(OverflowException).GetConstructor(new[] { typeof(string) });
+            ConstructorInfo myConstructorInfo = typeof(OverflowException).GetConstructor(new[] {typeof(string)});
             MethodInfo myExToStrMI = typeof(OverflowException).GetMethod("ToString");
-            MethodInfo myWriteLineMI = typeof(Console).GetMethod("WriteLine", new[] { typeof(string), typeof(object) });
+            MethodInfo myWriteLineMI = typeof(Console).GetMethod("WriteLine", new[] {typeof(string), typeof(object)});
 
             // Define method to add two numbers.
             MethodBuilder myMethodBuilder = myTypeBuilder.DefineMethod("DoAdd", MethodAttributes.Public |
-               MethodAttributes.Static, typeof(int), adderParams);
+                                                                                MethodAttributes.Static, typeof(int), adderParams);
             using (var il = new GroboIL(myMethodBuilder, symbolDocumentWriter))
             {
-
                 // Declare local variable.
                 GroboIL.Local myLocalBuilder1 = il.DeclareLocal(typeof(int));
                 GroboIL.Local myLocalBuilder2 = il.DeclareLocal(typeof(OverflowException));

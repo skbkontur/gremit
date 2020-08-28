@@ -11,6 +11,7 @@ using NUnit.Framework;
 #if NET45
 using System.Diagnostics;
 using System.Linq;
+
 #endif
 
 namespace GrEmit.Tests
@@ -62,7 +63,7 @@ namespace GrEmit.Tests
                     il.Ldloc(i); // stack: [i]
                     il.Ldc_I4(1); // stack: [i, 1]
                     il.Add(); // stack: [i + 1]
-                    il.Conv<byte>(); 
+                    il.Conv<byte>();
                     il.Stloc(i); // i = i + 1; stack: []
                     il.Br(loop1Start);
                 }
@@ -88,14 +89,14 @@ namespace GrEmit.Tests
                     il.Add(); // stack: [*(pointer + i) + sum]
                     il.Stloc(sum); // sum = *(pointer + i) + sum; stack: []
                     il.Ldloc(i); // stack: [i]
-                    il.Ldc_I4(1);  // stack: [i, 1]
+                    il.Ldc_I4(1); // stack: [i, 1]
                     il.Add(); // stack: [i + 1]
                     il.Conv<byte>();
                     il.Stloc(i); // i = (i + 1); // stack: []
                     il.Br(loop2Start);
                 }
                 il.MarkLabel(loop2End);
-                
+
                 il.Ldloc(sum); // stack: [sum]
                 il.Ret();
             }
@@ -511,7 +512,7 @@ namespace GrEmit.Tests
             method.SetParameters(typeof(List<>).MakeGenericType(parameter), typeof(Func<,>).MakeGenericType(parameter, typeof(int)));
             method.DefineParameter(2, ParameterAttributes.In, "list");
             method.SetReturnType(typeof(int));
-            using(var il = new GroboIL(method, symbolDocumentWriter))
+            using (var il = new GroboIL(method, symbolDocumentWriter))
             {
                 il.Ldarg(1);
                 il.Dup();
@@ -575,11 +576,11 @@ namespace GrEmit.Tests
             var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.RunAndSave);
             var module = assembly.DefineDynamicModule("Zzz", true);
 
-            for(var numberOfCases = 1; numberOfCases <= 20; ++numberOfCases)
+            for (var numberOfCases = 1; numberOfCases <= 20; ++numberOfCases)
             {
                 Console.WriteLine("#" + numberOfCases);
                 var keys = new string[numberOfCases];
-                for(var i = 0; i < numberOfCases; ++i)
+                for (var i = 0; i < numberOfCases; ++i)
                     keys[i] = Guid.NewGuid().ToString();
 
                 var ifs = BuildIfs(module, keys);
@@ -589,9 +590,9 @@ namespace GrEmit.Tests
                 Console.WriteLine("Worst case:");
 
                 var stopwatch = Stopwatch.StartNew();
-                for(var iter = 0; iter < iterations / numberOfCases; ++iter)
+                for (var iter = 0; iter < iterations / numberOfCases; ++iter)
                 {
-                    for(var i = 0; i < numberOfCases; ++i)
+                    for (var i = 0; i < numberOfCases; ++i)
                         ifs.Set("zzz", iter);
                     ifs.Set("zzz", iter);
                 }
@@ -599,9 +600,9 @@ namespace GrEmit.Tests
                 Console.WriteLine("Ifs: " + elapsedIfs.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedIfs.TotalMilliseconds) + " runs per second)");
 
                 stopwatch = Stopwatch.StartNew();
-                for(var iter = 0; iter < iterations / numberOfCases; ++iter)
+                for (var iter = 0; iter < iterations / numberOfCases; ++iter)
                 {
-                    for(var i = 0; i < numberOfCases; ++i)
+                    for (var i = 0; i < numberOfCases; ++i)
                         switCh.Set("zzz", iter);
                     switCh.Set("zzz", iter);
                 }
@@ -612,9 +613,9 @@ namespace GrEmit.Tests
                 Console.WriteLine("Average:");
 
                 stopwatch = Stopwatch.StartNew();
-                for(var iter = 0; iter < iterations / numberOfCases; ++iter)
+                for (var iter = 0; iter < iterations / numberOfCases; ++iter)
                 {
-                    for(var i = 0; i < numberOfCases; ++i)
+                    for (var i = 0; i < numberOfCases; ++i)
                         ifs.Set(keys[i], iter);
                     ifs.Set("zzz", iter);
                 }
@@ -622,9 +623,9 @@ namespace GrEmit.Tests
                 Console.WriteLine("Ifs: " + elapsedIfs.TotalMilliseconds * 1000 / iterations + " microseconds (" + Math.Round(1000.0 * iterations / elapsedIfs.TotalMilliseconds) + " runs per second)");
 
                 stopwatch = Stopwatch.StartNew();
-                for(var iter = 0; iter < iterations / numberOfCases; ++iter)
+                for (var iter = 0; iter < iterations / numberOfCases; ++iter)
                 {
-                    for(var i = 0; i < numberOfCases; ++i)
+                    for (var i = 0; i < numberOfCases; ++i)
                         switCh.Set(keys[i], iter);
                     switCh.Set("zzz", iter);
                 }
@@ -646,34 +647,6 @@ namespace GrEmit.Tests
             il.Ldarg(1);
             il.Ldarg(2);
             Assert.Throws<InvalidOperationException>(() => il.Call(HackHelpers.GetMethodDefinition<string>(s => string.Format(s, "", ""))));
-        }
-
-        public class C1 : I1, I2
-        {
-            public I2 GetI2()
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public class C2 : I1, I2
-        {
-            public I2 GetI2()
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public class Base<T>
-        {
-        }
-
-        public class C1<T> : Base<T>, I1<T>, I2<T>
-        {
-        }
-
-        public class C2<T> : Base<T>, I1<T>, I2<T>
-        {
         }
 
         public interface I1
@@ -814,7 +787,50 @@ namespace GrEmit.Tests
             return (IQxx)Activator.CreateInstance(type, new object[] {tinyHashtable});
         }
 
+        private struct Qxx
+        {
+#pragma warning disable 169
+            private Guid x1;
+            private Guid x2;
+            private Guid x3;
+            private Guid x4;
+            private Guid x5;
+            private Guid x6;
+            private Guid x7;
+            private Guid x8;
+            private Guid x9;
+#pragma warning restore 169
+        }
+
         private static readonly MethodInfo stringEqualityOperator = HackHelpers.GetMethodDefinition<string>(s => s == "");
+
+        public class C1 : I1, I2
+        {
+            public I2 GetI2()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class C2 : I1, I2
+        {
+            public I2 GetI2()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class Base<T>
+        {
+        }
+
+        public class C1<T> : Base<T>, I1<T>, I2<T>
+        {
+        }
+
+        public class C2<T> : Base<T>, I1<T>, I2<T>
+        {
+        }
 
         private class A
         {
@@ -836,21 +852,6 @@ namespace GrEmit.Tests
             }
 
             public int X { get; private set; }
-        }
-
-        private struct Qxx
-        {
-#pragma warning disable 169
-            private Guid x1;
-            private Guid x2;
-            private Guid x3;
-            private Guid x4;
-            private Guid x5;
-            private Guid x6;
-            private Guid x7;
-            private Guid x8;
-            private Guid x9;
-#pragma warning restore 169
         }
     }
 }
