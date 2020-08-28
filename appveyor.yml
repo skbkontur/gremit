@@ -8,32 +8,42 @@ image: Visual Studio 2019
 
 init:
   - cmd: git config --global core.autocrlf false
-  - ps: |
-      $ErrorActionPreference = "Stop"
-      $tagName = $env:APPVEYOR_REPO_TAG_NAME
-      if ($tagName -match '^v\d+\.\d+') # tag name starts with 'vX.Y'
-      {
-        $env:SHOULD_PUBLISH_NUGET_PACKAGE = "true"
-        Write-Host "Will publish nuget package for $tagName tag" -ForegroundColor "Green"
-        if ($tagName -match '^v\d+\.\d+-release') # tag name starts with 'vX.Y-release' (e.g. use 'v4.2-release.1' tag for the first patch for release v4.2)
-        {
-          $env:SHOULD_CREATE_RELEASE = "true"
-          Write-Host "Will create release for $tagName tag" -ForegroundColor "Green"
-        }
-      }
 
 nuget:
   disable_publish_on_pr: true
 
 before_build:
+  - ps: |
+      $ErrorActionPreference = "Stop"
+      $tagName = $env:APPVEYOR_REPO_TAG_NAME
+      if ($tagName -match '^v\d+\.\d+') # tag name starts with 'vX.Y'
+      {
+        $version = $tagName.Substring(1)
+        $env:SHOULD_PUBLISH_NUGET_PACKAGE = "true"
+        Write-Host "Will publish nuget package for $tagName tag" -ForegroundColor "Green"
+        if ($tagName -match '^v\d+\.\d+-release') # tag name starts with 'vX.Y-release' (e.g. use 'v4.2-release.1' tag for the first patch for release v4.2)
+        {
+          $version = $version.Substring(0, $version.IndexOf("-release"))
+          $env:SHOULD_CREATE_RELEASE = "true"
+          Write-Host "Will create release for $tagName tag" -ForegroundColor "Green"
+        }
+        $matchVersion = Select-String -Path ./version.json -Pattern "`"version`": `"$version`""
+        if ($matchVersion -eq $null)
+        {
+          Write-Error "Version in tag ($version) does not match version in version.json"
+        }
+      }
   - cmd: dotnet --info
-  - cmd: dotnet restore ./GrEmit.sln --verbosity m
+  - cmd: dotnet restore ./GrEmit.sln --verbosity minimal
+  - cmd: dotnet tool restore
 
 build_script:
   - cmd: dotnet build --configuration Release ./GrEmit.sln
   - cmd: dotnet pack --no-build --configuration Release ./GrEmit.sln
 
 test_script:
+  - cmd: dotnet jb cleanupcode GrEmit.sln --profile=CatalogueCleanup --verbosity=WARN
+  - cmd: git diff --exit-code
   - cmd: dotnet test --no-build --configuration Release ./GrEmit.Tests/GrEmit.Tests.csproj
 
 artifacts:
