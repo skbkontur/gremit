@@ -2,7 +2,6 @@
 using System.Reflection.Emit;
 
 using NUnit.Framework;
-
 #if NET45
 using System.Reflection;
 using System.Threading;
