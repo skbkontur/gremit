@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using GrEmit.Utils;
 
 using NUnit.Framework;
-
 #if NET45
 using System.Diagnostics;
 using System.Linq;
