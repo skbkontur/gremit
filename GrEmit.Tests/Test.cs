@@ -77,16 +77,16 @@ namespace GrEmit.Tests
                 il.Ret();
             }
 
-            var check = "12345";
+            var expectedResult = "12345";
 
-            var inputs = new StringBuilder[check.Length];
-            for (var i = 0; i < check.Length; i++)
+            var funcArguments = new StringBuilder[expectedResult.Length];
+            for (var i = 0; i < expectedResult.Length; i++)
             {
-                inputs[i] = new StringBuilder(check[i].ToString());
+                funcArguments[i] = new StringBuilder(expectedResult[i].ToString());
             }
 
             var func = (Func<StringBuilder[], string>)method.CreateDelegate(typeof(Func<StringBuilder[], string>));
-            Assert.That(func(inputs), Is.EqualTo(check));
+            Assert.That(func(funcArguments), Is.EqualTo(expectedResult));
         }
 
         [Test]

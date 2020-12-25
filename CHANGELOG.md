@@ -1,5 +1,8 @@
 # Changelog
 
+## v3.3.x - 2020.12.25
+- Fix bug with not passing type parameter for `Ldelem_Ref` instruction
+
 ## v3.3.7 - 2020.05.23
 - Support `Localloc` operation
 
