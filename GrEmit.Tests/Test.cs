@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
+using System.Text;
 
 using GrEmit.Utils;
 
@@ -31,32 +32,32 @@ namespace GrEmit.Tests
             //     }
             //     return result;
             // }
-            
-            var method = new DynamicMethod(nameof(Test_LdElem_OnClass_ShouldEmitType), typeof(string), new[] {typeof(System.Text.StringBuilder[])}, typeof(Test));
+
+            var method = new DynamicMethod(nameof(Test_LdElem_OnClass_ShouldEmitType), typeof(string), new[] {typeof(StringBuilder[])}, typeof(Test));
             using (var il = new GroboIL(method))
             {
                 var index = il.DeclareLocal(typeof(int));
                 var result = il.DeclareLocal(typeof(string));
-                    
+
                 il.Ldc_I4(0);
                 il.Stloc(index);
-                
+
                 il.Ldstr(string.Empty);
                 il.Stloc(result);
-                    
+
                 var start = il.DefineLabel("start");
                 var compare = il.DefineLabel("compare");
-                    
+
                 il.Br(compare);
                 il.MarkLabel(start);
-                
+
                 il.Ldloc(result);
-                
+
                 il.Ldarg(0);
                 il.Ldloc(index);
-                il.Ldelem(typeof(System.Text.StringBuilder));
+                il.Ldelem(typeof(StringBuilder));
                 il.Call(typeof(object).GetMethod(nameof(ToString)));
-                
+
                 il.Call(typeof(string).GetMethod(nameof(string.Concat), new[] {typeof(string), typeof(string)}));
                 il.Stloc(result);
 
@@ -64,30 +65,30 @@ namespace GrEmit.Tests
                 il.Ldc_I4(1);
                 il.Add();
                 il.Stloc(index);
-                    
+
                 il.MarkLabel(compare);
                 il.Ldloc(index);
                 il.Ldarg(0);
                 il.Ldlen();
                 il.Conv<int>();
                 il.Blt(start, false);
-                
+
                 il.Ldloc(result);
                 il.Ret();
             }
 
             var check = "12345";
 
-            var inputs = new System.Text.StringBuilder[check.Length];
+            var inputs = new StringBuilder[check.Length];
             for (var i = 0; i < check.Length; i++)
             {
-                inputs[i] = new System.Text.StringBuilder(check[i].ToString());
+                inputs[i] = new StringBuilder(check[i].ToString());
             }
-            
-            var func = (Func<System.Text.StringBuilder[], string>)method.CreateDelegate(typeof(Func<System.Text.StringBuilder[], string>));
+
+            var func = (Func<StringBuilder[], string>)method.CreateDelegate(typeof(Func<StringBuilder[], string>));
             Assert.That(func(inputs), Is.EqualTo(check));
         }
-        
+
         [Test]
         public void TestLocalloc()
         {
