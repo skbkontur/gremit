@@ -2131,7 +2131,7 @@ namespace GrEmit
 
         private void Emit(OpCode opCode, TypeILInstructionParameter parameter)
         {
-            var lineNumber = ilCode.Append(opCode, new EmptyILInstructionComment());
+            var lineNumber = ilCode.Append(opCode, parameter, new EmptyILInstructionComment());
             if (analyzeStack && stack != null)
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
