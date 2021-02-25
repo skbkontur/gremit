@@ -1,5 +1,8 @@
 # Changelog
 
+## v3.3.20 - 2021.02.25
+- Adding MIT license file to nuget package
+
 ## v3.3.18 - 2020.12.25
 - Fix bug with not passing type parameter for `Ldelem_Ref` instruction
 
