@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.4.x - 2021.03.10
+- Add net5.0 support
+- Drop netcoreapp2.x support
+
 ## v3.3.20 - 2021.02.25
 - Adding MIT license file to nuget package
 
