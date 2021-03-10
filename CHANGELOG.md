@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.4.x - 2021.03.10
+## v3.4.1 - 2021.03.10
 - Add net5.0 support
 - Drop netcoreapp2.x support
 
