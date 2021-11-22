@@ -709,6 +709,30 @@ namespace GrEmit.Tests
 #endif
 
         [Test]
+        public void Test_CreateStruct_ThenGetField()
+        {
+            var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(int), Type.EmptyTypes);
+            using (var il = new GroboIL(method))
+            {
+                il.Ldc_I4(5);
+                il.Newobj(HackHelpers.GetObjectConstruction(() => new TestStruct(0)));
+                il.Ldfld(HackHelpers.GetField<TestStruct>(x => x.Value));
+                il.Ret();
+            }
+            Assert.That(method.Invoke(null, null), Is.EqualTo(5));
+        }
+
+        public struct TestStruct
+        {
+            public TestStruct(int value)
+            {
+                Value = value;
+            }
+
+            public readonly int Value;
+        }
+
+        [Test]
         public void TestCallFormat()
         {
             var method = new DynamicMethod(Guid.NewGuid().ToString(), typeof(string), new[] {typeof(string), typeof(decimal), typeof(decimal)}, typeof(string), true);
