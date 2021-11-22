@@ -16,9 +16,7 @@ namespace GrEmit.StackMutators
                 var instance = stack.Pop().ToType();
                 if (instance != null)
                 {
-                    if (instance.IsValueType)
-                        ThrowError(il, $"In order to load the field '{Formatter.Format(field)}' of a value type '{Formatter.Format(instance)}' load an instance by ref");
-                    else if (!instance.IsByRef)
+                    if (!instance.IsByRef)
                         CheckCanBeAssigned(il, declaringType, instance);
                     else
                     {
