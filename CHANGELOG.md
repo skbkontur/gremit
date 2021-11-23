@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.4.XX - 2021.11.22
+## v3.4.10 - 2021.11.22
 - Allow using `Ldfld` on value-type objects
 
 ## v3.4.1 - 2021.03.10
