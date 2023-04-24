@@ -9,6 +9,9 @@ image: Visual Studio 2022
 init:
   - cmd: git config --global core.autocrlf false
 
+skip_tags: true
+skip_non_tags: true
+
 nuget:
   disable_publish_on_pr: true
 

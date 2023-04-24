@@ -1,0 +1,88 @@
+on:
+  push:
+    paths-ignore:
+      - "**/*.md"
+    pull_request:
+env:
+  DOTNET_VERSION: 6.0.x
+  SOLUTION_FILE: GrEmit.sln
+jobs:
+  test:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dependencies
+        run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity minimal && dotnet tool restore
+
+      - name: Build
+        run: dotnet build --configuration Release ${{ env.SOLUTION_FILE }}
+
+      - name: Check codestyle
+        run: dotnet jb cleanupcode ${{ env.SOLUTION_FILE }} --profile=CatalogueCleanup --verbosity=WARN && git diff --exit-code
+
+      - name: Run tests
+        run: dotnet test --no-build --configuration Release ${{ env.SOLUTION_FILE }}
+  publish:
+    runs-on: windows-2019
+    needs: test
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Build
+        run: dotnet build --configuration Release ${{ env.SOLUTION_FILE }}
+
+      - name: Check version
+        run: |
+          $ErrorActionPreference = "Stop"
+          $tagName = "${{ github.ref_name }}"
+          $version = $tagName.Substring(1)
+          Write-Host "Will publish nuget package for $tagName tag" -ForegroundColor "Green"
+          if ($tagName -match '^v\d+\.\d+-release') # tag name starts with 'vX.Y-release' (e.g. use 'v4.2-release.1' tag for the first patch for release v4.2)
+          {
+            $version = $version.Substring(0, $version.IndexOf("-release"))
+            echo "SHOULD_CREATE_RELEASE=true" >> $env:GITHUB_ENV
+            Write-Host "Will create release for $tagName tag" -ForegroundColor "Green"
+          }
+          $matchVersion = Select-String -Path ./version.json -Pattern "`"version`": `"$version`""
+          if ($matchVersion -eq $null)
+          {
+            Write-Error "Version in tag ($version) does not match version in version.json"
+          }
+      - name: Pack dotnet
+        run: dotnet pack --no-build --configuration Release ${{ env.SOLUTION_FILE }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: "**/*.nupkg"
+          if-no-files-found: error
+
+      - name: Publish NuGet
+        run: dotnet nuget push "**/*.nupkg" --source https://api.nuget.org/v3/index.json --no-symbols --api-key $env:NUGET_API_KEY
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        if: ${{ env.SHOULD_CREATE_RELEASE == 'true' }}
+        with:
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: false
+          files: "**/*.nupkg"
