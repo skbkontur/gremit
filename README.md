@@ -1,8 +1,8 @@
 # GrEmit
 
 [![NuGet Status](https://img.shields.io/nuget/v/GrEmit.svg)](https://www.nuget.org/packages/GrEmit/)
-[![Build Status](https://travis-ci.org/skbkontur/gremit.svg?branch=master)](https://travis-ci.org/skbkontur/gremit)
-[![Build status](https://ci.appveyor.com/api/projects/status/p8pr8xhyhb9tjtq2?svg=true)](https://ci.appveyor.com/project/skbkontur/gremit)
+[![Build status](https://github.com/skbkontur/gremit/actions/workflows/actions.yml/badge.svg)](https://github.com/skbkontur/gremit/actions)
+
 
 GrEmit is a library containing different helpers for generating code using Reflection.Emit with the main one being GroboIL - a smart wrapper over [ILGenerator](http://msdn.microsoft.com/en-us/library/system.reflection.emit.ilgenerator.aspx).
 
