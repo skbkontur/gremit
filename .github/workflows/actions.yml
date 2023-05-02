@@ -4,7 +4,6 @@ on:
       - "**/*.md"
     pull_request:
 env:
-  DOTNET_VERSION: 6.0.x
   SOLUTION_FILE: GrEmit.sln
 jobs:
   test:
@@ -17,7 +16,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: global.json
 
       - name: Install dependencies
         run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity minimal && dotnet tool restore
@@ -42,7 +41,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: global.json
 
       - name: Build
         run: dotnet build --configuration Release ${{ env.SOLUTION_FILE }}

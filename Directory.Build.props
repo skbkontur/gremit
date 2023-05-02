@@ -15,7 +15,7 @@
   <!-- Nerdbank.GitVersioning does not work on Ubuntu+Mono (see https://github.com/AArnott/Nerdbank.GitVersioning/issues/224) -->
   <ItemGroup Condition="'$(OS)' != 'Unix'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.244" PrivateAssets="All" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.6.128" PrivateAssets="All" />
   </ItemGroup>
 
   <PropertyGroup>
