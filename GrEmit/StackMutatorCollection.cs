@@ -176,6 +176,7 @@ namespace GrEmit
                 {OpCodes.Ldtoken, new LdtokenStackMutator()},
                 {OpCodes.Castclass, new CastclassStackMutator()},
                 {OpCodes.Isinst, new IsinstStackMutator()},
+                {OpCodes.Unbox, new Unbox_StackMutator()},
                 {OpCodes.Unbox_Any, new Unbox_AnyStackMutator()},
                 {OpCodes.Box, new BoxStackMutator()},
                 {OpCodes.Newobj, new NewobjStackMutator()},

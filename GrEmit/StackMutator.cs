@@ -119,6 +119,12 @@ namespace GrEmit
             if (cliType != CLIType.Pointer && cliType != CLIType.NativeInt)
                 ThrowError(il, $"A pointer type expected but was '{type}'");
         }
+        
+        protected static void CheckIsNotValueType(GroboIL il, ESType type)
+        {
+            if (type.ToType().IsValueType)
+                ThrowError(il, $"A reference type expected but was '{type}'");
+        }
 
         protected static void CheckCanBeAssigned(GroboIL il, Type to, ESType from)
         {
