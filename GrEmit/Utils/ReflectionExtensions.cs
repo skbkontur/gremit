@@ -12,7 +12,7 @@ namespace GrEmit.Utils
         static ReflectionExtensions()
         {
             IsMono = Type.GetType("Mono.Runtime") != null;
-            IsNet8 = Environment.Version.Major == 8;
+            DotnetVersion = Environment.Version.Major;
 
             var assembly = typeof(MethodInfo).Assembly;
             var types = assembly.GetTypes();
@@ -204,7 +204,7 @@ namespace GrEmit.Utils
         }
 
         internal static bool IsMono { get; }
-        internal static bool IsNet8 { get; }
+        internal static int DotnetVersion { get; }
 
         public static Type[] GetParameterTypes(MethodBase method)
         {
@@ -405,7 +405,7 @@ namespace GrEmit.Utils
                 string parameterTypesFieldName = IsMono ? "parameters" : "m_parameterTypes";
                 var parameterTypesField = runtimeMethodBuilder.GetField(parameterTypesFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (parameterTypesField == null)
-                    throw new InvalidOperationException($"Field 'RuntimeMethodBuilder.{parameterTypesFieldName}' is not found");
+                    throw new InvalidOperationException($"Field '{runtimeMethodBuilder.Name}.{parameterTypesFieldName}' is not found");
                 m_parameterTypesExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(parameterTypesField);
             }
 
@@ -428,7 +428,7 @@ namespace GrEmit.Utils
                 {
                     var methodBuilderField = runtimeConstructorBuilder.GetField("m_methodBuilder", BindingFlags.Instance | BindingFlags.NonPublic);
                     if (methodBuilderField == null)
-                        throw new InvalidOperationException("Field 'RuntimeConstructorBuilder.m_methodBuilder' is not found");
+                        throw new InvalidOperationException($"Field '{runtimeConstructorBuilder.Name}.m_methodBuilder' is not found");
                     m_methodBuilderExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodBuilderField);
                 }
                 else
@@ -465,10 +465,8 @@ namespace GrEmit.Utils
         {
             static TypeBuilderInstWrapper()
             {
-                string typeFieldName = IsMono ? "generic_type" : (IsNet8 ? "_genericType" : "m_type");
-                string instFieldName = IsMono ? "type_arguments" : (IsNet8 ? "_typeArguments" : "m_inst");
-
-
+                string typeFieldName = IsMono ? "generic_type" : DotnetVersion < 8 ? "m_type" : "_genericType";
+                string instFieldName = IsMono ? "type_arguments" : DotnetVersion < 8 ? "m_inst" : "_typeArguments";
                 var typeField = typeBuilderInstType.GetField(typeFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (typeField == null)
                     throw new InvalidOperationException($"Field '{typeBuilderInstType.Name}.{typeFieldName}' is not found");
@@ -562,8 +560,8 @@ namespace GrEmit.Utils
         {
             static MethodOnTypeBuilderInstWrapper()
             {
-                string methodFieldName = IsMono ? "base_method" : (IsNet8 ? "_method" : "m_method");
-                string typeFieldName = IsMono ? "instantiation" : (IsNet8 ? "_type" : "m_type");
+                string methodFieldName = IsMono ? "base_method" : DotnetVersion < 8 ? "m_method" : "_method";
+                string typeFieldName = IsMono ? "instantiation" : DotnetVersion < 8 ? "m_type" : "_type";
                 var methodField = methodOnTypeBuilderInstType.GetField(methodFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (methodField == null)
                     throw new InvalidOperationException($"Field '{methodOnTypeBuilderInstType.Name}.{methodFieldName}' is not found");
@@ -646,8 +644,8 @@ namespace GrEmit.Utils
         {
             static ConstructorOnTypeBuilderInstWrapper()
             {
-                string ctorFieldName = IsMono ? "cb" : (IsNet8 ? "_ctor" : "m_ctor");
-                string typeFieldName = IsMono ? "instantiation" : (IsNet8 ? "_type" : "m_type");
+                string ctorFieldName = IsMono ? "cb" : DotnetVersion < 8 ? "m_ctor" : "_ctor";
+                string typeFieldName = IsMono ? "instantiation" : DotnetVersion < 8 ? "m_type" : "_type";
                 var ctorField = constructorOnTypeBuilderInstType.GetField(ctorFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (ctorField == null)
                     throw new InvalidOperationException($"Field '{constructorOnTypeBuilderInstType.Name}.{ctorFieldName}' is not found");
@@ -686,17 +684,16 @@ namespace GrEmit.Utils
         {
             static MethodBuilderInstWrapper()
             {
-                var mMethodName = IsNet8 ? "_method" : "m_method";
+                var mMethodName = DotnetVersion < 8 ? "m_method" : "_method";
                 var methodField = methodBuilderInstType.GetField(mMethodName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (methodField == null)
                     throw new InvalidOperationException($"Field '{methodBuilderInstType.Name}.{mMethodName}' is not found");
                 m_methodExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodField);
-                var mInstName = IsNet8 ? "_inst" : "m_inst";
+                var mInstName = DotnetVersion < 8 ? "m_inst" : "_inst";
                 var instField = methodBuilderInstType.GetField(mInstName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (instField == null)
                     throw new InvalidOperationException($"Field '{methodBuilderInstType.Name}.{mInstName}' is not found");
                 m_instExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(instField);
-                //}
             }
 
             public MethodBuilderInstWrapper(MethodBase inst)
