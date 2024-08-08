@@ -137,7 +137,7 @@ namespace GrEmit.Utils
 
             parameterTypesExtractors[runtimeMethodBuilder]
                 = (Func<MethodBase, Type[]>)(method => new MethodBuilderWrapper(method).ParameterTypes);
-            
+
             parameterTypesExtractors[runtimeConstructorBuilder]
                 = (Func<MethodBase, Type[]>)(method => new ConstructorBuilderWrapper(method).ParameterTypes);
             parameterTypesExtractors[methodOnTypeBuilderInstType]
