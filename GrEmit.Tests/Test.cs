@@ -408,6 +408,19 @@ namespace GrEmit.Tests
         }
 
         [Test]
+        public void TestDefineConstructor()
+        {
+            var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
+            var module = assembly.DefineDynamicModule(Guid.NewGuid().ToString());
+            var type = module.DefineType("Zzz", TypeAttributes.Class | TypeAttributes.Public);
+            var ctr = type.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, null);
+            using (var il = new GroboIL(ctr))
+            {
+                il.Ret();
+            }
+        }
+
+        [Test]
         public void TestDifferentPathsGeneric()
         {
             var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);

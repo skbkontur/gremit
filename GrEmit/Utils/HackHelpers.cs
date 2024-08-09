@@ -17,13 +17,13 @@ namespace GrEmit.Utils
         //NOTE MetadataToken's reassigned on compilation !!! use inside appdomain
         public static ulong GetMemberUniqueToken(MemberInfo mi)
         {
-            return ((ulong)mi.Module.MetadataToken) << 32 | (ulong)mi.MetadataToken;
+            return ((ulong)mi.Module.MetadataToken << 32) | (uint)mi.MetadataToken;
         }
 
         //BUG может быть одинаков для типов из разных сборок
         public static ulong GetTypeUniqueToken(Type type)
         {
-            return ((ulong)type.Module.MetadataToken) << 32 | (ulong)type.MetadataToken;
+            return ((ulong)type.Module.MetadataToken << 32) | (uint)type.MetadataToken;
         }
 
         public static ConstructorInfo GetObjectConstruction<T>(Expression<Func<T>> constructorCall,

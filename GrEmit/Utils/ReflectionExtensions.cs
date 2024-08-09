@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +12,14 @@ namespace GrEmit.Utils
         static ReflectionExtensions()
         {
             IsMono = Type.GetType("Mono.Runtime") != null;
+            DotnetVersion = Environment.Version.Major;
 
             var assembly = typeof(MethodInfo).Assembly;
             var types = assembly.GetTypes();
+            runtimeConstructorBuilder = TryFindType(types, "RuntimeConstructorBuilder") ?? FindType(types, "ConstructorBuilder");
+            runtimeMethodBuilder = TryFindType(types, "RuntimeMethodBuilder") ?? FindType(types, "MethodBuilder");
+            runtimeGenericTypeParameterBuilder = TryFindType(types, "RuntimeGenericTypeParameterBuilder") ?? FindType(types, "GenericTypeParameterBuilder");
+            runtimeTypeBuilder = TryFindType(types, "RuntimeTypeBuilder") ?? FindType(types, "TypeBuilder");
 
             var runtimeTypeType = FindType(types, "RuntimeType");
             var monoTypeType = !IsMono ? runtimeTypeType : FindType(types, "MonoType");
@@ -57,11 +62,11 @@ namespace GrEmit.Utils
             returnTypeExtractors[runtimeMethodInfoType]
                 = returnTypeExtractors[runtimeGenericMethodInfoType]
                       = returnTypeExtractors[typeof(DynamicMethod)]
-                            = returnTypeExtractors[typeof(MethodBuilder)]
+                            = returnTypeExtractors[runtimeMethodBuilder]
                                   = (Func<MethodInfo, Type>)(method => method.ReturnType);
             baseTypeOfTypeExtractors[runtimeTypeType]
                 = baseTypeOfTypeExtractors[monoTypeType]
-                      = baseTypeOfTypeExtractors[typeof(TypeBuilder)]
+                      = baseTypeOfTypeExtractors[runtimeTypeBuilder]
                             = baseTypeOfTypeExtractors[typeof(GenericTypeParameterBuilder)]
                                   = baseTypeOfTypeExtractors[byRefTypeType]
                                         = baseTypeOfTypeExtractors[pointerTypeType]
@@ -70,13 +75,14 @@ namespace GrEmit.Utils
             interfacesOfTypeExtractors[runtimeTypeType]
                 = interfacesOfTypeExtractors[monoTypeType]
                       = (Func<Type, Type[]>)(type => type.GetInterfaces());
-            interfacesOfTypeExtractors[typeof(TypeBuilder)]
+            interfacesOfTypeExtractors[runtimeTypeBuilder]
                 = (Func<Type, Type[]>)(type => GetInterfaces(GetBaseType(type)).Concat(type.GetInterfaces()).Distinct().ToArray());
             interfacesOfTypeExtractors[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type[]>)(type => type.GetGenericParameterConstraints());
             typeComparers[runtimeTypeType]
                 = typeComparers[monoTypeType]
-                      = typeComparers[typeof(TypeBuilder)]
-                            = typeComparers[typeof(GenericTypeParameterBuilder)] = (Func<Type, Type, bool>)((x, y) => x == y);
+                      = typeComparers[runtimeTypeBuilder]
+                            = typeComparers[runtimeGenericTypeParameterBuilder] = (Func<Type, Type, bool>)((x, y) => x == y);
+
             typeComparers[byRefTypeType]
                 = typeComparers[pointerTypeType]
                       = typeComparers[arrayTypeType]
@@ -93,7 +99,7 @@ namespace GrEmit.Utils
             hashCodeCalculators[runtimeTypeType]
                 = hashCodeCalculators[monoTypeType]
                       = hashCodeCalculators[typeof(TypeBuilder)]
-                            = hashCodeCalculators[typeof(GenericTypeParameterBuilder)]
+                            = hashCodeCalculators[runtimeGenericTypeParameterBuilder]
                                   = (Func<Type, int>)(type => type.GetHashCode());
             hashCodeCalculators[byRefTypeType]
                 = hashCodeCalculators[pointerTypeType]
@@ -127,11 +133,12 @@ namespace GrEmit.Utils
                                                             }
                                                             return false;
                                                         });
-            assignabilityCheckers[typeof(TypeBuilder)] = (Func<Type, Type, bool>)((to, from) => to.IsAssignableFrom(from));
+            assignabilityCheckers[runtimeTypeBuilder] = (Func<Type, Type, bool>)((to, from) => to.IsAssignableFrom(from));
 
-            parameterTypesExtractors[typeof(MethodBuilder)]
+            parameterTypesExtractors[runtimeMethodBuilder]
                 = (Func<MethodBase, Type[]>)(method => new MethodBuilderWrapper(method).ParameterTypes);
-            parameterTypesExtractors[typeof(ConstructorBuilder)]
+
+            parameterTypesExtractors[runtimeConstructorBuilder]
                 = (Func<MethodBase, Type[]>)(method => new ConstructorBuilderWrapper(method).ParameterTypes);
             parameterTypesExtractors[methodOnTypeBuilderInstType]
                 = (Func<MethodBase, Type[]>)(method => new MethodOnTypeBuilderInstWrapper(method).ParameterTypes);
@@ -197,6 +204,7 @@ namespace GrEmit.Utils
         }
 
         internal static bool IsMono { get; }
+        internal static int DotnetVersion { get; }
 
         public static Type[] GetParameterTypes(MethodBase method)
         {
@@ -362,6 +370,10 @@ namespace GrEmit.Utils
         private static readonly Type methodOnTypeBuilderInstType;
         private static readonly Type constructorOnTypeBuilderInstType;
         private static readonly Type methodBuilderInstType;
+        private static readonly Type runtimeConstructorBuilder;
+        private static readonly Type runtimeMethodBuilder;
+        private static readonly Type runtimeGenericTypeParameterBuilder;
+        private static readonly Type runtimeTypeBuilder;
 
         private static readonly Hashtable parameterTypesExtractors;
         private static readonly Hashtable returnTypeExtractors;
@@ -391,9 +403,9 @@ namespace GrEmit.Utils
             static MethodBuilderWrapper()
             {
                 string parameterTypesFieldName = IsMono ? "parameters" : "m_parameterTypes";
-                var parameterTypesField = typeof(MethodBuilder).GetField(parameterTypesFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+                var parameterTypesField = runtimeMethodBuilder.GetField(parameterTypesFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (parameterTypesField == null)
-                    throw new InvalidOperationException($"Field 'MethodBuilder.{parameterTypesFieldName}' is not found");
+                    throw new InvalidOperationException($"Field '{runtimeMethodBuilder.Name}.{parameterTypesFieldName}' is not found");
                 m_parameterTypesExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(parameterTypesField);
             }
 
@@ -414,9 +426,9 @@ namespace GrEmit.Utils
             {
                 if (!IsMono)
                 {
-                    var methodBuilderField = typeof(ConstructorBuilder).GetField("m_methodBuilder", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var methodBuilderField = runtimeConstructorBuilder.GetField("m_methodBuilder", BindingFlags.Instance | BindingFlags.NonPublic);
                     if (methodBuilderField == null)
-                        throw new InvalidOperationException("Field 'ConstructorBuilder.m_methodBuilder' is not found");
+                        throw new InvalidOperationException($"Field '{runtimeConstructorBuilder.Name}.m_methodBuilder' is not found");
                     m_methodBuilderExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodBuilderField);
                 }
                 else
@@ -453,8 +465,8 @@ namespace GrEmit.Utils
         {
             static TypeBuilderInstWrapper()
             {
-                string typeFieldName = IsMono ? "generic_type" : "m_type";
-                string instFieldName = IsMono ? "type_arguments" : "m_inst";
+                string typeFieldName = IsMono ? "generic_type" : DotnetVersion < 8 ? "m_type" : "_genericType";
+                string instFieldName = IsMono ? "type_arguments" : DotnetVersion < 8 ? "m_inst" : "_typeArguments";
                 var typeField = typeBuilderInstType.GetField(typeFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (typeField == null)
                     throw new InvalidOperationException($"Field '{typeBuilderInstType.Name}.{typeFieldName}' is not found");
@@ -548,8 +560,8 @@ namespace GrEmit.Utils
         {
             static MethodOnTypeBuilderInstWrapper()
             {
-                string methodFieldName = IsMono ? "base_method" : "m_method";
-                string typeFieldName = IsMono ? "instantiation" : "m_type";
+                string methodFieldName = IsMono ? "base_method" : DotnetVersion < 8 ? "m_method" : "_method";
+                string typeFieldName = IsMono ? "instantiation" : DotnetVersion < 8 ? "m_type" : "_type";
                 var methodField = methodOnTypeBuilderInstType.GetField(methodFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (methodField == null)
                     throw new InvalidOperationException($"Field '{methodOnTypeBuilderInstType.Name}.{methodFieldName}' is not found");
@@ -632,8 +644,8 @@ namespace GrEmit.Utils
         {
             static ConstructorOnTypeBuilderInstWrapper()
             {
-                string ctorFieldName = IsMono ? "cb" : "m_ctor";
-                string typeFieldName = IsMono ? "instantiation" : "m_type";
+                string ctorFieldName = IsMono ? "cb" : DotnetVersion < 8 ? "m_ctor" : "_ctor";
+                string typeFieldName = IsMono ? "instantiation" : DotnetVersion < 8 ? "m_type" : "_type";
                 var ctorField = constructorOnTypeBuilderInstType.GetField(ctorFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (ctorField == null)
                     throw new InvalidOperationException($"Field '{constructorOnTypeBuilderInstType.Name}.{ctorFieldName}' is not found");
@@ -672,13 +684,15 @@ namespace GrEmit.Utils
         {
             static MethodBuilderInstWrapper()
             {
-                var methodField = methodBuilderInstType.GetField("m_method", BindingFlags.Instance | BindingFlags.NonPublic);
+                var mMethodName = DotnetVersion < 8 ? "m_method" : "_method";
+                var methodField = methodBuilderInstType.GetField(mMethodName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (methodField == null)
-                    throw new InvalidOperationException($"Field '{methodBuilderInstType.Name}.m_method' is not found");
+                    throw new InvalidOperationException($"Field '{methodBuilderInstType.Name}.{mMethodName}' is not found");
                 m_methodExtractor = FieldsExtractor.GetExtractor<MethodBase, MethodInfo>(methodField);
-                var instField = methodBuilderInstType.GetField("m_inst", BindingFlags.Instance | BindingFlags.NonPublic);
+                var mInstName = DotnetVersion < 8 ? "m_inst" : "_inst";
+                var instField = methodBuilderInstType.GetField(mInstName, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (instField == null)
-                    throw new InvalidOperationException($"Field '{methodBuilderInstType.Name}.m_inst' is not found");
+                    throw new InvalidOperationException($"Field '{methodBuilderInstType.Name}.{mInstName}' is not found");
                 m_instExtractor = FieldsExtractor.GetExtractor<MethodBase, Type[]>(instField);
             }
 
