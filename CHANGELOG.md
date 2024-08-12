@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.5.1 - 2024.08.12
+- Added .NET 8 support.
+- Source Link was removed because, starting with .NET 8, Source Link is included in the .NET SDK and enabled by default.
+- Minor bug fixes.
+
 ## v3.4.10 - 2021.11.22
 - Allow using `Ldfld` on value-type objects
 
