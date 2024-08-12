@@ -1417,6 +1417,27 @@ namespace GrEmit
                 throw new ArgumentNullException("type");
             Emit(OpCodes.Isinst, type);
         }
+        
+        /// <summary>
+        ///     The unbox instruction converts the object reference (type O), the boxed representation of a value type,
+        ///     to a value type pointer (a managed pointer, type ref), its unboxed form. The supplied value type (valType)
+        ///     is a metadata token indicating the type of value type contained within the boxed object.
+        ///
+        ///     Unlike Box, which is required to make a copy of a value type for use in the object, unbox is not
+        ///     required to copy the value type from the object. Typically it simply computes the address of the value
+        ///     type that is already present inside of the boxed object.
+        /// </summary>
+        /// <param name="type">
+        ///     The <see cref="Type">Type</see> of boxed object. Must be a value type.
+        /// </param>
+        public void Unbox(Type type)
+        {
+            if (type == null)
+                throw new ArgumentNullException("type");
+            if (!type.IsValueType && !type.IsGenericParameter)
+                throw new ArgumentException("A value type expected", "type");
+            Emit(OpCodes.Unbox, type);
+        }
 
         /// <summary>
         ///     Converts the boxed representation of a type specified in the instruction to its unboxed form.
