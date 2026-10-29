@@ -35,6 +35,7 @@ namespace GrEmit.Utils
                                             ? TryFindType(types, "MonoMethod") ?? FindType(types, "RuntimeMethodInfo")
                                             : FindType(types, "RuntimeMethodInfo");
             var runtimeGenericMethodInfoType = FindType(types, "RuntimeMethodInfo");
+            runtimeMethodInfoTypes = new HashSet<Type> {runtimeMethodInfoType, runtimeGenericMethodInfoType};
 
             // Starting from mono 6 MonoCMethod is renamed to RuntimeConstructorInfo (as in microsoft .net implementation)
             var runtimeConstructorInfoType = IsMono
@@ -206,6 +207,11 @@ namespace GrEmit.Utils
         internal static bool IsMono { get; }
         internal static int DotnetVersion { get; }
 
+        internal static bool IsRuntimeMethodInfo(MethodInfo method)
+        {
+            return runtimeMethodInfoTypes.Contains(method.GetType());
+        }
+
         public static Type[] GetParameterTypes(MethodBase method)
         {
             var type = method.GetType();
@@ -366,6 +372,7 @@ namespace GrEmit.Utils
         }
 
         private static readonly HashSet<Type> runtimeTypeTypes;
+        private static readonly HashSet<Type> runtimeMethodInfoTypes;
         private static readonly Type typeBuilderInstType;
         private static readonly Type methodOnTypeBuilderInstType;
         private static readonly Type constructorOnTypeBuilderInstType;

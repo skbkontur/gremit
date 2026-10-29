@@ -1922,7 +1922,7 @@ namespace GrEmit
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             if (symbolDocumentWriter == null)
-                il.EmitCall(opCode, method, optionalParameterTypes);
+                EmitCallInstruction(opCode, method, optionalParameterTypes);
         }
 
         /// <summary>
@@ -1972,7 +1972,7 @@ namespace GrEmit
                 MutateStack(opCode, parameter);
             ilCode.SetComment(lineNumber, GetComment());
             if (symbolDocumentWriter == null)
-                il.EmitCall(opCode, method, optionalParameterTypes);
+                EmitCallInstruction(opCode, method, optionalParameterTypes);
         }
 
         /// <summary>
@@ -2026,6 +2026,22 @@ namespace GrEmit
 #else
             throw new PlatformNotSupportedException("Unmanaged function call is not supported for netstandard2.0 target. See https://apisof.net/catalog/System.Reflection.Emit.ILGenerator.EmitCalli(OpCode,CallingConvention,Type,Type())");
 #endif
+        }
+
+        // Emit(OpCode, MethodInfo) emits without keeps a SignatureHelper + VarArgMethod token per call site while the method is alive.
+        // For MethodBuilder/ConstructorBuilder: Emit(call/callvirt) is EmitCall(opCode, method, null) anyway.
+        private void EmitCallInstruction(OpCode opCode, MethodInfo method, Type[] optionalParameterTypes)
+        {
+            // DynamicILGenerator.Emit accepts only methods of already created types (RuntimeMethodInfo) and DynamicMethods.
+            // Checked first because MethodBuilder and other not yet created methods throw NotSupportedException from ContainsGenericParameters.
+            var isRuntimeMethod = method is DynamicMethod || ReflectionExtensions.IsRuntimeMethodInfo(method);
+            if (optionalParameterTypes == null
+                && isRuntimeMethod
+                && (method.CallingConvention & CallingConventions.VarArgs) == 0
+                && !method.ContainsGenericParameters && !(method.DeclaringType?.ContainsGenericParameters ?? false))
+                il.Emit(opCode, method);
+            else
+                il.EmitCall(opCode, method, optionalParameterTypes);
         }
 
         private void Emit(OpCode opCode, ILInstructionParameter parameter)
