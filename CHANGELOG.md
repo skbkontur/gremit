@@ -1,5 +1,8 @@
 # Changelog
 
+## v3.6.1 - 2026.10.29
+- Optimize memory usage by using `ILGenerator.Emit` instead of `EmitCall` which kept a `SignatureHelper` and `VarArgMethod` per call site for the method's lifetime.
+
 ## v3.5.1 - 2024.08.12
 - Added .NET 8 support.
 - Source Link was removed because, starting with .NET 8, Source Link is included in the .NET SDK and enabled by default.
